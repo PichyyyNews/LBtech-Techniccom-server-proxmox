@@ -51,3 +51,16 @@
 
 * **URL ของ Proxmox VE WebUI:** [https://192.168.1.250:8006](https://192.168.1.250:8006)
 * **IP ของ Debian LXC (web-server):** `192.168.1.113` (สามารถเชื่อมต่อ SSH: `ssh root@192.168.1.113` รหัสผ่าน `07072569`)
+
+---
+
+## 5. วิธีเข้าใช้งานแบบสาธารณะผ่าน Cloudflare Tunnel (ไม่ต้องเชื่อมต่อ Tailscale)
+
+คุณสามารถเข้าใช้งาน Proxmox VE ผ่านอินเทอร์เน็ตสาธารณะได้โดยตรงจากทุกที่ ทุกอุปกรณ์ (รวมถึงมือถือหรือแท็บเล็ต) โดย**ไม่จำเป็นต้องเชื่อมต่อ Tailscale**:
+
+* **URL ของ Proxmox VE WebUI:** [https://techniccom-pve.pichyy.qzz.io](https://techniccom-pve.pichyy.qzz.io)
+* **ข้อมูลเข้าล็อกอิน:**
+  * **User name:** `tc-admin`
+  * **Password:** `07072569`
+  * **Realm:** `Linux PAM standard authentication` *(ต้องเลือกข้อนี้ในช่องดร็อปดาวน์ เพื่อใช้บัญชีของระบบปฏิบัติการ)*
+
