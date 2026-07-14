@@ -9,41 +9,47 @@
 
 ## 1. เซิร์ฟเวอร์หลัก (Proxmox VE Host)
 
-เครื่องแม่ข่ายหลักที่ควบคุมระบบทั้งหมด
+เครื่องแม่ข่ายหลักที่ควบคุมระบบทั้งหมด (ตั้งค่าเน็ตเวิร์กแลนหลักเป็น **DHCP** เพื่อรองรับการย้ายเราเตอร์และสถานที่ติดตั้ง)
 
 | รายการ | ข้อมูลการเข้าใช้งาน |
 | --- | --- |
-| **URL (Local - ในบ้าน)** | [https://192.168.1.250:8006](https://192.168.1.250:8006) |
-| **URL (Tailscale - VPN)** | [https://100.125.250.85:8006](https://100.125.250.85:8006) |
-| **URL (External - โดเมนสาธารณะ)** | [https://techniccom-pve.pichyy.qzz.io](https://techniccom-pve.pichyy.qzz.io) |
+| **IP (Local - ในบ้าน)** | ได้รับผ่าน DHCP (หากเราเตอร์เปลี่ยน วง IP จะเปลี่ยนอัตโนมัติเพื่อป้องกันระบบพัง) |
+| **URL (Tailscale - VPN)** | [https://100.125.250.85:8006](https://100.125.250.85:8006) *(แนะนำ - เป็น Static IP VPN เสมอ)* |
+| **URL (External - โดเมนสาธารณะ)** | [https://techniccom-pve.pichyy.qzz.io](https://techniccom-pve.pichyy.qzz.io) *(ใช้งานได้จากอินเทอร์เน็ตภายนอก)* |
 | **User name** | `tc-admin` / `root` |
 | **Password** | `07072569` |
 | **Realm** | `Linux PAM standard authentication` *(ต้องเลือกข้อนี้ตอนล็อกอินผ่านเว็บ)* |
-| **SSH Command** | `ssh tc-admin@192.168.1.250` หรือ `ssh tc-admin@100.125.250.85` |
+| **SSH Command** | `ssh tc-admin@100.125.250.85` (แนะนำ) |
 
 ---
 
 ## 2. LXC Containers
+
+เชื่อมต่อเข้ากับสองวงแลนหลัก:
+1. **วงแลนหลัก (vmbr0)**: รับ IP ผ่าน DHCP เพื่อออกอินเทอร์เน็ตอัตโนมัติ
+2. **วงแลนจำลองภายใน (vmbr1)**: ตั้งค่า Static IP ในวง `10.10.10.x` เพื่อเชื่อมต่อกับเซิร์ฟเวอร์หลักและ Cloudflare Tunnel อย่างถาวร (ไม่มีวันพังตามเราเตอร์)
 
 ### CT 100 — Web Server (`web-server`)
 คอนเทนเนอร์สำหรับรันบริการเว็บหลักและแอปพลิเคชัน
 
 | รายการ | ข้อมูลการเข้าใช้งาน |
 | --- | --- |
-| **IP Address** | `192.168.1.113` |
+| **IP Address (Local LAN)** | รับผ่าน DHCP (จากเราเตอร์ในบ้าน) |
+| **IP Address (Internal Static)** | `10.10.10.100` *(ใช้เชื่อมต่อ Cloudflare Tunnel)* |
 | **SSH User** | `root` |
 | **Password** | `07072569` |
-| **SSH Command** | `ssh root@192.168.1.113` |
+| **SSH Command** | `ssh root@10.10.10.100` *(ยิงตรงผ่าน Proxmox Host)* |
 
 ### CT 102 — Database Server (`database-server`)
 คอนเทนเนอร์สำหรับสำรองข้อมูลและจัดการฐานข้อมูลแยกส่วน
 
 | รายการ | ข้อมูลการเข้าใช้งาน |
 | --- | --- |
-| **IP Address** | `192.168.1.69` (รับผ่าน DHCP) |
+| **IP Address (Local LAN)** | รับผ่าน DHCP (จากเราเตอร์ในบ้าน) |
+| **IP Address (Internal Static)** | `10.10.10.102` *(ใช้สื่อสารภายในระบบ)* |
 | **SSH User** | `root` |
 | **Password** | `07072569` |
-| **SSH Command** | `ssh root@192.168.1.69` |
+| **SSH Command** | `ssh root@10.10.10.102` *(ยิงตรงผ่าน Proxmox Host)* |
 
 ---
 
@@ -54,15 +60,15 @@
 
 | รายการ | ข้อมูลการเข้าใช้งาน |
 | --- | --- |
-| **IP Address** | `192.168.1.114` |
-| **URL (Local - ในบ้าน)** | [https://192.168.1.114:8443](https://192.168.1.114:8443) |
+| **IP Address (Local LAN)** | รับผ่าน DHCP (จากเราเตอร์ในบ้าน) |
+| **IP Address (Internal Static)** | `10.10.10.103` *(ใช้เชื่อมต่อ Cloudflare Tunnel)* |
 | **URL (External - โดเมนสาธารณะ)** | [https://techniccom-cp.pichyy.qzz.io](https://techniccom-cp.pichyy.qzz.io) |
 | **CloudPanel Username** | `techniccom.admin` |
 | **CloudPanel Email** | `lbtechniccom@gmail.com` |
 | **CloudPanel Password** | `Techniccom.admin14072569` |
 | **SSH User** | `tc-admin` / `root` |
 | **SSH Password** | `07072569` |
-| **SSH Command** | `ssh tc-admin@192.168.1.114` |
+| **SSH Command** | `ssh tc-admin@10.10.10.103` *(ยิงตรงผ่าน Proxmox Host)* |
 
 ---
 
@@ -71,6 +77,6 @@
 
 | รายการ | ข้อมูลการเข้าใช้งาน |
 | --- | --- |
-| **IP Address** | (ตรวจสอบผ่าน Proxmox GUI หรือ Network list) |
+| **IP Address (Local LAN)** | รับผ่าน DHCP (ตรวจสอบผ่านแผงควบคุม Proxmox) |
 | **Console/RDP User** | `Administrator` หรือ `tc-admin` |
 | **Password** | `07072569` *(หรือล็อกอินอัตโนมัติ/ว่าง)* |
