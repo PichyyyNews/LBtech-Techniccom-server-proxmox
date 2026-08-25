@@ -1,91 +1,103 @@
-# CloudPanel VM 103
+# CloudPanel VM 103 (`techniccom-cp`) 🎛️
 
-## Purpose
+## 1. Purpose (วัตถุประสงค์)
 
-VM 103 (`techniccom-cp`) provides the supported virtual-machine runtime for CloudPanel and future hosted websites. It replaces the earlier idea of running CloudPanel in an LXC container: CloudPanel is deployed on a Debian VM so its web, PHP, database, and system services run in a supported environment.
+VM 103 (`techniccom-cp`) provides the dedicated virtual machine environment for running **CloudPanel**, managing hosted websites, PHP-FPM runtimes, and local MySQL database services. It runs as a full Debian 12 Virtual Machine to ensure full compatibility with CloudPanel's systemd services, user management, and security isolation.
 
-## VM specification
+---
 
-| Setting | Value |
-| --- | --- |
-| Proxmox node | `Techniccom` |
-| VM ID | `103` |
-| Name | `techniccom-cp` |
-| Operating system | Debian 12 |
-| vCPU | 2 |
-| Memory | 4 GB |
-| Disk | 32 GB on `pve-extra` |
-| Network bridge | `vmbr0` |
-| Private IP | `192.168.1.114/24` |
-| Gateway / DNS | `192.168.1.1` |
-| Auto-start | Enabled |
+## 2. VM Specifications (รายละเอียดสเปก)
 
-## Installed services
+| Setting | Value | หมายเหตุ |
+| :--- | :--- | :--- |
+| **Proxmox Node** | `Techniccom` | แม่ข่ายหลัก |
+| **VM ID** | `103` | รหัสเครื่องเสมือน |
+| **Name** | `techniccom-cp` | ชื่อ Hostname ในระบบ |
+| **Operating System** | Debian 12 (Bookworm x64) | Full VM (KVM) |
+| **vCPU** | 2 Cores | จัดสรร 2 Core สำหรับงานเว็บและฐานข้อมูล |
+| **Memory (RAM)** | 4 GB - 8 GB | รองรับการปรับเปลี่ยนตามปริมาณการใช้งานเว็บ |
+| **Storage (Disk)** | 32 GB (บนสตอเรจ `pve-extra`) | ขยายพื้นที่ได้ผ่าน Proxmox GUI |
+| **Network (net0 - vmbr0)** | DHCP (เช่น `192.168.1.114/24`) | เชื่อมต่อเราเตอร์หลักเพื่อออกสู่อินเทอร์เน็ต |
+| **Network (net1 - vmbr1)** | Static IP `10.10.10.103/24` | เครือข่ายส่วนตัว Host-Only ใช้รับ Traffic จาก Cloudflare Tunnel |
+| **Auto-Start** | Enabled (onboot: 1) | เริ่มทำงานอัตโนมัติเมื่อ Host เปิดเครื่อง |
 
-CloudPanel was installed with its current MySQL 8.4 option. The following endpoints are listening inside the VM:
+---
 
-| Port | Purpose |
-| --- | --- |
-| `80` | HTTP / nginx |
-| `443` | HTTPS / nginx |
-| `8443` | CloudPanel administration |
+## 3. Installed Services & Listening Ports (บริการและพอร์ตที่เปิดใช้งาน)
 
-The relevant services are active:
+CloudPanel ติดตั้งพร้อมฐานข้อมูล **MySQL 8.4** โดยมีบริการหลักที่ทำงานอยู่ภายในดังนี้:
 
-```text
-clp-nginx
-clp-php-fpm
-nginx
-mysql
-ssh
+| Port | Service Name | รายละเอียด |
+| :--- | :--- | :--- |
+| **80** | `nginx` | HTTP Web Server |
+| **443** | `nginx` | HTTPS Web Server |
+| **8443** | `clp-nginx` | CloudPanel Administration Web GUI |
+| **22** | `ssh` | Remote Shell Administration |
+| **3306** | `mysql` | MySQL 8.4 Database Server (Local) |
+
+**ตรวจสอบสถานะเซอร์วิสภายใน VM:**
+```bash
+sudo systemctl status clp-nginx clp-php-fpm nginx mysql ssh
 ```
 
-## Public access through Cloudflare Tunnel
+---
 
-The existing Cloudflare Tunnel on the Proxmox host has an ingress route for the panel:
+## 4. Cloudflare Tunnel Ingress Configuration (การตั้งค่าทางเข้า)
+
+Proxmox Host มีการกำหนด Ingress Route ใน `/etc/cloudflared/config.yml` ดังนี้:
 
 ```yaml
 - hostname: techniccom-cp.pichyy.qzz.io
-  service: https://192.168.1.114:8443
+  service: https://10.10.10.103:8443
   originRequest:
     noTLSVerify: true
 ```
+*(หรือชี้ไปยัง IP วง LAN `https://192.168.1.114:8443`)*
 
-Public URL: [https://techniccom-cp.pichyy.qzz.io](https://techniccom-cp.pichyy.qzz.io)
+* **Public Web Admin URL:** [https://techniccom-cp.pichyy.qzz.io](https://techniccom-cp.pichyy.qzz.io)
+* **CloudPanel Initial Admin User:** `techniccom.admin`
+* **Email:** `lbtechniccom@gmail.com`
 
-The route was verified by receiving an HTTP `302` redirect to `/login` through Cloudflare. On the first visit, create the CloudPanel administrator account immediately.
+---
 
-## Operations
+## 5. Operations & Maintenance (คำสั่งควบคุมและบำรุงรักษา)
 
-Run these commands on the Proxmox host:
+รันคำสั่งเหล่านี้บน **Proxmox Host**:
 
 ```bash
-# VM status and lifecycle
+# ตรวจสอบสถานะ VM 103
 qm status 103
+
+# เปิด / ปิด / บังคับปิด VM
 qm start 103
 qm shutdown 103
+qm stop 103
+
+# ดูการตั้งค่าฮาร์ดแวร์และเน็ตเวิร์ก
 qm config 103
 
-# Open the VM serial console
+# เปิด Serial Terminal Console
 qm terminal 103
 
-# Inspect VM services via SSH from the Proxmox host
+# SSH เข้า VM จาก Proxmox Host
+ssh tc-admin@10.10.10.103
+# หรือ
 ssh tc-admin@192.168.1.114
-sudo systemctl status clp-nginx clp-php-fpm nginx mysql ssh
-sudo ss -ltnp | grep -E ':(80|443|8443)'
 ```
 
-The Cloudflare client configuration remains on the Proxmox host at `/etc/cloudflared/config.yml`.
+**คำสั่งตรวจสอบสถานะเซอร์วิสและพอร์ตภายใน VM 103:**
+```bash
+sudo systemctl status clp-nginx clp-php-fpm nginx mysql ssh
+sudo ss -ltnp | grep -E ':(80|443|8443|3306)'
+```
 
-## Database boundary
+---
 
-CloudPanel requires and currently uses its own local MySQL instance inside VM 103 for panel operations. CT 102 is still a SQLite bind-mount/backup container; it does **not** yet run a MySQL or PostgreSQL server.
+## 6. Database Architecture & Future Scalability (การจัดการฐานข้อมูล)
 
-For website/application data to be stored on CT 102, complete this separately:
-
-1. Increase CT 102 resources from its current minimal allocation.
-2. Choose and install a database engine (recommended: MySQL 8.4 or MariaDB compatible with application requirements).
-3. Restrict database access to VM 103 and required private-network clients.
-4. Create per-application database users and point each hosted application to CT 102.
-
-Do not store Cloudflare API tokens, SSH passwords, database passwords, or panel credentials in this repository. Keep them in a password manager or other secret store, and rotate any credential that was exposed in a chat or log.
+* **ปัจจุบัน:** CloudPanel ใช้งาน MySQL 8.4 ภายในตัว VM 103 เองสำหรับจัดการเว็บและฐานข้อมูลของแต่ละเว็บไซต์
+* **CT 102 (`database-server`):** ปัจจุบันทำหน้าที่เก็บสำรองข้อมูลและจัดการไฟล์ SQLite ของระบบอื่น (ยังไม่ได้รันบริการ MySQL Server สำหรับ VM 103)
+* **แนวทางการแยกฐานข้อมูลในอนาคต (ถ้าต้องการ):**
+  1. เพิ่มทรัพยากร (RAM / Storage) ให้กับ CT 102
+  2. ติดตั้ง MySQL 8.4 หรือ MariaDB บน CT 102
+  3. ผูกการเชื่อมต่อผ่านวง Private Bridge `vmbr1` (`10.10.10.102` ↔ `10.10.10.103`) เพื่อความปลอดภัยและความเร็วสูงสุด
