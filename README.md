@@ -128,6 +128,52 @@ df -h
 
 ---
 
+---
+
+## 💾 ข้อมูลพื้นที่จัดเก็บข้อมูล (Storage Architecture & Disk Usage)
+
+เครื่องเซิร์ฟเวอร์ติดตั้งฮาร์ดดิสก์ทั้งหมด **2 ลูก (ขนาดรวม ~3.6 - 4.0 TB)**:
+
+| ดิสก์ / พาร์ทิชัน | ขนาดรวม | ใช้งานแล้ว | พื้นที่ว่างคงเหลือ | สถานะ / หน้าที่ |
+| :--- | :---: | :---: | :---: | :--- |
+| 💽 **Disk 1 (`sdb` ➔ `pve-extra`)** | **1.8 TB (1,800 GB)** | 48 GB (2.6%) | **1.7 TB (1,700 GB)** | 🟢 **สตอเรจหลัก Proxmox** (เก็บ VMs, Containers, Web Root, Backups) |
+| 💽 **Disk 2 (`sda` ➔ System & Home)** | **1.8 TB (1,800 GB)** | 5.5 GB | **1.7 TB (1,700 GB)** | 🟢 เก็บระบบปฏิบัติการ Proxmox OS (`/`) และ `/home` |
+
+### การจัดสรรพื้นที่ให้แก่ Guest VMs & Containers:
+* **VM 103 (CloudPanel & Lab Sites):** จัดสรร **32 GB** (ใช้ไป 7.4 GB / ว่าง ~23 GB)
+* **VM 101 (Windows 10 Light):** จัดสรร **32 GB**
+* **CT 100 (Web Server หน้าร้าน):** จัดสรร **20 GB**
+* **CT 102 (Database Backup):** จัดสรร **10 GB**
+
+---
+
+## ⏱️ การตั้งค่าเวลาและเขตเวลาของระบบ (Timezone & Clock Synchronization)
+
+ทุกโหนดและเครื่องเสมือนในระบบได้รับการตั้งค่าเขตเวลาเป็น **เวลามาตรฐานประเทศไทย (`Asia/Bangkok` GMT+7)** และซิงก์เวลากับเครือข่าย NTP:
+
+| เครื่อง / ระบบ | เขตเวลา (Timezone) | สถานะ NTP |
+| :--- | :---: | :---: |
+| **Proxmox Host (Node `Techniccom`)** | `Asia/Bangkok (+07:00)` | Active (Synchronized) |
+| **VM 103 (`techniccom-cp`)** | `Asia/Bangkok (+07:00)` | Active (Synchronized) |
+| **CT 100 (`web-server`)** | `Asia/Bangkok (+07:00)` | Active (Synchronized) |
+| **CT 102 (`database-server`)** | `Asia/Bangkok (+07:00)` | Active (Synchronized) |
+
+---
+
+## 🎓 ศูนย์รวมผลงานนักศึกษา (Student Project Hub)
+
+* **เว็บไซต์หลัก:** [https://lab.pichyy.qzz.io/](https://lab.pichyy.qzz.io/)
+* **รายวิชา:** (31909-0003) การสร้างเว็บไซต์และระบบฐานข้อมูล
+* **ผู้สอน:** อาจารย์พิชญุตย์ สมบุญ
+* **จำนวนนักศึกษา:** 19 คน (รหัส `69319090021` ถึง `69319090039`)
+* **ฟีเจอร์เด่น:**
+  * หน้า Hub กลางแสดงรายชื่อนักศึกษาทุกคน พร้อมระบบค้นหาแบบ Real-time Search
+  * รองรับ SEO เต็มรูปแบบ (OpenGraph, Schema.org JSON-LD สำหรับ Course)
+  * หน้าเว็บส่วนตัวของนักศึกษาแต่ละคน: `https://lab.pichyy.qzz.io/<รหัสนักศึกษา>`
+  * ระบบจัดการไฟล์และฐานข้อมูล MySQL 8.4 แยกรายคนผ่าน CloudPanel Web UI
+
+---
+
 ## 🔒 แนวทางความปลอดภัย (Security Best Practices)
 
 1. **ไม่เปิดเผยรหัสผ่านและ Secret ในพื้นที่สาธารณะ**: บันทึกและส่งต่อข้อมูลผ่าน Password Manager ที่ปลอดภัยเท่านั้น
@@ -138,4 +184,5 @@ df -h
 ---
 
 *จัดทำและปรับปรุงล่าสุด: สิงหาคม 2569*
+
 
