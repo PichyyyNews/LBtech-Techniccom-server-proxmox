@@ -63,7 +63,7 @@ flowchart TB
 | **Host** | Host | `Techniccom` | Proxmox 8.x | ตามเครื่องจริง | `10.10.10.1` | `techniccom-pve.pichyy.qzz.io`<br/>Tailscale: `100.125.250.85` | แม่ข่าย Hypervisor ควบคุม VM/LXC ทั้งหมด |
 | **CT 100** | LXC | `web-server` | Debian 12 | 4 GB / 1 vCPU | `10.10.10.100` | `http://aas.pichyy.qzz.io` | บริการเว็บแอปพลิเคชันหน้าร้าน |
 | **CT 102** | LXC | `database-server` | Debian 12 | 512 MB / 1 vCPU | `10.10.10.102` | - *(ใช้งานภายใน)* | พื้นที่จัดเก็บ SQLite และสำรองข้อมูล |
-| **VM 103** | VM | `techniccom-cp` | Debian 12 | 4-8 GB / 2 vCPU | `10.10.10.103` | `https://techniccom-cp.pichyy.qzz.io` | แผงควบคุม CloudPanel, Nginx, MySQL 8.4 |
+| **VM 103** | VM | `techniccom-cp` | Debian 12 | 4-8 GB / 2 vCPU | `10.10.10.103` | `https://techniccom-cp.pichyy.qzz.io`<br/>`https://lab.pichyy.qzz.io` | แผงควบคุม CloudPanel, Nginx, MySQL 8.4, Student Project Hub |
 | **VM 101** | VM | `win10-light` | Tiny10 x64 | 2 GB / 1 vCPU | DHCP | - *(เข้าผ่าน Console/RDP)* | ระบบปฏิบัติการ Windows 10 ขนาดเบา |
 
 ---
@@ -75,6 +75,7 @@ flowchart TB
 * **Proxmox VE Web UI (Tailscale VPN):** [https://100.125.250.85:8006](https://100.125.250.85:8006)
 * **Proxmox VE Web UI (Local LAN Fallback):** [https://192.168.1.250:8006](https://192.168.1.250:8006)
 * **CloudPanel Admin (External Domain):** [https://techniccom-cp.pichyy.qzz.io](https://techniccom-cp.pichyy.qzz.io)
+* **Student Project Hub (วิชา 31909-0003):** [https://lab.pichyy.qzz.io](https://lab.pichyy.qzz.io)
 * **Web Application (External Domain):** [http://aas.pichyy.qzz.io](http://aas.pichyy.qzz.io)
 
 ### 2. เข้าใช้งานผ่าน SSH (Terminal / PowerShell)
@@ -137,3 +138,4 @@ df -h
 ---
 
 *จัดทำและปรับปรุงล่าสุด: สิงหาคม 2569*
+

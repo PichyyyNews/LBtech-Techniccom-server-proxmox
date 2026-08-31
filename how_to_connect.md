@@ -64,6 +64,40 @@
 ### 4.3 เว็บแอปพลิเคชันหน้าร้าน (CT 100)
 * **URL:** [http://aas.pichyy.qzz.io](http://aas.pichyy.qzz.io)
 
+### 4.4 เว็บไซต์ศูนย์รวมผลงานนักศึกษา (Student Project Hub)
+* **URL หน้า Hub รวมผลงาน:** [https://lab.pichyy.qzz.io](https://lab.pichyy.qzz.io)
+* **รายวิชา:** (31909-0003) การสร้างเว็บไซต์และระบบฐานข้อมูล
+* **ผู้สอน:** อาจารย์พิชญุตย์ สมบุญ
+* **การล็อกอินจัดการไฟล์และฐานข้อมูลของนักศึกษา:**
+  * เข้าแผงควบคุม CloudPanel: [https://techniccom-cp.pichyy.qzz.io](https://techniccom-cp.pichyy.qzz.io)
+  * **User Name:** `std` ตามด้วยรหัสนักศึกษา (เช่น `std69319090021`)
+  * **Password:** `Std@` ตามด้วยรหัสนักศึกษา (เช่น `Std@69319090021`)
+  * **โฟลเดอร์งาน:** `Files` ➡️ `htdocs` ➡️ `lab.pichyy.qzz.io` ➡️ `<รหัสนักศึกษา>`
+
+| ลำดับ | รหัสนักศึกษา | ชื่อ - นามสกุล | URL ผลงานของนักศึกษา |
+| :---: | :---: | :--- | :--- |
+| 1 | `69319090021` | นางสาวกาญจน์เกล้า แซ่ลิ้ม | [https://lab.pichyy.qzz.io/69319090021](https://lab.pichyy.qzz.io/69319090021) |
+| 2 | `69319090022` | นางสาวฐิติพร เจริญสลุง | [https://lab.pichyy.qzz.io/69319090022](https://lab.pichyy.qzz.io/69319090022) |
+| 3 | `69319090023` | นายทักษดนย์ ชูชื่น | [https://lab.pichyy.qzz.io/69319090023](https://lab.pichyy.qzz.io/69319090023) |
+| 4 | `69319090024` | นายทินภัทร มะนาวหวาน | [https://lab.pichyy.qzz.io/69319090024](https://lab.pichyy.qzz.io/69319090024) |
+| 5 | `69319090025` | นางสาวธันย์ชนก ทับทิมทอง | [https://lab.pichyy.qzz.io/69319090025](https://lab.pichyy.qzz.io/69319090025) |
+| 6 | `69319090026` | นายธีรพันธ์ เต็งน้อย | [https://lab.pichyy.qzz.io/69319090026](https://lab.pichyy.qzz.io/69319090026) |
+| 7 | `69319090027` | นายนครินทร์ แก้วโสตย | [https://lab.pichyy.qzz.io/69319090027](https://lab.pichyy.qzz.io/69319090027) |
+| 8 | `69319090028` | นายปัญญพัฒน์ บุญเกตุ | [https://lab.pichyy.qzz.io/69319090028](https://lab.pichyy.qzz.io/69319090028) |
+| 9 | `69319090029` | นางสาวปิยธิดา บุตรนิน | [https://lab.pichyy.qzz.io/69319090029](https://lab.pichyy.qzz.io/69319090029) |
+| 10 | `69319090030` | นายพิทวัส วงค์ตาเขียว | [https://lab.pichyy.qzz.io/69319090030](https://lab.pichyy.qzz.io/69319090030) |
+| 11 | `69319090031` | นายพีรพัฒน์ พาหุรัตน์ | [https://lab.pichyy.qzz.io/69319090031](https://lab.pichyy.qzz.io/69319090031) |
+| 12 | `69319090032` | นายภาณุวัฒน์ ปั่นสันเที่ยะ | [https://lab.pichyy.qzz.io/69319090032](https://lab.pichyy.qzz.io/69319090032) |
+| 13 | `69319090033` | นายภานุวัฒน์ ยิ้มพ่วง | [https://lab.pichyy.qzz.io/69319090033](https://lab.pichyy.qzz.io/69319090033) |
+| 14 | `69319090034` | นายรชต เปลี่ยนศรี | [https://lab.pichyy.qzz.io/69319090034](https://lab.pichyy.qzz.io/69319090034) |
+| 15 | `69319090035` | นายศิรศักดิ์ ม่วงงาม | [https://lab.pichyy.qzz.io/69319090035](https://lab.pichyy.qzz.io/69319090035) |
+| 16 | `69319090036` | นายศิวา พุทธโชติ | [https://lab.pichyy.qzz.io/69319090036](https://lab.pichyy.qzz.io/69319090036) |
+| 17 | `69319090037` | นายศุภกร แสงจันทร์ | [https://lab.pichyy.qzz.io/69319090037](https://lab.pichyy.qzz.io/69319090037) |
+| 18 | `69319090038` | นางสาวโสธิตา มีผล | [https://lab.pichyy.qzz.io/69319090038](https://lab.pichyy.qzz.io/69319090038) |
+| 19 | `69319090039` | นายอนาวินทร์ แก้วเก้า | [https://lab.pichyy.qzz.io/69319090039](https://lab.pichyy.qzz.io/69319090039) |
+
+
+
 ---
 
 ## 5. วิธีเข้าใช้งานแบบโลคอล (สำหรับกรณีอยู่ในวงแลน Wi-Fi เดียวกัน)

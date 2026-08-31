@@ -81,7 +81,9 @@
 * **พอร์ตบริการ:**
   * พอร์ต `80`, `443` (หน้าเว็บไซต์ของผู้ใช้)
   * พอร์ต `8443` (หน้าควบคุมระบบ CloudPanel Admin)
-* **โดเมนสาธารณะ:** [https://techniccom-cp.pichyy.qzz.io](https://techniccom-cp.pichyy.qzz.io)
+* **โดเมนสาธารณะ:** 
+  * [https://techniccom-cp.pichyy.qzz.io](https://techniccom-cp.pichyy.qzz.io) (แผงควบคุมระบบ)
+  * [https://lab.pichyy.qzz.io](https://lab.pichyy.qzz.io) (Student Project Hub)
 
 ---
 
@@ -105,5 +107,6 @@
 | **Host** | Host | `Techniccom` | รับจากเราเตอร์ (Fallback: `192.168.1.250`) | `10.10.10.1` | `techniccom-pve.pichyy.qzz.io` | ตัวควบคุมเซิร์ฟเวอร์หลัก |
 | **100** | LXC | `web-server` | รับจากเราเตอร์ | `10.10.10.100` | `aas.pichyy.qzz.io` | หน้าบ้าน/เว็บแอปพลิเคชัน |
 | **102** | LXC | `database-server` | รับจากเราเตอร์ | `10.10.10.102` | - | ตัวเก็บสำรองฐานข้อมูลหลัก |
-| **103** | VM | `techniccom-cp` | รับจากเราเตอร์ | `10.10.10.103` | `techniccom-cp.pichyy.qzz.io` | จัดการเว็บ / CloudPanel |
+| **103** | VM | `techniccom-cp` | รับจากเราเตอร์ | `10.10.10.103` | `techniccom-cp.pichyy.qzz.io`<br/>`lab.pichyy.qzz.io` | จัดการเว็บ / CloudPanel / Student Hub |
 | **101** | VM | `win10-light` | รับจากเราเตอร์ | - | - | เครื่องวินโดวส์ใช้งานทั่วไป |
+

@@ -51,16 +51,43 @@ Proxmox Host มีการกำหนด Ingress Route ใน `/etc/cloudflar
   service: https://10.10.10.103:8443
   originRequest:
     noTLSVerify: true
+
+- hostname: lab.pichyy.qzz.io
+  service: https://10.10.10.103:443
+  originRequest:
+    httpHostHeader: lab.pichyy.qzz.io
+    originServerName: lab.pichyy.qzz.io
+    noTLSVerify: true
 ```
-*(หรือชี้ไปยัง IP วง LAN `https://192.168.1.114:8443`)*
 
 * **Public Web Admin URL:** [https://techniccom-cp.pichyy.qzz.io](https://techniccom-cp.pichyy.qzz.io)
+* **Student Project Hub URL:** [https://lab.pichyy.qzz.io](https://lab.pichyy.qzz.io)
 * **CloudPanel Initial Admin User:** `techniccom.admin`
 * **Email:** `lbtechniccom@gmail.com`
 
 ---
 
-## 5. Operations & Maintenance (คำสั่งควบคุมและบำรุงรักษา)
+## 5. เว็บไซต์และระบบการเรียนการสอน (Student Project Lab) 🎓
+
+* **Domain ประจำวิชา:** `lab.pichyy.qzz.io`
+* **รายวิชา:** (31909-0003) การสร้างเว็บไซต์และระบบฐานข้อมูล
+* **ผู้สอน:** อาจารย์พิชญุตย์ สมบุญ
+* **Document Root:** `/home/lab-pichyy/htdocs/lab.pichyy.qzz.io/`
+* **Site User:** `lab-pichyy`
+* **จำนวนนักศึกษา:** 19 คน (รหัส `69319090021` - `69319090039`)
+* **โครงสร้างพื้นที่:**
+  * หน้าหลัก (Hub): `https://lab.pichyy.qzz.io/` (ไฟล์ `index.php` ศูนย์รวมผลงาน พร้อมระบบค้นหาแบบ Real-time)
+  * หน้านักศึกษาแต่ละคน: `https://lab.pichyy.qzz.io/<รหัสนักศึกษา>` (เช่น `/69319090021`)
+* **บัญชีผู้ใช้ CloudPanel ของนักเรียน:**
+  * Role: `User`
+  * Username: `std<รหัสนักศึกษา>` (เช่น `std69319090021`)
+  * Password: `Std@<รหัสนักศึกษา>` (เช่น `Std@69319090021`)
+  * Email: `std<รหัสนักศึกษา>@lab.local`
+
+
+---
+
+## 6. Operations & Maintenance (คำสั่งควบคุมและบำรุงรักษา)
 
 รันคำสั่งเหล่านี้บน **Proxmox Host**:
 
@@ -93,7 +120,8 @@ sudo ss -ltnp | grep -E ':(80|443|8443|3306)'
 
 ---
 
-## 6. Database Architecture & Future Scalability (การจัดการฐานข้อมูล)
+## 7. Database Architecture & Future Scalability (การจัดการฐานข้อมูล)
+
 
 * **ปัจจุบัน:** CloudPanel ใช้งาน MySQL 8.4 ภายในตัว VM 103 เองสำหรับจัดการเว็บและฐานข้อมูลของแต่ละเว็บไซต์
 * **CT 102 (`database-server`):** ปัจจุบันทำหน้าที่เก็บสำรองข้อมูลและจัดการไฟล์ SQLite ของระบบอื่น (ยังไม่ได้รันบริการ MySQL Server สำหรับ VM 103)
