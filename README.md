@@ -9,6 +9,7 @@
 | เอกสาร | รายละเอียด |
 | :--- | :--- |
 | 🚀 [**คู่มือการเชื่อมต่อและเข้าใช้งาน (how_to_connect.md)**](how_to_connect.md) | วิธีเข้าใช้งาน Proxmox VE, CloudPanel, SSH, Tailscale VPN และ Cloudflare Tunnel สำหรับผู้ใช้ทั่วไปและผู้ดูแล |
+| 🎓 [**คู่มือการสอนนักศึกษา Deploy เว็บขึ้น CloudPanel (docs/student-deployment-guide)**](docs/student-deployment-guide/README.md) | ชุดคู่มือการสอน Step-by-Step สำหรับนักศึกษา 19 คน ในการนำโปรเจกต์ PHP/MySQL ขึ้นสู่เซิร์ฟเวอร์ CloudPanel |
 | 🏗️ [**โครงสร้างระบบเซิร์ฟเวอร์ (server_infrastructure.md)**](server_infrastructure.md) | สเปกฮาร์ดแวร์/ซอฟต์แวร์, การจัดสรร CPU/RAM/Disk, การตั้งค่าเครือข่าย (`vmbr0`, `vmbr1`), Bind Mount และ Storage |
 | 🎛️ [**คู่มือระบบ CloudPanel VM 103 (CLOUDPANEL_VM_103.md)**](CLOUDPANEL_VM_103.md) | รายละเอียดเครื่องเสมือน CloudPanel, Nginx, PHP-FPM, MySQL 8.4, การกำหนด Ingress Route และการจัดการเว็บไซต์ |
 | 🔐 [**ข้อมูลบัญชีและรหัสผ่าน (credentials.md)**](credentials.md) | ทะเบียนบัญชีผู้ใช้งาน, รหัสผ่าน, พอร์ตบริการ, คำสั่ง SSH และ Static IP *(เอกสารภายใน)* |
