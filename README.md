@@ -59,30 +59,33 @@ flowchart TB
 
 ## 📊 ตารางสรุปข้อมูลเครื่องและบริการ (System Inventory)
 
-| ID / Node | ประเภท | ชื่อระบบ | OS | RAM / Core | IP ภายใน (vmbr1) | ช่องทางภายนอก (Domain / VPN) | หน้าที่หลัก |
+| ID / Node | ประเภท | ชื่อระบบ | OS | RAM / Core | IP ภายใน / LAN | ช่องทางภายนอก (Domain / VPN) | หน้าที่หลัก |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Host** | Host | `Techniccom` | Proxmox 8.x | ตามเครื่องจริง | `10.10.10.1` | `techniccom-pve.pichyy.qzz.io`<br/>Tailscale: `100.125.250.85` | แม่ข่าย Hypervisor ควบคุม VM/LXC ทั้งหมด |
+| **Host** | Host | `Techniccom` (HP DL20 Gen9) | Debian 12 / PVE 8.x | 40 GB DDR4 / 4 Cores (Xeon E3-1220 v6) | `10.10.10.1`<br/>LAN: `192.168.1.141` | `techniccom-pve.pichyy.qzz.io`<br/>Tailscale: `100.125.250.85` | แม่ข่าย Hypervisor ควบคุม VM/LXC ทั้งหมด |
 | **CT 100** | LXC | `web-server` | Debian 12 | 4 GB / 1 vCPU | `10.10.10.100` | `http://aas.pichyy.qzz.io` | บริการเว็บแอปพลิเคชันหน้าร้าน |
-| **CT 102** | LXC | `database-server` | Debian 12 | 512 MB / 1 vCPU | `10.10.10.102` | - *(ใช้งานภายใน)* | พื้นที่จัดเก็บ SQLite และสำรองข้อมูล |
-| **VM 103** | VM | `techniccom-cp` | Debian 12 | 4-8 GB / 2 vCPU | `10.10.10.103` | `https://techniccom-cp.pichyy.qzz.io`<br/>`https://lab.pichyy.qzz.io` | แผงควบคุม CloudPanel, Nginx, MySQL 8.4, Student Project Hub |
-| **VM 101** | VM | `win10-light` | Tiny10 x64 | 2 GB / 1 vCPU | DHCP | - *(เข้าผ่าน Console/RDP)* | ระบบปฏิบัติการ Windows 10 ขนาดเบา |
+| **CT 102** | LXC | `database-server` | Debian 12 | 2 GB / 1 vCPU | `10.10.10.102` | - *(ใช้งานภายใน)* | พื้นที่จัดเก็บ SQLite และสำรองข้อมูล |
+| **VM 103** | VM | `techniccom-cp` | Debian 12 | 8 GB / 2 vCPU | `10.10.10.103`<br/>LAN: `192.168.1.114` | `https://techniccom-cp.pichyy.qzz.io`<br/>`https://lab.pichyy.qzz.io` | แผงควบคุม CloudPanel, Nginx, MySQL 8.4, Student Project Hub |
+| **VM 101** | VM | `win10-light` | Tiny10 x64 | 4 GB / 2 vCPU | DHCP | - *(เข้าผ่าน Console/RDP)* | ระบบปฏิบัติการ Windows 10 ขนาดเบา |
 
 ---
 
 ## ⚡ สรุปช่องทางเข้าใช้งานหลัก (Quick Access)
 
-### 1. เข้าใช้งานผ่าน Web Interface
-* **Proxmox VE Web UI (Cloudflare):** [https://techniccom-pve.pichyy.qzz.io](https://techniccom-pve.pichyy.qzz.io)
+### 1. เข้าใช้งานผ่าน Web Interface (ไม่ต้องเปิด VPN)
+* **Proxmox VE Web UI (Cloudflare):** [https://techniccom-pve.pichyy.qzz.io](https://techniccom-pve.pichyy.qzz.io) *(มี Web Shell ระดับ Root ในตัว ใช้งานได้แม้โดนบล็อก VPN)*
 * **Proxmox VE Web UI (Tailscale VPN):** [https://100.125.250.85:8006](https://100.125.250.85:8006)
-* **Proxmox VE Web UI (Local LAN Fallback):** [https://192.168.1.250:8006](https://192.168.1.250:8006)
+* **Proxmox VE Web UI (Local LAN):** [https://192.168.1.141:8006](https://192.168.1.141:8006) *(Fallback Static: `192.168.1.250:8006`)*
 * **CloudPanel Admin (External Domain):** [https://techniccom-cp.pichyy.qzz.io](https://techniccom-cp.pichyy.qzz.io)
 * **Student Project Hub (วิชา 31909-0003):** [https://lab.pichyy.qzz.io](https://lab.pichyy.qzz.io)
 * **Web Application (External Domain):** [http://aas.pichyy.qzz.io](http://aas.pichyy.qzz.io)
 
 ### 2. เข้าใช้งานผ่าน SSH (Terminal / PowerShell)
 ```bash
-# Proxmox Host (ผ่าน Tailscale)
+# Proxmox Host (ผ่าน Tailscale VPN)
 ssh tc-admin@100.125.250.85
+
+# Proxmox Host (ผ่าน Local LAN ในบ้าน)
+ssh tc-admin@192.168.1.141
 
 # CT 100 Web Server (เข้าผ่าน Host)
 ssh root@10.10.10.100
@@ -93,6 +96,8 @@ ssh root@10.10.10.102
 # VM 103 CloudPanel Server (เข้าผ่าน Host)
 ssh tc-admin@10.10.10.103
 ```
+*หมายเหตุ: หากอยู่บนเครือข่ายสถาบัน/ที่ทำงานที่มีไฟร์วอลล์บล็อกพอร์ต Tailscale สามารถเปิดใช้ Terminal ผ่าน Web Shell บน Proxmox Web UI ได้ทันทีโดยไม่ต้องเปิด VPN*
+
 
 ---
 
@@ -184,6 +189,6 @@ df -h
 
 ---
 
-*จัดทำและปรับปรุงล่าสุด: สิงหาคม 2569*
+*จัดทำและปรับปรุงล่าสุด: กันยายน 2569*
 
 

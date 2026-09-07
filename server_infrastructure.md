@@ -6,11 +6,18 @@
 
 ## 1. เซิร์ฟเวอร์หลัก (Proxmox VE Host)
 * **ชื่อโฮสต์ (Node Name):** `Techniccom`
-* **ระบบปฏิบัติการ:** Debian Bookworm / Proxmox VE 8.x
+* **โมเดลฮาร์ดแวร์ (Hardware Model):** HP ProLiant DL20 Gen9 (1U Rack Server)
+* **หน่วยประมวลผล (CPU):** Intel(R) Xeon(R) CPU E3-1220 v6 @ 3.00GHz (4 Cores / 4 Threads, Turbo 3.50GHz, 8MB Cache)
+* **หน่วยความจำ (RAM):** 40 GB DDR4 ECC (40,985 MB) — *ใช้งานจริงเฉลี่ย ~11.8 GB (~29%) ว่างเหลือเฟือ ~28.2 GB (~71%)*
+* **ฮาร์ดดิสก์หลัก (Storage Disks):** 2x 2.0 TB Enterprise Surveillance HDD (Western Digital WD Purple — `WD22PURZ-85B4ZY0`)
+  * `/dev/sda` (2TB): ติดตั้ง OS Root (`/`), `/var`, `/home`, Swap (S.M.A.R.T. Health: PASSED, อุณหภูมิ 32°C, 0 Bad Sector)
+  * `/dev/sdb` (2TB): พาร์ทิชันจัดเก็บข้อมูลหลัก `/mnt/pve-extra` (VMs/LXCs Disks, ISOs, Data) (S.M.A.R.T. Health: PASSED, อุณหภูมิ 33°C, 0 Bad Sector)
+* **ระบบปฏิบัติการ:** Debian 12 (Bookworm) / Proxmox VE 8.x (Kernel: `Linux 6.8.12-33-pve`)
+* **ความร้อนและเสถียรภาพ:** อุณหภูมิ CPU Package ~43°C, ฮาร์ดดิสก์ ~32-33°C, Uptime เฉลี่ย 14+ วันต่อเนื่อง
 * **หน้าที่หลัก:** คอยควบคุม จัดสรรทรัพยากร และทำหน้าที่เป็น Hypervisor ให้กับระบบจำลอง (Virtualization) ทั้งหมด
 
 ### การเชื่อมต่อเครือข่าย (Network Interfaces)
-* **การ์ดแลนหลัก (`vmbr0`):** ตั้งค่าแบบ **DHCP** (รับ IP อัตโนมัติจากเราเตอร์บ้าน เพื่อป้องกันเน็ตเวิร์กพังหากย้ายสถานที่/เปลี่ยนรุ่นเราเตอร์)
+* **การ์ดแลนหลัก (`vmbr0`):** ตั้งค่าแบบ **DHCP** (รับ IP ปัจจุบันจากเราเตอร์บ้าน: `192.168.1.141/24`, Gateway: `192.168.1.1`)
 * **วงแลนสำรองกู้ภัย:** ล็อกไอพีสำรองฉุกเฉินแบบ Static ไว้ที่ `192.168.1.250/24` (หากเกิดเหตุฉุกเฉินสามารถเสียบสายแลนจากคอมตรงเข้าเซิร์ฟเวอร์แล้วล็อกอินเข้าแก้ไขได้)
 * **วงแลนจำลองภายในเครื่อง (`vmbr1`):** เป็นเครือข่ายส่วนตัว (Host-Only Virtual Network) ไอพี `10.10.10.1/24` เพื่อความเสถียรในการเชื่อมต่อระหว่างโฮสต์และแอปพลิเคชัน
 * **เครือข่าย VPN (`Tailscale`):** `100.125.250.85` (ไอพีถาวรสำหรับรีโมททางไกล)
@@ -104,9 +111,10 @@
 
 | VMID | ประเภท | ชื่อเครื่อง | IP วงในบ้าน (DHCP) | IP วงจำลองในเครื่อง | โดเมนภายนอก (Cloudflare Tunnel) | หน้าที่ |
 | --- | --- | --- | --- | --- | --- | --- |
-| **Host** | Host | `Techniccom` | รับจากเราเตอร์ (Fallback: `192.168.1.250`) | `10.10.10.1` | `techniccom-pve.pichyy.qzz.io` | ตัวควบคุมเซิร์ฟเวอร์หลัก |
+| **Host** | Host | `Techniccom` | `192.168.1.141` (Fallback: `192.168.1.250`) | `10.10.10.1` | `techniccom-pve.pichyy.qzz.io` | ตัวควบคุมเซิร์ฟเวอร์หลัก (Proxmox VE) |
 | **100** | LXC | `web-server` | รับจากเราเตอร์ | `10.10.10.100` | `aas.pichyy.qzz.io` | หน้าบ้าน/เว็บแอปพลิเคชัน |
 | **102** | LXC | `database-server` | รับจากเราเตอร์ | `10.10.10.102` | - | ตัวเก็บสำรองฐานข้อมูลหลัก |
-| **103** | VM | `techniccom-cp` | รับจากเราเตอร์ | `10.10.10.103` | `techniccom-cp.pichyy.qzz.io`<br/>`lab.pichyy.qzz.io` | จัดการเว็บ / CloudPanel / Student Hub |
+| **103** | VM | `techniccom-cp` | รับจากเราเตอร์ (`192.168.1.114`) | `10.10.10.103` | `techniccom-cp.pichyy.qzz.io`<br/>`lab.pichyy.qzz.io` | จัดการเว็บ / CloudPanel / Student Hub |
 | **101** | VM | `win10-light` | รับจากเราเตอร์ | - | - | เครื่องวินโดวส์ใช้งานทั่วไป |
+
 

@@ -104,19 +104,23 @@
 
 หากใช้งานคอมพิวเตอร์ที่เชื่อมต่อสายแลนหรือ Wi-Fi เดียวกันกับเครื่องเซิร์ฟเวอร์:
 
-* **URL ของ Proxmox VE WebUI:** [https://192.168.1.250:8006](https://192.168.1.250:8006) *(Fallback IP ในกรณีเราเตอร์วง 192.168.1.x)*
-* **เข้าผ่าน IP จาก DHCP:** ตรวจสอบ IP ที่ได้รับจากเราเตอร์ผ่านหน้าจอ Console หรือเราเตอร์
+* **URL ของ Proxmox VE WebUI (IP ปัจจุบันจาก DHCP):** [https://192.168.1.141:8006](https://192.168.1.141:8006)
+* **URL ของ Proxmox VE WebUI (IP สำรองฉุกเฉิน Static):** [https://192.168.1.250:8006](https://192.168.1.250:8006)
+* **การตรวจสอบ IP:** หากมีการย้ายเราเตอร์หรือสถานที่ ให้ตรวจสอบ IP ที่ได้รับผ่านเราเตอร์ หรือล็อกอินผ่าน Tailscale / Cloudflare
 
 ---
 
-## 6. ช่องทางการเชื่อมต่อ SSH (สำหรับ Command Line)
+## 6. ช่องทางการเชื่อมต่อ SSH และ Command Line
 
 ### 6.1 เชื่อมต่อเข้า Proxmox Host (เครื่องแม่ข่าย)
 ```bash
-# ผ่าน Tailscale VPN (จากภายนอก)
+# ผ่าน Tailscale VPN (จากภายนอกบ้าน เมื่อไม่ได้อยู่บนเน็ตที่บล็อก VPN)
 ssh tc-admin@100.125.250.85
 
-# ผ่านวงแลนในบ้าน (Local LAN)
+# ผ่านวงแลนในบ้าน (Local LAN ตาม IP ปัจจุบัน)
+ssh tc-admin@192.168.1.141
+
+# ผ่านวงแลนในบ้าน (IP สำรองฉุกเฉิน Static)
 ssh tc-admin@192.168.1.250
 ```
 
@@ -132,6 +136,24 @@ ssh root@10.10.10.102
 ssh tc-admin@10.10.10.103
 ```
 *รหัสผ่าน SSH มาตรฐาน: `07072569`*
+
+### 6.3 วิธีเข้าใช้ Terminal เมื่ออยู่บนเครือข่ายที่บล็อก Tailscale / VPN (เช่น Wi-Fi มหาวิทยาลัย / ที่ทำงาน)
+หากเชื่อมต่อ Wi-Fi สถาบันที่มีไฟร์วอลล์ (เช่น Fortinet) บล็อกพอร์ต VPN ของ Tailscale คุณสามารถเลือกเข้าใช้งาน Terminal ได้ 2 รูปแบบ:
+
+1. **ผ่าน Proxmox Web Shell บนเบราว์เซอร์ (แนะนำ — ไม่ต้องลงโปรแกรมเพิ่ม):**
+   * เปิดเบราว์เซอร์เข้า [https://techniccom-pve.pichyy.qzz.io](https://techniccom-pve.pichyy.qzz.io)
+   * เข้าสู่ระบบด้วย `tc-admin` / `07072569` (Realm: `Linux PAM standard authentication`)
+   * คลิกที่โหนด **`Techniccom`** แถบซ้าย ➔ กดปุ่ม **`>_ Shell`** ด้านขวาบน จะได้หน้าต่าง Terminal ระดับ Root ทันที
+2. **ผ่าน Cloudflare Tunnel SSH (สำหรับผู้ที่ต้องการใช้คำสั่ง `ssh` ใน PowerShell/Terminal):**
+   * ฝั่งเครื่องผู้ใช้ ติดตั้ง Cloudflare CLI: `winget install Cloudflare.cloudflared`
+   * ตั้งค่าในไฟล์ `~/.ssh/config`:
+     ```ssh
+     Host pve-cf
+         HostName ssh.pichyy.qzz.io
+         ProxyCommand cloudflared access ssh --hostname %h
+         User tc-admin
+     ```
+   * ยิงคำสั่ง `ssh pve-cf` ทราฟฟิกจะวิ่งผ่าน HTTPS (Port 443) ข้ามไฟร์วอลล์สถาบันได้ทันที
 
 ---
 
@@ -154,5 +176,7 @@ ssh tc-admin@10.10.10.103
 | --- | --- | --- |
 | **เบราว์เซอร์แจ้งเตือน Certificate ไม่ปลอดภัย (SSL Warning)** | Proxmox ใช้ Self-signed SSL Certificate ภายใน | กดปุ่ม **Advanced** (ขั้นสูง) แล้วเลือก **Proceed to ... (unsafe)** เพื่อเข้าใช้งานตามปกติ |
 | **ล็อกอินไม่ผ่าน แม้กรอกรหัสผ่านถูกต้อง** | ไม่ได้เลือก Realm เป็น PAM | ตรวจสอบช่อง **Realm** ในหน้า Login ให้เลือกเป็น `Linux PAM standard authentication` |
-| **เข้าผ่าน Tailscale ไม่ได้** | Tailscale ยังไม่ได้เปิดใช้งาน หรือหลุดการเชื่อมต่อ | เปิดแอปพลิเคชัน Tailscale ตรวจสอบสถานะว่าแสดงเป็น **Connected** และตรวจสอบว่าบัญชีที่ใช้ได้รับการอนุมัติแล้ว |
+| **เข้าผ่าน Tailscale ไม่ได้ (Timed out / NoState)** | หลุดการเชื่อมต่อ หรืออยู่บนเครือข่ายสถาบันที่มีไฟร์วอลล์บล็อก VPN (เช่น Fortinet) | ให้สลับไปใช้งานผ่าน **Cloudflare Tunnel WebUI** ([techniccom-pve.pichyy.qzz.io](https://techniccom-pve.pichyy.qzz.io)) หรือแชร์ Hotspot มือถือเพื่อใช้งาน Tailscale |
 | **เข้าผ่าน Cloudflare Domain ไม่ได้** | เซอร์วิส cloudflared บนเซิร์ฟเวอร์หยุดทำงาน | รีโมทเข้า Host แล้วรัน `systemctl restart cloudflared` เพื่อเริ่มเซอร์วิสใหม่ |
+| **Host แปลชื่อโดเมนไม่ได้ (DNS SERVFAIL)** | Tailscale MagicDNS คุม `/etc/resolv.conf` โดยไม่มี Upstream | รัน `sudo tailscale set --accept-dns=false` บน Host เพื่อกลับมาใช้ DNS จากเราเตอร์ปกติ |
+

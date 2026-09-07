@@ -13,13 +13,14 @@
 
 | รายการ | ข้อมูลการเข้าใช้งาน |
 | :--- | :--- |
-| **IP (Local - ในบ้าน)** | ได้รับผ่าน DHCP (หากเราเตอร์เปลี่ยน วง IP จะเปลี่ยนอัตโนมัติเพื่อป้องกันระบบพัง) |
+| **IP (Local - ในบ้าน)** | `192.168.1.141` (ได้รับผ่าน DHCP) / Fallback Static: `192.168.1.250` |
 | **URL (Tailscale - VPN)** | [https://100.125.250.85:8006](https://100.125.250.85:8006) *(แนะนำ - เป็น Static IP VPN เสมอ)* |
-| **URL (External - โดเมนสาธารณะ)** | [https://techniccom-pve.pichyy.qzz.io](https://techniccom-pve.pichyy.qzz.io) *(ใช้งานได้จากอินเทอร์เน็ตภายนอก)* |
+| **URL (External - โดเมนสาธารณะ)** | [https://techniccom-pve.pichyy.qzz.io](https://techniccom-pve.pichyy.qzz.io) *(ใช้งานได้จากอินเทอร์เน็ตภายนอก ไม่ต้องต่อ VPN)* |
 | **User name** | `tc-admin` / `root` |
 | **Password** | `07072569` |
 | **Realm** | `Linux PAM standard authentication` *(ต้องเลือกข้อนี้ตอนล็อกอินผ่านเว็บ)* |
-| **SSH Command** | `ssh tc-admin@100.125.250.85` (แนะนำ) |
+| **SSH Command** | `ssh tc-admin@100.125.250.85` (Tailscale) หรือ `ssh tc-admin@192.168.1.141` (Local) |
+
 
 ---
 
