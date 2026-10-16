@@ -11,7 +11,7 @@ import re
 import subprocess
 import threading
 import time
-from http.server import HTTPServer, BaseHTTPRequestHandler
+from http.server import HTTPServer, BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, urlparse
 
 PORT = 8088
@@ -1006,6 +1006,13 @@ class RequestHandler(BaseHTTPRequestHandler):
             self.send_response(404)
             self.end_headers()
 
+    def do_OPTIONS(self):
+        self.send_response(200)
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type")
+        self.end_headers()
+
     def do_POST(self):
         parsed = urlparse(self.path)
         if parsed.path == "/api/control":
@@ -1019,12 +1026,16 @@ class RequestHandler(BaseHTTPRequestHandler):
                     if "target_fan" in data: app_state["target_fan"] = int(data["target_fan"])
                 apply_fan_policy()
                 self.send_response(200)
-                self.send_header("Content-Type", "application/json")
+                self.send_header("Content-Type", "application/json; charset=utf-8")
+                self.send_header("Access-Control-Allow-Origin", "*")
                 self.end_headers()
-                resp = json.dumps({"status": "ok", "message": f"Mode: {data.get('mode')}, Preset: {data.get('preset')}"})
+                mode_th = "อัตโนมัติ (Auto)" if data.get('mode') == 'auto' else f"กำหนดเอง (พัดลม {data.get('target_fan', 20)}%)"
+                resp = json.dumps({"status": "ok", "message": f"เปลี่ยนเป็นโหมด {mode_th} สำเร็จ"})
                 self.wfile.write(resp.encode("utf-8"))
             except Exception as e:
                 self.send_response(400)
+                self.send_header("Content-Type", "application/json; charset=utf-8")
+                self.send_header("Access-Control-Allow-Origin", "*")
                 self.end_headers()
                 self.wfile.write(json.dumps({"status": "error", "error": str(e)}).encode("utf-8"))
         else:
@@ -1038,7 +1049,7 @@ def main():
     t = threading.Thread(target=telemetry_loop, daemon=True)
     t.start()
 
-    server = HTTPServer(("0.0.0.0", PORT), RequestHandler)
+    server = ThreadingHTTPServer(("0.0.0.0", PORT), RequestHandler)
     print(f"Hardware Monitor Dashboard running on http://0.0.0.0:{PORT}")
     try:
         server.serve_forever()
