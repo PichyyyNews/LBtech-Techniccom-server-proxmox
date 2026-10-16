@@ -1,0 +1,16 @@
+[Unit]
+Description=Hardware & Fan Telemetry Service (HP ProLiant DL20 Gen9)
+After=network.target amsd.service
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/hardware-monitor
+ExecStart=/usr/bin/python3 /opt/hardware-monitor/app.py
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

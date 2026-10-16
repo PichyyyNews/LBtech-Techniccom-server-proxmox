@@ -21,6 +21,15 @@
 | **Realm** | `Linux PAM standard authentication` *(ต้องเลือกข้อนี้ตอนล็อกอินผ่านเว็บ)* |
 | **SSH Command** | `ssh tc-admin@100.125.250.85` (Tailscale) หรือ `ssh tc-admin@192.168.1.141` (Local) |
 
+### แผงควบคุม iLO 4 และระบบมอนิเตอร์ฮาร์ดแวร์ (Hardware & Fan Monitor)
+
+| รายการ | ข้อมูลการเข้าใช้งาน |
+| :--- | :--- |
+| **ระบบควบคุมพัดลมและฮาร์ดแวร์ (Web Dashboard)** | [https://aas.pichyy.qzz.io](https://aas.pichyy.qzz.io) *(ไม่ต้องต่อ VPN / สตรีมข้อมูลเรียลไทม์)* |
+| **พอร์ตบริการภายในโฮสต์** | `http://10.10.10.1:8088` (Bridged ผ่าน CT 100 พอร์ต 80) |
+| **HPE iLO 4 Web Interface** | [https://192.168.1.73](https://192.168.1.73) *(Shared LOM Port บน eno1)* |
+| **iLO 4 User** | `Administrator` |
+| **iLO 4 Password** | `07072569` |
 
 ---
 

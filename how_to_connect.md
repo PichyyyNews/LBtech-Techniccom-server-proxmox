@@ -61,10 +61,14 @@
   * **Email:** `lbtechniccom@gmail.com`
   * **Password:** `Techniccom.admin14072569`
 
-### 4.3 เว็บแอปพลิเคชันหน้าร้าน (CT 100)
-* **URL:** [http://aas.pichyy.qzz.io](http://aas.pichyy.qzz.io)
+### 4.3 ระบบมอนิเตอร์ฮาร์ดแวร์และควบคุมพัดลม (Hardware & Fan Controller Dashboard)
+* **URL:** [https://aas.pichyy.qzz.io](https://aas.pichyy.qzz.io)
+* **คุณสมบัติ:**
+  * สตรีมข้อมูลสดแบบ Real-time (Server-Sent Events: SSE) ความถี่ 1 วินาที
+  * ตรวจสอบอุณหภูมิ CPU Package, อุณหภูมิฮาร์ดดิสก์ WD Purple (SDA/SDB), อุณหภูมิเคส (Inlet/Exhaust), และความเร็วรอบพัดลม (Fans 1, 2, 3)
+  * สลับโหมดการทำงานระหว่าง **Auto (Dynamic Curve)** หรือ **Manual Presets** (Quiet, Balanced, Performance, Turbo) พร้อม Custom Slider ควบคุมรอบพัดลม
 
-### 4.4 เว็บไซต์ศูนย์รวมผลงานนักศึกษา (Student Project Hub)
+---
 * **URL หน้า Hub รวมผลงาน:** [https://lab.pichyy.qzz.io](https://lab.pichyy.qzz.io)
 * **รายวิชา:** (31909-0003) การสร้างเว็บไซต์และระบบฐานข้อมูล
 * **ผู้สอน:** อาจารย์พิชญุตย์ สมบุญ
