@@ -13,7 +13,7 @@
 | 🏗️ [**โครงสร้างระบบเซิร์ฟเวอร์ (server_infrastructure.md)**](server_infrastructure.md) | สเปกฮาร์ดแวร์/ซอฟต์แวร์, การจัดสรร CPU/RAM/Disk, การตั้งค่าเครือข่าย (`vmbr0`, `vmbr1`), Bind Mount และ Storage |
 | 🎛️ [**คู่มือระบบ CloudPanel VM 103 (CLOUDPANEL_VM_103.md)**](CLOUDPANEL_VM_103.md) | รายละเอียดเครื่องเสมือน CloudPanel, Nginx, PHP-FPM, MySQL 8.4, การกำหนด Ingress Route และการจัดการเว็บไซต์ |
 | 🔐 [**ข้อมูลบัญชีและรหัสผ่าน (credentials.md)**](credentials.md) | ทะเบียนบัญชีผู้ใช้งาน, รหัสผ่าน, พอร์ตบริการ, คำสั่ง SSH และ Static IP *(เอกสารภายใน)* |
-| ❄️ [**ระบบมอนิเตอร์ฮาร์ดแวร์และพัดลม (scripts/hardware_monitor)**](scripts/hardware_monitor/README.md) | เว็บแดชบอร์ดสตรีมเซนเซอร์เรียลไทม์ (SSE) และควบคุมรอบพัดลม DL20 Gen9 ผ่านโดเมน [https://aas.pichyy.qzz.io](https://aas.pichyy.qzz.io) |
+| ❄️ [**ระบบมอนิเตอร์ฮาร์ดแวร์และพัดลม (scripts/hardware_monitor)**](scripts/hardware_monitor/README.md) | เว็บแดชบอร์ดสตรีมเซนเซอร์เรียลไทม์ (SSE) และควบคุมรอบพัดลม DL20 Gen9 ผ่านโดเมน [https://hardware.pichyy.qzz.io](https://hardware.pichyy.qzz.io) |
 | 📄 [**เอกสารคู่มือฉบับทางการ (PDF Handbooks)**](output/pdf/) | ไฟล์คู่มือรูปแบบ PDF พร้อมพิมพ์/ส่งมอบ: <br/>• `คู่มือส่งมอบและดูแลระบบเซิร์ฟเวอร์.pdf`<br/>• `คู่มือการใช้งานและดูแลระบบเซิร์ฟเวอร์.pdf` |
 
 ---
@@ -63,7 +63,7 @@ flowchart TB
 | ID / Node | ประเภท | ชื่อระบบ | OS | RAM / Core | IP ภายใน / LAN | ช่องทางภายนอก (Domain / VPN) | หน้าที่หลัก |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | **Host** | Host | `Techniccom` (HP DL20 Gen9) | Debian 12 / PVE 8.x | 40 GB DDR4 / 4 Cores (Xeon E3-1220 v6) | `10.10.10.1`<br/>LAN: `192.168.1.141` | `techniccom-pve.pichyy.qzz.io`<br/>Tailscale: `100.125.250.85` | แม่ข่าย Hypervisor ควบคุม VM/LXC ทั้งหมด |
-| **CT 100** | LXC | `web-server` | Debian 12 | 4 GB / 1 vCPU | `10.10.10.100` | `https://aas.pichyy.qzz.io` | บริการแดชบอร์ดมอนิเตอร์ฮาร์ดแวร์และควบคุมพัดลม |
+| **CT 100** | LXC | `web-server` | Debian 12 | 4 GB / 1 vCPU | `10.10.10.100` | `https://aas.pichyy.qzz.io`<br/>`https://techsar.pichyy.qzz.io` | ระบบ Activity Attendance System (AAS) และ TechSAR QA Web |
 | **CT 102** | LXC | `database-server` | Debian 12 | 2 GB / 1 vCPU | `10.10.10.102` | - *(ใช้งานภายใน)* | พื้นที่จัดเก็บ SQLite และสำรองข้อมูล |
 | **VM 103** | VM | `techniccom-cp` | Debian 12 | 8 GB / 2 vCPU | `10.10.10.103`<br/>LAN: `192.168.1.114` | `https://techniccom-cp.pichyy.qzz.io`<br/>`https://lab.pichyy.qzz.io` | แผงควบคุม CloudPanel, Nginx, MySQL 8.4, Student Project Hub |
 | **VM 101** | VM | `win10-light` | Tiny10 x64 | 4 GB / 2 vCPU | DHCP | - *(เข้าผ่าน Console/RDP)* | ระบบปฏิบัติการ Windows 10 ขนาดเบา |
@@ -76,7 +76,9 @@ flowchart TB
 * **Proxmox VE Web UI (Cloudflare):** [https://techniccom-pve.pichyy.qzz.io](https://techniccom-pve.pichyy.qzz.io) *(มี Web Shell ระดับ Root ในตัว ใช้งานได้แม้โดนบล็อก VPN)*
 * **Proxmox VE Web UI (Tailscale VPN):** [https://100.125.250.85:8006](https://100.125.250.85:8006)
 * **Proxmox VE Web UI (Local LAN):** [https://192.168.1.141:8006](https://192.168.1.141:8006) *(Fallback Static: `192.168.1.250:8006`)*
-* **Hardware & Fan Monitor Dashboard:** [https://aas.pichyy.qzz.io](https://aas.pichyy.qzz.io) *(สตรีมเซนเซอร์สด + ควบคุมรอบพัดลม)*
+* **Hardware & Fan Monitor Dashboard:** [https://hardware.pichyy.qzz.io](https://hardware.pichyy.qzz.io) *(สำรอง: [https://fan.pichyy.qzz.io](https://fan.pichyy.qzz.io) — สตรีมเซนเซอร์สด + ควบคุมรอบพัดลม + Responsive)*
+* **Activity Attendance System (AAS):** [https://aas.pichyy.qzz.io](https://aas.pichyy.qzz.io)
+* **TechSAR Web App:** [https://techsar.pichyy.qzz.io](https://techsar.pichyy.qzz.io)
 * **CloudPanel Admin (External Domain):** [https://techniccom-cp.pichyy.qzz.io](https://techniccom-cp.pichyy.qzz.io)
 * **Student Project Hub (วิชา 31909-0003):** [https://lab.pichyy.qzz.io](https://lab.pichyy.qzz.io)
 

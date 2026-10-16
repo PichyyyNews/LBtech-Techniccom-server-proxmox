@@ -25,8 +25,8 @@
 
 | รายการ | ข้อมูลการเข้าใช้งาน |
 | :--- | :--- |
-| **ระบบควบคุมพัดลมและฮาร์ดแวร์ (Web Dashboard)** | [https://aas.pichyy.qzz.io](https://aas.pichyy.qzz.io) *(ไม่ต้องต่อ VPN / สตรีมข้อมูลเรียลไทม์)* |
-| **พอร์ตบริการภายในโฮสต์** | `http://10.10.10.1:8088` (Bridged ผ่าน CT 100 พอร์ต 80) |
+| **ระบบควบคุมพัดลมและฮาร์ดแวร์ (Web Dashboard)** | [https://hardware.pichyy.qzz.io](https://hardware.pichyy.qzz.io) *(สำรอง: [https://fan.pichyy.qzz.io](https://fan.pichyy.qzz.io))* |
+| **พอร์ตบริการภายในโฮสต์** | `http://10.10.10.1:8088` (Service: `hardware-monitor.service`) |
 | **HPE iLO 4 Web Interface** | [https://192.168.1.73](https://192.168.1.73) *(Shared LOM Port บน eno1)* |
 | **iLO 4 User** | `Administrator` |
 | **iLO 4 Password** | `07072569` |
@@ -98,7 +98,7 @@
 
 ### Cloudflare
 * **Account Email:** `Newskung43@gmail.com`
-* **Global API Key:** `cfk_59y4RSdqWrRjvoPku0vLqkkXZNPO9j2oGpqQSHle2161d7f8`
+* **Global API Key:** `[REDACTED_SECURE_IN_DASHBOARD]` *(จัดการผ่าน Cloudflare Zero Trust Dashboard)*
 * **Account ID:** `5162d00fd728881de42502416a88419e`
 * **Zone ID (`pichyy.qzz.io`):** `cdba5bb60aa2588a2f8eb24219abc360`
 * **Tunnel ID (`techniccom-pve`):** `ae270dc3-cd44-46cb-abd6-3a409f94d423`

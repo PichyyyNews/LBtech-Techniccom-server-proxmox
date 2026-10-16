@@ -62,13 +62,17 @@
   * **Password:** `Techniccom.admin14072569`
 
 ### 4.3 ระบบมอนิเตอร์ฮาร์ดแวร์และควบคุมพัดลม (Hardware & Fan Controller Dashboard)
-* **URL:** [https://aas.pichyy.qzz.io](https://aas.pichyy.qzz.io)
+* **URL:** [https://hardware.pichyy.qzz.io](https://hardware.pichyy.qzz.io) *(สำรอง: [https://fan.pichyy.qzz.io](https://fan.pichyy.qzz.io))*
 * **คุณสมบัติ:**
   * สตรีมข้อมูลสดแบบ Real-time (Server-Sent Events: SSE) ความถี่ 1 วินาที
   * ตรวจสอบอุณหภูมิ CPU Package, อุณหภูมิฮาร์ดดิสก์ WD Purple (SDA/SDB), อุณหภูมิเคส (Inlet/Exhaust), และความเร็วรอบพัดลม (Fans 1, 2, 3)
   * สลับโหมดการทำงานระหว่าง **Auto (Dynamic Curve)** หรือ **Manual Presets** (Quiet, Balanced, Performance, Turbo) พร้อม Custom Slider ควบคุมรอบพัดลม
+  * ออกแบบ UI แบบ Cyber/Dark theme รองรับการแสดงผล Responsive บนสมาร์ทโฟนและแท็บเล็ต 100%
 
----
+### 4.4 ระบบลงชื่อเข้าร่วมกิจกรรม (Activity Attendance System - AAS)
+* **URL:** [https://aas.pichyy.qzz.io](https://aas.pichyy.qzz.io)
+
+### 4.5 เว็บไซต์ศูนย์รวมผลงานนักศึกษา (Student Project Hub)
 * **URL หน้า Hub รวมผลงาน:** [https://lab.pichyy.qzz.io](https://lab.pichyy.qzz.io)
 * **รายวิชา:** (31909-0003) การสร้างเว็บไซต์และระบบฐานข้อมูล
 * **ผู้สอน:** อาจารย์พิชญุตย์ สมบุญ

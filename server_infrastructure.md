@@ -26,10 +26,10 @@
   * **สาเหตุพัดลมดังเดิม:** พัดลม Fan 3 ทำหน้าที่ระบายความร้อนโซน PCIe/Storage หมุนค้างที่ 54% เนื่องจากใช้งานฮาร์ดดิสก์ SATA ทั่วไป (WD Purple) ทำให้เซนเซอร์ `04-HD Max` ของ iLO รายงานสถานะ `na` ระบบจึงเปิด Fail-safe cooling
   * **การแก้ไข:** ปรับ CPU Governor เป็น `powersave` ลดอุณหภูมิ CPU ลงเหลือ ~36-37°C และติดตั้ง `amsd` ทำให้รอบพัดลม Fan 3 ปรับลดลงมาอยู่ที่ ~41% (เสียงเงียบลงอย่างเห็นได้ชัด)
 * **เว็บแดชบอร์ดควบคุมและดูค่าเซนเซอร์เรียลไทม์:**
-  * **URL สาธารณะ:** [https://aas.pichyy.qzz.io](https://aas.pichyy.qzz.io)
-  * **พอร์ตบริการภายใน:** `http://10.10.10.1:8088` (Service: `hardware-monitor.service`)
-  * **การส่งต่อทราฟฟิก (Ingress Bridge):** CT 100 รัน `socat` ผ่าน `hw_bridge.service` รับพอร์ต 80 ส่งต่อไปยัง `10.10.10.1:8088`
-  * **ฟีเจอร์:** สตรีมข้อมูลสด (SSE), แสดงอุณหภูมิ CPU/HDD/Ambient, โหลดระบบ, รอบพัดลม 3 ตัว, โหมด Auto Dynamic Curve และ Manual Presets (Quiet, Balanced, Performance, Turbo)
+  * **URL สาธารณะ:** [https://hardware.pichyy.qzz.io](https://hardware.pichyy.qzz.io) *(สำรอง: [https://fan.pichyy.qzz.io](https://fan.pichyy.qzz.io))*
+  * **พอร์ตบริการภายใน:** `http://10.10.10.1:8088` (Service: `hardware-monitor.service` บน Proxmox Host)
+  * **การส่งต่อทราฟฟิก (Cloudflare Tunnel Ingress):** ยิงตรงจาก Cloudflare เข้า `http://10.10.10.1:8088` แยกขาดจาก CT 100 ไม่แย่งพอร์ตหรือทับซ้อนระบบอื่น
+  * **ฟีเจอร์:** สตรีมข้อมูลสด (SSE), แสดงอุณหภูมิ CPU/HDD/Ambient, โหลดระบบ, รอบพัดลม 3 ตัว, โหมด Auto Dynamic Curve และ Manual Presets (Quiet, Balanced, Performance, Turbo), รองรับการแสดงผล Responsive บนมือถือและเดสก์ท็อป 100%
 
 ### การเชื่อมต่อเครือข่าย (Network Interfaces)
 * **การ์ดแลนหลัก (`vmbr0`):** ตั้งค่าแบบ **DHCP** (รับ IP ปัจจุบันจากเราเตอร์บ้าน: `192.168.1.141/24`, Gateway: `192.168.1.1`)
@@ -37,7 +37,7 @@
 * **วงแลนจำลองภายในเครื่อง (`vmbr1`):** เป็นเครือข่ายส่วนตัว (Host-Only Virtual Network) ไอพี `10.10.10.1/24` เพื่อความเสถียรในการเชื่อมต่อระหว่างโฮสต์และแอปพลิเคชัน
 * **เครือข่าย VPN (`Tailscale`):** `100.125.250.85` (ไอพีถาวรสำหรับรีโมททางไกล)
 * **โดเมนควบคุมหลัก:** [https://techniccom-pve.pichyy.qzz.io](https://techniccom-pve.pichyy.qzz.io)
-* **โดเมนควบคุมฮาร์ดแวร์และพัดลม:** [https://aas.pichyy.qzz.io](https://aas.pichyy.qzz.io)
+* **โดเมนควบคุมฮาร์ดแวร์และพัดลม:** [https://hardware.pichyy.qzz.io](https://hardware.pichyy.qzz.io)
 
 ---
 
@@ -128,8 +128,9 @@
 | VMID | ประเภท | ชื่อเครื่อง | IP วงในบ้าน (DHCP) | IP วงจำลองในเครื่อง | โดเมนภายนอก (Cloudflare Tunnel) | หน้าที่ |
 | --- | --- | --- | --- | --- | --- | --- |
 | **Host** | Host | `Techniccom` | `192.168.1.141` (Fallback: `192.168.1.250`) | `10.10.10.1` | `techniccom-pve.pichyy.qzz.io` | ตัวควบคุมเซิร์ฟเวอร์หลัก (Proxmox VE) |
+| **HW Mon** | Service | `hardware-monitor` | - | `10.10.10.1:8088` | `hardware.pichyy.qzz.io`<br/>`fan.pichyy.qzz.io` | เว็บแดชบอร์ดควบคุมฮาร์ดแวร์และพัดลม (Responsive) |
 | **iLO 4** | IPMI | `iLO-Techniccom` | `192.168.1.73` (Shared LOM eno1) | - | - | แผงควบคุมฮาร์ดแวร์ระยะไกลระดับ BIOS/IPMI |
-| **100** | LXC | `web-server` | รับจากเราเตอร์ | `10.10.10.100` | `aas.pichyy.qzz.io` | หน้าบ้าน/เว็บแดชบอร์ดควบคุมฮาร์ดแวร์และพัดลม |
+| **100** | LXC | `web-server` | รับจากเราเตอร์ | `10.10.10.100` | `aas.pichyy.qzz.io`<br/>`techsar.pichyy.qzz.io` | ระบบ Activity Attendance System และ TechSAR |
 | **102** | LXC | `database-server` | รับจากเราเตอร์ | `10.10.10.102` | - | ตัวเก็บสำรองฐานข้อมูลหลัก |
 | **103** | VM | `techniccom-cp` | รับจากเราเตอร์ (`192.168.1.114`) | `10.10.10.103` | `techniccom-cp.pichyy.qzz.io`<br/>`lab.pichyy.qzz.io` | จัดการเว็บ / CloudPanel / Student Hub |
 | **101** | VM | `win10-light` | รับจากเราเตอร์ | - | - | เครื่องวินโดวส์ใช้งานทั่วไป |

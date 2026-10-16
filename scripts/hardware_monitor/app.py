@@ -245,63 +245,83 @@ INDEX_HTML = """<!DOCTYPE html>
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Techniccom Hardware & Fan Controller</title>
-    <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-dark: #0a0e17;
-            --card-bg: rgba(18, 26, 43, 0.75);
-            --card-border: rgba(45, 140, 255, 0.25);
+            --bg-dark: #070a10;
+            --card-bg: rgba(15, 23, 38, 0.85);
+            --card-border: rgba(45, 140, 255, 0.22);
             --cyan: #00f3ff;
             --blue: #0066ff;
             --green: #00ff88;
             --orange: #ff9900;
             --red: #ff3366;
-            --text-main: #e2e8f0;
+            --text-main: #f1f5f9;
             --text-muted: #94a3b8;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        
         body {
             background-color: var(--bg-dark);
             background-image: 
-                radial-gradient(circle at 15% 15%, rgba(0, 243, 255, 0.08) 0%, transparent 40%),
-                radial-gradient(circle at 85% 85%, rgba(0, 102, 255, 0.08) 0%, transparent 40%);
+                radial-gradient(circle at 10% 10%, rgba(0, 243, 255, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 90% 90%, rgba(0, 102, 255, 0.08) 0%, transparent 40%);
             color: var(--text-main);
             font-family: 'Chakra Petch', sans-serif;
             min-height: 100vh;
-            padding: 20px;
+            padding: 16px;
+            overflow-x: hidden;
         }
 
-        .container { max-width: 1200px; margin: 0 auto; }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
         
         /* Header */
         header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 15px 25px;
+            padding: 16px 20px;
             background: var(--card-bg);
             border: 1px solid var(--card-border);
             border-radius: 14px;
             backdrop-filter: blur(12px);
-            margin-bottom: 25px;
+            margin-bottom: 18px;
+            gap: 12px;
         }
-        .logo-area { display: flex; align-items: center; gap: 15px; }
-        .logo-area h1 { font-size: 22px; font-weight: 700; letter-spacing: 1px; color: #fff; }
-        .logo-area span { color: var(--cyan); font-family: 'JetBrains Mono', monospace; font-size: 13px; }
+        .logo-area { display: flex; align-items: center; gap: 14px; }
+        .logo-area h1 {
+            font-size: clamp(16px, 3.8vw, 22px);
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            color: #fff;
+            line-height: 1.2;
+        }
+        .logo-area span {
+            color: var(--cyan);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: clamp(11px, 2.5vw, 13px);
+            display: block;
+            margin-top: 3px;
+        }
         .live-badge {
             display: flex;
             align-items: center;
             gap: 8px;
             font-family: 'JetBrains Mono', monospace;
-            font-size: 13px;
+            font-size: 12px;
+            font-weight: 600;
             padding: 6px 14px;
-            background: rgba(0, 255, 136, 0.1);
+            background: rgba(0, 255, 136, 0.12);
             border: 1px solid var(--green);
             border-radius: 20px;
             color: var(--green);
+            white-space: nowrap;
         }
         .pulse-dot {
             width: 8px; height: 8px;
@@ -310,19 +330,33 @@ INDEX_HTML = """<!DOCTYPE html>
             box-shadow: 0 0 10px var(--green);
             animation: pulse 1.5s infinite;
         }
-        @keyframes pulse { 0% { opacity: 0.4; } 50% { opacity: 1; } 100% { opacity: 0.4; } }
+        @keyframes pulse { 0% { opacity: 0.3; } 50% { opacity: 1; } 100% { opacity: 0.3; } }
 
-        /* Grid */
-        .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; margin-bottom: 25px; }
+        /* Grid System */
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
         
         .card {
             background: var(--card-bg);
             border: 1px solid var(--card-border);
             border-radius: 14px;
-            padding: 22px;
+            padding: 20px;
             backdrop-filter: blur(10px);
             position: relative;
             overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
         }
         .card::before {
             content: '';
@@ -331,55 +365,82 @@ INDEX_HTML = """<!DOCTYPE html>
             background: linear-gradient(90deg, transparent, var(--cyan), transparent);
         }
         .card-title {
-            font-size: 16px;
+            font-size: 15px;
             font-weight: 600;
             color: var(--cyan);
-            margin-bottom: 16px;
+            margin-bottom: 14px;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
 
         /* Fan Visualizer */
-        .fans-row { display: flex; justify-content: space-around; gap: 15px; margin-top: 10px; }
+        .fans-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 5px;
+        }
         .fan-unit {
             display: flex;
             flex-direction: column;
             align-items: center;
-            background: rgba(0, 0, 0, 0.35);
-            padding: 15px;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 12px 8px;
             border-radius: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            flex: 1;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            text-align: center;
         }
         .fan-icon {
-            width: 54px; height: 54px;
+            width: 48px; height: 48px;
             border-radius: 50%;
-            border: 3px dashed var(--cyan);
+            border: 2.5px dashed var(--cyan);
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
+            font-size: 20px;
             animation: spin 3s linear infinite;
         }
         .fan-icon.warn { border-color: var(--orange); }
         .fan-icon.active-fast { animation: spin 0.8s linear infinite; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
-        .fan-val { font-family: 'JetBrains Mono', monospace; font-size: 20px; font-weight: 700; color: #fff; }
-        .fan-name { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
+        .fan-val {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: clamp(16px, 4vw, 20px);
+            font-weight: 700;
+            color: #fff;
+        }
+        .fan-name {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            width: 100%;
+        }
 
-        /* Temp Gauges */
-        .temp-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
+        /* Temp & Metrics Rows */
+        .temp-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 9px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            gap: 10px;
+        }
         .temp-row:last-child { border-bottom: none; }
-        .temp-label { font-size: 14px; color: var(--text-muted); }
+        .temp-label { font-size: 13px; color: var(--text-muted); flex: 1; }
         .temp-badge {
             font-family: 'JetBrains Mono', monospace;
-            font-size: 15px;
+            font-size: 14px;
             font-weight: 700;
             padding: 3px 10px;
             border-radius: 6px;
             background: rgba(0, 243, 255, 0.1);
             color: var(--cyan);
+            white-space: nowrap;
         }
         .temp-badge.cool { background: rgba(0, 255, 136, 0.15); color: var(--green); }
         .temp-badge.warn { background: rgba(255, 153, 0, 0.15); color: var(--orange); }
@@ -387,29 +448,34 @@ INDEX_HTML = """<!DOCTYPE html>
 
         /* Control Panel */
         .controls-card {
-            background: linear-gradient(135deg, rgba(18, 26, 43, 0.95), rgba(12, 19, 32, 0.95));
+            background: linear-gradient(135deg, rgba(18, 28, 48, 0.95), rgba(12, 19, 32, 0.95));
             border: 1px solid rgba(0, 243, 255, 0.35);
         }
         .mode-toggle {
             display: flex;
-            gap: 10px;
-            background: rgba(0, 0, 0, 0.4);
+            gap: 8px;
+            background: rgba(0, 0, 0, 0.45);
             padding: 5px;
             border-radius: 10px;
-            margin-bottom: 20px;
+            margin-bottom: 18px;
         }
         .mode-btn {
             flex: 1;
-            padding: 10px;
+            padding: 12px 10px;
             border: none;
             background: transparent;
             color: var(--text-muted);
             font-family: 'Chakra Petch', sans-serif;
-            font-size: 15px;
+            font-size: 14px;
             font-weight: 600;
             border-radius: 8px;
             cursor: pointer;
             transition: all 0.2s ease;
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
         }
         .mode-btn.active {
             background: var(--blue);
@@ -417,18 +483,28 @@ INDEX_HTML = """<!DOCTYPE html>
             box-shadow: 0 0 15px rgba(0, 102, 255, 0.5);
         }
 
-        .presets-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px; }
+        .presets-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-bottom: 18px;
+        }
         .preset-btn {
-            padding: 12px 8px;
+            padding: 12px 6px;
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.1);
             color: var(--text-main);
-            border-radius: 8px;
+            border-radius: 10px;
             font-family: 'Chakra Petch', sans-serif;
             font-size: 13px;
             cursor: pointer;
             transition: all 0.2s;
             text-align: center;
+            min-height: 52px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
         }
         .preset-btn:hover { background: rgba(0, 243, 255, 0.15); border-color: var(--cyan); }
         .preset-btn.active {
@@ -439,26 +515,33 @@ INDEX_HTML = """<!DOCTYPE html>
         }
 
         /* Slider */
-        .slider-box { margin-bottom: 20px; }
-        .slider-label { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 8px; color: var(--text-muted); }
+        .slider-box { margin-bottom: 18px; }
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            margin-bottom: 10px;
+            color: var(--text-muted);
+        }
         .slider {
             width: 100%;
-            height: 8px;
-            border-radius: 5px;
-            background: rgba(255, 255, 255, 0.1);
+            height: 10px;
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.12);
             outline: none;
             -webkit-appearance: none;
+            touch-action: manipulation;
         }
         .slider::-webkit-slider-thumb {
             -webkit-appearance: none;
-            width: 20px; height: 20px;
+            width: 26px; height: 26px;
             border-radius: 50%;
             background: var(--cyan);
             cursor: pointer;
-            box-shadow: 0 0 10px var(--cyan);
+            box-shadow: 0 0 12px var(--cyan);
         }
 
-        /* Buttons & Actions */
+        /* Apply Button */
         .btn-apply {
             width: 100%;
             padding: 14px;
@@ -470,16 +553,103 @@ INDEX_HTML = """<!DOCTYPE html>
             font-size: 16px;
             font-weight: 700;
             cursor: pointer;
-            transition: opacity 0.2s;
+            transition: all 0.2s;
+            min-height: 48px;
+            box-shadow: 0 4px 15px rgba(0, 243, 255, 0.2);
         }
-        .btn-apply:hover { opacity: 0.9; }
+        .btn-apply:active { transform: scale(0.98); }
 
         /* Chart Canvas */
-        canvas { width: 100%; height: 160px; }
+        .chart-box {
+            position: relative;
+            width: 100%;
+            height: 160px;
+        }
+        canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
 
-        /* Hardware specs badge */
-        .spec-item { font-size: 13px; color: var(--text-muted); margin-bottom: 6px; }
+        /* Footer */
+        .footer-card {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 20px;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .spec-item { font-size: 12px; color: var(--text-muted); }
         .spec-item b { color: #fff; font-family: 'JetBrains Mono', monospace; }
+        .footer-links a {
+            color: var(--cyan);
+            text-decoration: none;
+            font-size: 13px;
+            margin-left: 12px;
+            transition: opacity 0.2s;
+        }
+        .footer-links a:hover { text-decoration: underline; }
+
+        /* Toast notification */
+        #toast {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            padding: 12px 24px;
+            background: rgba(0, 255, 136, 0.95);
+            color: #000;
+            font-weight: 700;
+            font-size: 14px;
+            border-radius: 30px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
+            transition: transform 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+            z-index: 9999;
+            pointer-events: none;
+            white-space: nowrap;
+        }
+        #toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* Responsive Breakpoints */
+        @media (max-width: 900px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 600px) {
+            body { padding: 10px; }
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+                padding: 12px 16px;
+            }
+            .logo-area { width: 100%; }
+            .live-badge { align-self: flex-start; }
+            .grid-3 {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+            .grid-2 {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+            .card { padding: 16px; }
+            .presets-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 8px;
+            }
+            .footer-card {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            .footer-links a { margin-left: 0; margin-right: 12px; }
+        }
     </style>
 </head>
 <body>
@@ -488,7 +658,7 @@ INDEX_HTML = """<!DOCTYPE html>
             <div class="logo-area">
                 <div>
                     <h1>TECHNICCOM HARDWARE CONTROLLER</h1>
-                    <span>HP ProLiant DL20 Gen9 • Proxmox VE • iLO 4</span>
+                    <span>HP ProLiant DL20 Gen9 • Proxmox VE 8 • iLO 4</span>
                 </div>
             </div>
             <div class="live-badge">
@@ -503,7 +673,7 @@ INDEX_HTML = """<!DOCTYPE html>
             <div class="card">
                 <div class="card-title">
                     <span>CHASSIS FANS (รอบพัดลม)</span>
-                    <span style="font-size: 12px; color: var(--text-muted);">IPMI Real-time</span>
+                    <span style="font-size: 11px; color: var(--text-muted);">IPMI Real-time</span>
                 </div>
                 <div class="fans-row">
                     <div class="fan-unit">
@@ -519,7 +689,7 @@ INDEX_HTML = """<!DOCTYPE html>
                     <div class="fan-unit">
                         <div class="fan-icon warn active-fast" id="fan3-icon">⚠️</div>
                         <div class="fan-val" id="fan3-val" style="color: var(--orange);">--%</div>
-                        <div class="fan-name">Fan 3 (PCIe/Disk)</div>
+                        <div class="fan-name">Fan 3 (PCIe/HDD)</div>
                     </div>
                 </div>
             </div>
@@ -528,7 +698,7 @@ INDEX_HTML = """<!DOCTYPE html>
             <div class="card">
                 <div class="card-title">
                     <span>TEMPERATURES (อุณหภูมิระบบ)</span>
-                    <span style="font-size: 12px; color: var(--text-muted);">Sensors</span>
+                    <span style="font-size: 11px; color: var(--text-muted);">Sensors</span>
                 </div>
                 <div class="temp-row">
                     <span class="temp-label">CPU Package</span>
@@ -556,7 +726,7 @@ INDEX_HTML = """<!DOCTYPE html>
             <div class="card">
                 <div class="card-title">
                     <span>SYSTEM LOAD & CPU FREQ</span>
-                    <span style="font-size: 12px; color: var(--text-muted);">Proxmox Host</span>
+                    <span style="font-size: 11px; color: var(--text-muted);">Proxmox Host</span>
                 </div>
                 <div class="temp-row">
                     <span class="temp-label">CPU Load (1m, 5m, 15m)</span>
@@ -578,12 +748,12 @@ INDEX_HTML = """<!DOCTYPE html>
         </div>
 
         <!-- CONTROLS & CHART GRID -->
-        <div class="grid-3" style="grid-template-columns: 1fr 1fr;">
+        <div class="grid-2">
             <!-- CONTROL PANEL -->
             <div class="card controls-card">
                 <div class="card-title">
                     <span>FAN & COOLING CONTROL (ปรับการทำงาน)</span>
-                    <span id="active-mode-label" style="font-size: 13px; color: var(--cyan); font-family: 'JetBrains Mono';">MODE: AUTO</span>
+                    <span id="active-mode-label" style="font-size: 12px; color: var(--cyan); font-family: 'JetBrains Mono';">MODE: AUTO</span>
                 </div>
 
                 <div class="mode-toggle">
@@ -592,17 +762,17 @@ INDEX_HTML = """<!DOCTYPE html>
                 </div>
 
                 <div id="manual-controls">
-                    <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 8px;">เลือกระดับความแรงพัดลม (Presets):</div>
+                    <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px;">เลือกระดับความแรงพัดลม (Presets):</div>
                     <div class="presets-grid">
-                        <button class="preset-btn active" onclick="setPreset('quiet')">🌙 เงียบสนิท<br/><b style="color:var(--green)">15%</b></button>
-                        <button class="preset-btn" onclick="setPreset('balanced')">⚖️ มาตรฐาน<br/><b style="color:var(--cyan)">25%</b></button>
-                        <button class="preset-btn" onclick="setPreset('performance')">🚀 ประสิทธิภาพ<br/><b style="color:var(--orange)">45%</b></button>
-                        <button class="preset-btn" onclick="setPreset('turbo')">❄️ เย็นสุด<br/><b style="color:var(--red)">80%</b></button>
+                        <button class="preset-btn active" onclick="setPreset('quiet', event)">🌙 เงียบสนิท<br/><b style="color:var(--green)">15%</b></button>
+                        <button class="preset-btn" onclick="setPreset('balanced', event)">⚖️ มาตรฐาน<br/><b style="color:var(--cyan)">25%</b></button>
+                        <button class="preset-btn" onclick="setPreset('performance', event)">🚀 ประสิทธิภาพ<br/><b style="color:var(--orange)">45%</b></button>
+                        <button class="preset-btn" onclick="setPreset('turbo', event)">❄️ เย็นสุด<br/><b style="color:var(--red)">80%</b></button>
                     </div>
 
                     <div class="slider-box">
                         <div class="slider-label">
-                            <span>กำหนดรอบพัดลมเป้าหมาย (Fan Target Speed):</span>
+                            <span>กำหนดรอบพัดลมเป้าหมาย (Target Speed):</span>
                             <b id="slider-val" style="color: var(--cyan); font-family: 'JetBrains Mono'">20%</b>
                         </div>
                         <input type="range" min="10" max="100" value="20" class="slider" id="fan-slider" oninput="onSliderChange(this.value)">
@@ -616,10 +786,12 @@ INDEX_HTML = """<!DOCTYPE html>
             <div class="card">
                 <div class="card-title">
                     <span>REAL-TIME TELEMETRY STREAM</span>
-                    <span style="font-size: 12px; color: var(--text-muted);">History Graph</span>
+                    <span style="font-size: 11px; color: var(--text-muted);">History Graph</span>
                 </div>
-                <canvas id="liveChart"></canvas>
-                <div style="display: flex; gap: 15px; justify-content: center; margin-top: 10px; font-size: 12px;">
+                <div class="chart-box">
+                    <canvas id="liveChart"></canvas>
+                </div>
+                <div style="display: flex; gap: 14px; justify-content: center; margin-top: 10px; font-size: 12px; flex-wrap: wrap;">
                     <span style="color: var(--cyan);">● CPU Temp (°C)</span>
                     <span style="color: var(--orange);">● Fan 3 Speed (%)</span>
                     <span style="color: var(--green);">● Max HDD Temp (°C)</span>
@@ -628,23 +800,36 @@ INDEX_HTML = """<!DOCTYPE html>
         </div>
 
         <!-- FOOTER / ILO SHORTCUTS -->
-        <div class="card" style="display: flex; justify-content: space-between; align-items: center; padding: 15px 25px;">
+        <div class="card footer-card">
             <div>
-                <span class="spec-item">iLO 4 Interface: <b id="ilo-ip">192.168.1.73</b> (Shared LOM Port)</span> |
+                <span class="spec-item">iLO 4: <b id="ilo-ip">192.168.1.73</b> (Shared LOM Port)</span> |
                 <span class="spec-item">Firmware: <b>v2.53</b></span> |
                 <span class="spec-item">User: <b>Administrator</b></span>
             </div>
-            <div>
-                <a href="https://techniccom-pve.pichyy.qzz.io" target="_blank" style="color: var(--cyan); text-decoration: none; font-size: 14px; margin-right: 15px;">🌐 Proxmox VE</a>
-                <a href="https://techniccom-cp.pichyy.qzz.io" target="_blank" style="color: var(--cyan); text-decoration: none; font-size: 14px;">🎛️ CloudPanel</a>
+            <div class="footer-links">
+                <a href="https://techniccom-pve.pichyy.qzz.io" target="_blank">🌐 Proxmox VE</a>
+                <a href="https://techniccom-cp.pichyy.qzz.io" target="_blank">🎛️ CloudPanel</a>
+                <a href="https://aas.pichyy.qzz.io" target="_blank">📋 AAS System</a>
             </div>
         </div>
     </div>
+
+    <!-- Floating Toast -->
+    <div id="toast">บันทึกคำสั่งสำเร็จ</div>
 
     <script>
         let currentMode = 'auto';
         let currentPreset = 'quiet';
         let currentSlider = 20;
+        let lastHistory = [];
+
+        function showToast(msg, isSuccess = true) {
+            const toast = document.getElementById('toast');
+            toast.innerText = msg;
+            toast.style.background = isSuccess ? 'rgba(0, 255, 136, 0.95)' : 'rgba(255, 51, 102, 0.95)';
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
 
         function setMode(m) {
             currentMode = m;
@@ -653,10 +838,10 @@ INDEX_HTML = """<!DOCTYPE html>
             document.getElementById('active-mode-label').innerText = 'MODE: ' + m.toUpperCase();
         }
 
-        function setPreset(p) {
+        function setPreset(p, ev) {
             currentPreset = p;
             document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
-            event.target.closest('.preset-btn').classList.add('active');
+            if (ev && ev.currentTarget) ev.currentTarget.classList.add('active');
             let vals = { 'quiet': 15, 'balanced': 25, 'performance': 45, 'turbo': 80 };
             document.getElementById('fan-slider').value = vals[p];
             document.getElementById('slider-val').innerText = vals[p] + '%';
@@ -678,8 +863,10 @@ INDEX_HTML = """<!DOCTYPE html>
                     target_fan: currentSlider
                 })
             }).then(r => r.json()).then(data => {
-                alert('บันทึกคำสั่งสำเร็จ: ' + data.message);
-            }).catch(e => alert('เกิดข้อผิดพลาดในการส่งคำสั่ง'));
+                showToast('✅ ' + data.message, true);
+            }).catch(e => {
+                showToast('❌ เกิดข้อผิดพลาดในการส่งคำสั่ง', false);
+            });
         }
 
         // Live EventSource Stream
@@ -718,21 +905,30 @@ INDEX_HTML = """<!DOCTYPE html>
             document.getElementById('cpu-gov').innerText = d.cpu.governor;
 
             // Draw Chart
-            drawChart(d.history);
+            lastHistory = d.history;
+            drawChart(lastHistory);
         };
 
         evtSource.onerror = function() {
             document.getElementById('stream-status').innerText = 'RECONNECTING...';
         };
 
+        // Window resize listener for responsive canvas
+        window.addEventListener('resize', () => {
+            if (lastHistory && lastHistory.length > 0) {
+                drawChart(lastHistory);
+            }
+        });
+
         // Simple Canvas Chart Renderer
         function drawChart(hist) {
             if (!hist || hist.length < 2) return;
             const canvas = document.getElementById('liveChart');
-            const ctx = canvas.getContext('2d');
-            canvas.width = canvas.parentElement.clientWidth - 40;
-            canvas.height = 140;
+            const box = canvas.parentElement;
+            canvas.width = box.clientWidth;
+            canvas.height = box.clientHeight;
 
+            const ctx = canvas.getContext('2d');
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             const w = canvas.width;
             const h = canvas.height;
@@ -755,7 +951,7 @@ INDEX_HTML = """<!DOCTYPE html>
                 const step = w / (hist.length - 1);
                 hist.forEach((pt, idx) => {
                     const val = pt[key] || 0;
-                    const y = h - (val / maxVal) * (h - 15) - 5;
+                    const y = h - (val / maxVal) * (h - 20) - 8;
                     const x = idx * step;
                     if (idx === 0) ctx.moveTo(x, y);
                     else ctx.lineTo(x, y);

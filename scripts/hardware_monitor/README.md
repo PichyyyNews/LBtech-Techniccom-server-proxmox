@@ -2,9 +2,10 @@
 
 ระบบเว็บแดชบอร์ดสำหรับแสดงผลเซนเซอร์ฮาร์ดแวร์และควบคุมรอบพัดลมของเครื่อง **HP ProLiant DL20 Gen9** (Proxmox VE 8 / Debian 12 Bookworm) แบบเรียลไทม์ผ่าน Server-Sent Events (SSE) พร้อมระบบปรับโหมด Auto / Manual
 
-- **URL สาธารณะ (Cloudflare Tunnel):** [https://aas.pichyy.qzz.io](https://aas.pichyy.qzz.io)
+- **URL สาธารณะ (Cloudflare Tunnel):** [https://hardware.pichyy.qzz.io](https://hardware.pichyy.qzz.io) *(สำรอง: [https://fan.pichyy.qzz.io](https://fan.pichyy.qzz.io))*
 - **พอร์ตบริการภายในบนโฮสต์:** `http://10.10.10.1:8088`
 - **ระบบหลังบ้าน:** Python 3 (Pure HTTP Server + SSE, Zero Third-party Python Dependencies)
+- **การออกแบบ UI:** Cyberpunk / Dark Theme พร้อมรองรับ **Mobile Responsive 100%** และ Touch-friendly Control
 
 ---
 
@@ -59,12 +60,15 @@ StandardError=journal
 WantedBy=multi-user.target
 ```
 
-### การตั้งค่า Network Ingress Bridge (CT 100)
+### การตั้งค่า Network Ingress Route (Cloudflare Tunnel)
 
-เนื่องจาก Cloudflare Tunnel ผูก Ingress โดเมน `aas.pichyy.qzz.io` เข้ากับ CT 100 พอร์ต 80 จึงใช้ `socat` รันผ่าน Systemd (`hw_bridge.service`) เพื่อส่งต่อทราฟฟิกไปยัง Proxmox Host พอร์ต 8088:
+Cloudflare Zero Trust Tunnel (`techniccom-pve`) ทำการ Route ทราฟฟิกโดเมนสาธารณะเข้ามายังพอร์ต 8088 บน Host โดยตรง ไม่ต้องผ่าน Bridge:
 
-```bash
-socat TCP-LISTEN:80,fork,reuseaddr TCP:10.10.10.1:8088
+```yaml
+- hostname: hardware.pichyy.qzz.io
+  service: http://10.10.10.1:8088
+- hostname: fan.pichyy.qzz.io
+  service: http://10.10.10.1:8088
 ```
 
 ---
