@@ -199,10 +199,11 @@ def update_ipmi_sensors():
 
 def apply_fan_policy():
     with state_lock:
-        mode = app_state["mode"]
-        preset = app_state["preset"]
-        cpu_temp = app_state["cpu"]["temp_package"]
-        hdd_max = max([d["temp"] for d in app_state["disks"]] or [30])
+        mode = app_state.get("mode", "auto")
+        preset = app_state.get("preset", "quiet")
+        target_fan = app_state.get("target_fan", 20)
+        cpu_temp = app_state["cpu"].get("temp_package", 35.0)
+        hdd_max = max([d["temp"] for d in app_state.get("disks", [])] or [30])
 
     if mode == "auto":
         # Dynamic policy based on live temps
@@ -211,7 +212,7 @@ def apply_fan_policy():
         else:
             set_governor("powersave")
     elif mode == "manual":
-        if preset in ["performance", "turbo"]:
+        if preset in ["performance", "turbo"] or target_fan >= 45:
             set_governor("performance")
         else:
             set_governor("powersave")
@@ -757,11 +758,32 @@ INDEX_HTML = """<!DOCTYPE html>
                 </div>
 
                 <div class="mode-toggle">
-                    <button class="mode-btn active" id="btn-mode-auto" onclick="setMode('auto')">🤖 AUTO (Dynamic)</button>
+                    <button class="mode-btn active" id="btn-mode-auto" onclick="setMode('auto')">🤖 AUTO (อัตโนมัติ)</button>
                     <button class="mode-btn" id="btn-mode-manual" onclick="setMode('manual')">🎛️ MANUAL (กำหนดเอง)</button>
                 </div>
 
-                <div id="manual-controls">
+                <!-- AUTO MODE INFO CARD -->
+                <div id="auto-info" style="display: block; background: rgba(0, 243, 255, 0.05); border: 1px solid rgba(0, 243, 255, 0.2); border-radius: 12px; padding: 14px; margin-bottom: 18px;">
+                    <div style="display: flex; align-items: center; gap: 8px; font-weight: 700; color: var(--cyan); margin-bottom: 8px; font-size: 14px;">
+                        <span>🤖 ระบบคุมอุณหภูมิอัจฉริยะ (Dynamic Thermal Regulation)</span>
+                    </div>
+                    <p style="font-size: 12.5px; color: var(--text-muted); line-height: 1.5; margin-bottom: 12px;">
+                        โหมดนี้ <b>ไม่ต้องเลือกรอบพัดลมเอง</b> ระบบจะจัดการรอบการทำงานและความเย็นอัตโนมัติตามเซนเซอร์ของเครื่องตลอด 24 ชม.:
+                    </p>
+                    <div style="display: grid; gap: 8px; font-size: 12px;">
+                        <div style="display: flex; align-items: center; gap: 8px; background: rgba(0, 255, 136, 0.08); padding: 8px 12px; border-radius: 8px; border: 1px solid rgba(0, 255, 136, 0.2);">
+                            <span style="color: var(--green); font-size: 16px;">🌱</span>
+                            <span style="color: #fff;"><b>เมื่อเครื่องเย็น (CPU &lt; 60°C):</b> โหมด Powersave พัดลมหมุนเบา เสียงเงียบ ประหยัดไฟ</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px; background: rgba(255, 153, 0, 0.08); padding: 8px 12px; border-radius: 8px; border: 1px solid rgba(255, 153, 0, 0.2);">
+                            <span style="color: var(--orange); font-size: 16px;">⚡</span>
+                            <span style="color: #fff;"><b>เมื่อโหลดหนัก (CPU &gt; 65°C / ดิสก์ร้อน):</b> บูสต์โหมด Performance เพื่อเร่งระบายความร้อน</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MANUAL CONTROLS -->
+                <div id="manual-controls" style="display: none;">
                     <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px;">เลือกระดับความแรงพัดลม (Presets):</div>
                     <div class="presets-grid">
                         <button class="preset-btn active" onclick="setPreset('quiet', event)">🌙 เงียบสนิท<br/><b style="color:var(--green)">15%</b></button>
@@ -777,9 +799,13 @@ INDEX_HTML = """<!DOCTYPE html>
                         </div>
                         <input type="range" min="10" max="100" value="20" class="slider" id="fan-slider" oninput="onSliderChange(this.value)">
                     </div>
+
+                    <div style="background: rgba(255, 153, 0, 0.08); border: 1px solid rgba(255, 153, 0, 0.25); border-radius: 8px; padding: 10px 12px; margin-bottom: 16px; font-size: 11.5px; color: #ffcc66; line-height: 1.5;">
+                        ℹ️ <b>สถาปัตยกรรมเซิร์ฟเวอร์ HPE iLO 4:</b> รอบพัดลมควบคุมด้วยชิปความปลอดภัยฮาร์ดแวร์ BMC การปรับในโหมด Manual จะจัดการระดับความร้อนของ CPU เพื่อให้อุณหภูมิและพัดลมปรับตามโซนระบายความร้อนของเครื่อง
+                    </div>
                 </div>
 
-                <button class="btn-apply" onclick="applySettings()">บันทึกและสั่งการ (APPLY SETTINGS)</button>
+                <button class="btn-apply" id="btn-apply" onclick="applySettings()">เปิดใช้งานโหมดอัตโนมัติ (APPLY AUTO)</button>
             </div>
 
             <!-- LIVE CHART -->
@@ -835,7 +861,21 @@ INDEX_HTML = """<!DOCTYPE html>
             currentMode = m;
             document.getElementById('btn-mode-auto').classList.toggle('active', m === 'auto');
             document.getElementById('btn-mode-manual').classList.toggle('active', m === 'manual');
-            document.getElementById('active-mode-label').innerText = 'MODE: ' + m.toUpperCase();
+            document.getElementById('active-mode-label').innerText = 'MODE: ' + (m === 'auto' ? 'AUTO (อัตโนมัติ)' : 'MANUAL (กำหนดเอง)');
+            
+            const manualBox = document.getElementById('manual-controls');
+            const autoBox = document.getElementById('auto-info');
+            const btnApply = document.getElementById('btn-apply');
+            
+            if (m === 'auto') {
+                manualBox.style.display = 'none';
+                autoBox.style.display = 'block';
+                btnApply.innerText = 'เปิดใช้งานโหมดอัตโนมัติ (APPLY AUTO)';
+            } else {
+                manualBox.style.display = 'block';
+                autoBox.style.display = 'none';
+                btnApply.innerText = 'บันทึกและสั่งการ (APPLY MANUAL)';
+            }
         }
 
         function setPreset(p, ev) {
@@ -854,20 +894,35 @@ INDEX_HTML = """<!DOCTYPE html>
         }
 
         function applySettings() {
+            const payload = { mode: currentMode };
+            if (currentMode === 'manual') {
+                payload.preset = currentPreset;
+                payload.target_fan = currentSlider;
+            }
             fetch('/api/control', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    mode: currentMode,
-                    preset: currentPreset,
-                    target_fan: currentSlider
-                })
+                body: JSON.stringify(payload)
             }).then(r => r.json()).then(data => {
                 showToast('✅ ' + data.message, true);
             }).catch(e => {
                 showToast('❌ เกิดข้อผิดพลาดในการส่งคำสั่ง', false);
             });
         }
+
+        // Initial state sync
+        fetch('/api/status').then(r => r.json()).then(st => {
+            if (st.mode) setMode(st.mode);
+            else setMode('auto');
+            if (st.preset) setPreset(st.preset);
+            if (st.target_fan) {
+                document.getElementById('fan-slider').value = st.target_fan;
+                document.getElementById('slider-val').innerText = st.target_fan + '%';
+                currentSlider = st.target_fan;
+            }
+        }).catch(err => {
+            setMode('auto');
+        });
 
         // Live EventSource Stream
         const evtSource = new EventSource('/api/stream');
@@ -1020,17 +1075,23 @@ class RequestHandler(BaseHTTPRequestHandler):
             body = self.rfile.read(length).decode("utf-8")
             try:
                 data = json.loads(body)
+                mode = data.get("mode", "auto")
                 with state_lock:
-                    if "mode" in data: app_state["mode"] = data["mode"]
-                    if "preset" in data: app_state["preset"] = data["preset"]
-                    if "target_fan" in data: app_state["target_fan"] = int(data["target_fan"])
+                    app_state["mode"] = mode
+                    if mode == "manual":
+                        if "preset" in data: app_state["preset"] = data["preset"]
+                        if "target_fan" in data: app_state["target_fan"] = int(data["target_fan"])
                 apply_fan_policy()
                 self.send_response(200)
                 self.send_header("Content-Type", "application/json; charset=utf-8")
                 self.send_header("Access-Control-Allow-Origin", "*")
                 self.end_headers()
-                mode_th = "อัตโนมัติ (Auto)" if data.get('mode') == 'auto' else f"กำหนดเอง (พัดลม {data.get('target_fan', 20)}%)"
-                resp = json.dumps({"status": "ok", "message": f"เปลี่ยนเป็นโหมด {mode_th} สำเร็จ"})
+                if mode == "auto":
+                    resp_msg = "เปิดใช้งานโหมดอัตโนมัติ (AUTO) สำเร็จ ระบบจะควบคุมการระบายความร้อนอัตโนมัติ"
+                else:
+                    target = data.get("target_fan", app_state.get("target_fan", 20))
+                    resp_msg = f"บันทึกโหมดกำหนดเอง (MANUAL {target}%) สำเร็จ"
+                resp = json.dumps({"status": "ok", "message": resp_msg})
                 self.wfile.write(resp.encode("utf-8"))
             except Exception as e:
                 self.send_response(400)
