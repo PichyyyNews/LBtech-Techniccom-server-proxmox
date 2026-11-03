@@ -1885,7 +1885,15 @@ Payload:
             </aside>
 
             {/* MAIN CONTENT AREA */}
-            <main className={`flex-1 min-w-0 p-4 sm:p-6 md:p-8 mx-auto w-full transition-all ${activeTab === 'ct-servers' ? 'max-w-7xl' : 'max-w-4xl'}`}>
+            <main
+              className={`flex-1 min-w-0 mx-auto w-full transition-all ${
+                activeTab === 'ct-servers'
+                  ? selectedServerVmid !== null
+                    ? 'max-w-7xl p-1 sm:p-5 md:p-8'
+                    : 'max-w-7xl p-2 sm:p-5 md:p-8'
+                  : 'max-w-4xl p-2.5 sm:p-6 md:p-8'
+              }`}
+            >
               {/* TAB 1: OVERVIEW & CREDENTIALS */}
               {activeTab === 'overview' && (
                 <div className="space-y-6">
@@ -2497,40 +2505,41 @@ Payload:
                       const isRunning = selectedServer.status === 'running'
 
                       return (
-                        <div className="space-y-4">
+                        <div className="space-y-2.5 sm:space-y-4">
                           {/* Top Navigation Breadcrumb */}
-                          <div className="flex items-center justify-between">
+                          <div className="flex items-center justify-between px-0.5 sm:px-0">
                             <button
                               type="button"
                               onClick={() => setSelectedServerVmid(null)}
                               className="inline-flex items-center gap-1.5 text-xs text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white font-medium transition-colors cursor-pointer"
                             >
                               <ArrowLeft className="h-4 w-4" />
-                              <span>กลับสู่ Server Hub (หน้ารวมเซิร์ฟเวอร์)</span>
+                              <span className="sm:hidden">กลับสู่หน้ารวม</span>
+                              <span className="hidden sm:inline">กลับสู่ Server Hub (หน้ารวมเซิร์ฟเวอร์)</span>
                             </button>
 
                             <div className="text-[11px] text-zinc-400 font-mono">
-                              CT ID: {selectedServer.vmid}
+                              CT {selectedServer.vmid}
                             </div>
                           </div>
 
                           {/* Server Workspace Header Banner - Clean Monochrome Bar */}
-                          <div className="border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-zinc-900 p-4 sm:p-4.5 shadow-xs">
-                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                              <div className="flex items-center gap-3">
+                          <div className="border-0 sm:border border-zinc-200 dark:border-zinc-800 rounded-none sm:rounded-xl bg-transparent sm:bg-white dark:sm:bg-zinc-900 p-1 sm:p-4 shadow-none sm:shadow-xs">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3">
+                              <div className="flex items-center gap-2.5 sm:gap-3">
                                 <div className="shrink-0">
-                                  {renderOSLogo(selectedServer.osKey, 'h-10 w-10')}
+                                  {renderOSLogo(selectedServer.osKey, 'h-7 w-7 sm:h-10 sm:w-10')}
                                 </div>
                                 <div>
-                                  <div className="flex items-center gap-2">
-                                    <h2 className="font-bold text-base text-zinc-900 dark:text-white">
+                                  <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                                    <h2 className="font-bold text-sm sm:text-base text-zinc-900 dark:text-white">
                                       {selectedServer.name}
                                     </h2>
-                                    <span className="font-mono text-[10px] text-zinc-500 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded border border-zinc-200 dark:border-zinc-700">
+                                    <span className="font-mono text-[9px] sm:text-[10px] text-zinc-500 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded border border-zinc-200 dark:border-zinc-700">
                                       CT {selectedServer.vmid}
                                     </span>
                                     <span
-                                      className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-medium border ${
+                                      className={`inline-flex items-center gap-1 px-1.5 sm:px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-medium border ${
                                         isRunning
                                           ? 'bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 border-zinc-200 dark:border-zinc-700'
                                           : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 border-zinc-200 dark:border-zinc-700'
@@ -2544,43 +2553,37 @@ Payload:
                                       {isRunning ? 'Online' : 'Stopped'}
                                     </span>
                                     {isRunning && liveStats?.running && (
-                                      <>
-                                        <span className="hidden sm:inline-flex items-center gap-1 font-mono text-[10px] text-zinc-600 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded border border-zinc-200 dark:border-zinc-700">
-                                          CPU: {liveStats.cpuPercent}%
-                                        </span>
-                                        <span className="hidden sm:inline-flex items-center gap-1 font-mono text-[10px] text-zinc-600 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded border border-zinc-200 dark:border-zinc-700">
-                                          RAM: {liveStats.memPercent}%
-                                        </span>
-                                      </>
+                                      <span className="inline-flex items-center gap-1 font-mono text-[10px] text-zinc-600 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded border border-zinc-200 dark:border-zinc-700">
+                                        CPU: {liveStats.cpuPercent}% | RAM: {liveStats.memPercent}%
+                                      </span>
                                     )}
                                   </div>
                                   <div className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5 flex items-center gap-2">
-                                    <span>{selectedServer.os}</span>
-                                    <span>•</span>
+                                    <span className="hidden sm:inline">{selectedServer.os} • </span>
                                     <span>IP: <code className="font-mono font-semibold text-zinc-800 dark:text-zinc-200">{selectedServer.ip}</code></span>
                                   </div>
                                 </div>
                               </div>
 
                               {/* Quick Power Controls (Monochrome Black & White) */}
-                              <div className="flex items-center gap-2 self-start sm:self-center">
+                              <div className="flex items-center gap-1.5 sm:gap-2 self-start sm:self-center">
                                 <Button
                                   size="sm"
                                   variant={isRunning ? 'outline' : 'default'}
                                   onClick={() => handleTogglePower(selectedServer.vmid)}
-                                  className={`h-8 text-xs cursor-pointer ${
+                                  className={`h-7 sm:h-8 px-2 sm:px-3 text-xs cursor-pointer ${
                                     !isRunning ? 'bg-zinc-900 hover:bg-zinc-800 text-white dark:bg-white dark:hover:bg-zinc-200 dark:text-zinc-900' : ''
                                   }`}
                                   title={isRunning ? 'ปิดเครื่อง' : 'เปิดเครื่อง'}
                                 >
                                   {isRunning ? (
                                     <>
-                                      <Square className="h-3 w-3 mr-1 text-red-500 fill-current" />
-                                      <span>ปิดเครื่อง</span>
+                                      <Square className="h-3 w-3 sm:mr-1 text-red-500 fill-current" />
+                                      <span className="hidden sm:inline">ปิดเครื่อง</span>
                                     </>
                                   ) : (
                                     <>
-                                      <Play className="h-3 w-3 mr-1 fill-current" />
+                                      <Play className="h-3 w-3 sm:mr-1 fill-current" />
                                       <span>เปิดเครื่อง</span>
                                     </>
                                   )}
@@ -2591,11 +2594,11 @@ Payload:
                                   variant="outline"
                                   disabled={!isRunning}
                                   onClick={() => handleReboot(selectedServer.vmid)}
-                                  className="h-8 text-xs cursor-pointer"
+                                  className="h-7 sm:h-8 px-2 sm:px-3 text-xs cursor-pointer"
                                   title="รีสตาร์ตเครื่อง"
                                 >
-                                  <RotateCw className="h-3 w-3 mr-1" />
-                                  <span>รีสตาร์ต</span>
+                                  <RotateCw className="h-3 w-3 sm:mr-1" />
+                                  <span className="hidden sm:inline">รีสตาร์ต</span>
                                 </Button>
 
                                 <Button
@@ -2606,7 +2609,7 @@ Payload:
                                     setTerminalServer(selectedServer)
                                     setTerminalMode(terminalMode === 'fullscreen' ? 'embedded' : 'fullscreen')
                                   }}
-                                  className="h-8 text-xs cursor-pointer hidden sm:inline-flex"
+                                  className="h-7 sm:h-8 px-2 sm:px-3 text-xs cursor-pointer hidden sm:inline-flex"
                                   title="ขยายคอนโซลเต็มหน้าจอ"
                                 >
                                   <Terminal className="h-3 w-3 mr-1" />
@@ -2618,11 +2621,11 @@ Payload:
                                     size="sm"
                                     variant="outline"
                                     onClick={() => handleDestroyServer(selectedServer.vmid)}
-                                    className="h-8 text-xs cursor-pointer text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/30 border-red-200 dark:border-red-900/50"
+                                    className="h-7 sm:h-8 px-2 sm:px-3 text-xs cursor-pointer text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/30 border-red-200 dark:border-red-900/50"
                                     title="ลบเครื่องเซิร์ฟเวอร์ (Admin Only)"
                                   >
-                                    <Trash2 className="h-3 w-3 mr-1" />
-                                    <span>ลบเครื่อง</span>
+                                    <Trash2 className="h-3 w-3 sm:mr-1" />
+                                    <span className="hidden sm:inline">ลบเครื่อง</span>
                                   </Button>
                                 )}
                               </div>
@@ -2630,13 +2633,13 @@ Payload:
                           </div>
 
                           {/* 2-COLUMN DEDICATED WORKSPACE: Left = Large Console, Right = Controls & Specs */}
-                          <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:items-stretch">
+                          <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-5 lg:items-stretch">
                             {/* LEFT COLUMN: Large Dedicated Web Console (8 cols / ~67% width) */}
                             <div className="lg:col-span-8 flex flex-col min-h-0">
                               {!isRunning ? (
-                                <div className="p-12 text-center border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-zinc-900 space-y-4">
-                                  <div className="h-12 w-12 rounded-xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-zinc-500 mx-auto">
-                                    <Square className="h-5 w-5 text-zinc-400" />
+                                <div className="p-6 sm:p-12 text-center border-0 sm:border border-zinc-200 dark:border-zinc-800 rounded-none sm:rounded-xl bg-zinc-50/50 sm:bg-white dark:bg-zinc-900/40 dark:sm:bg-zinc-900 space-y-3 sm:space-y-4">
+                                  <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-zinc-500 mx-auto">
+                                    <Square className="h-4 w-4 sm:h-5 sm:w-5 text-zinc-400" />
                                   </div>
                                   <div className="space-y-1">
                                     <h3 className="text-sm font-semibold text-zinc-900 dark:text-white">
@@ -2649,7 +2652,7 @@ Payload:
                                   <Button
                                     size="sm"
                                     onClick={() => handleTogglePower(selectedServer.vmid)}
-                                    className="h-9 px-4 text-xs bg-zinc-900 hover:bg-zinc-800 text-white dark:bg-white dark:hover:bg-zinc-200 dark:text-zinc-900 cursor-pointer inline-flex items-center gap-1.5 rounded-lg shadow-xs"
+                                    className="h-8 sm:h-9 px-3 sm:px-4 text-xs bg-zinc-900 hover:bg-zinc-800 text-white dark:bg-white dark:hover:bg-zinc-200 dark:text-zinc-900 cursor-pointer inline-flex items-center gap-1.5 rounded-lg shadow-xs"
                                   >
                                     <Play className="h-3.5 w-3.5 fill-current" />
                                     <span>เปิดเครื่องเซิร์ฟเวอร์</span>
@@ -2667,15 +2670,15 @@ Payload:
                                       setSelectedServerVmid(null)
                                     }
                                   }}
-                                  className="h-full flex-1 min-h-[580px]"
+                                  className="h-[65vh] sm:h-full flex-1 min-h-[380px] sm:min-h-[580px]"
                                 />
                               )}
                             </div>
 
                             {/* RIGHT COLUMN: Credentials, SSH Bastion & Specs (4 cols / ~33% width) */}
-                            <div className="lg:col-span-4 flex flex-col justify-between gap-4">
+                            <div className="lg:col-span-4 flex flex-col justify-between gap-3 sm:gap-4">
                               {/* 1. Root Credentials Card */}
-                              <div className="p-4 bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 space-y-3 shadow-xs text-xs">
+                              <div className="p-3 sm:p-4 bg-zinc-50/50 sm:bg-white dark:bg-zinc-900/40 dark:sm:bg-zinc-900 rounded-none sm:rounded-xl border-0 sm:border border-zinc-200 dark:border-zinc-800 space-y-2.5 sm:space-y-3 shadow-none sm:shadow-xs text-xs">
                                 <div className="flex items-center justify-between pb-2 border-b border-zinc-100 dark:border-zinc-800">
                                   <div className="flex items-center gap-2 font-semibold text-zinc-900 dark:text-white">
                                     <Key className="h-4 w-4 text-zinc-600 dark:text-zinc-300" />
@@ -2686,7 +2689,7 @@ Payload:
 
                                 <div className="space-y-2.5">
                                   {/* Username */}
-                                  <div className="p-2.5 rounded-lg bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
+                                  <div className="p-2.5 rounded-lg bg-white sm:bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
                                     <div className="space-y-0.5">
                                       <div className="text-[10px] text-zinc-400">Username</div>
                                       <code className="font-mono font-bold text-zinc-900 dark:text-white text-xs">root</code>
@@ -2707,7 +2710,7 @@ Payload:
                                   </div>
 
                                   {/* Password */}
-                                  <div className="p-2.5 rounded-lg bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
+                                  <div className="p-2.5 rounded-lg bg-white sm:bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
                                     <div className="space-y-0.5 min-w-0 pr-2">
                                       <div className="text-[10px] text-zinc-400">Password</div>
                                       <code className="font-mono text-zinc-900 dark:text-white text-xs truncate block">
@@ -2759,7 +2762,7 @@ Payload:
                               </div>
 
                               {/* 2. SSH Bastion Access Card */}
-                              <div className="p-4 bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 space-y-3 shadow-xs text-xs">
+                              <div className="p-3 sm:p-4 bg-zinc-50/50 sm:bg-white dark:bg-zinc-900/40 dark:sm:bg-zinc-900 rounded-none sm:rounded-xl border-0 sm:border border-zinc-200 dark:border-zinc-800 space-y-2.5 sm:space-y-3 shadow-none sm:shadow-xs text-xs">
                                 <div className="flex items-center justify-between pb-2 border-b border-zinc-100 dark:border-zinc-800">
                                   <div className="flex items-center gap-2 font-semibold text-zinc-900 dark:text-white">
                                     <Globe className="h-4 w-4 text-zinc-600 dark:text-zinc-300" />
@@ -2768,7 +2771,7 @@ Payload:
                                   <span className="text-[10px] text-zinc-400 font-mono">Port 10000</span>
                                 </div>
 
-                                <div className="p-2.5 bg-zinc-50 dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 flex items-center justify-between gap-2">
+                                <div className="p-2.5 bg-white sm:bg-zinc-50 dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 flex items-center justify-between gap-2">
                                   <code className="font-mono text-zinc-800 dark:text-zinc-200 text-[11px] select-all break-all">
                                     ssh {selectedServer.studentId}@techniccom.tail59415d.ts.net -p 10000
                                   </code>
@@ -2791,7 +2794,7 @@ Payload:
                                   </Button>
                                 </div>
 
-                                <div className="p-2.5 bg-zinc-50 dark:bg-zinc-900/50 rounded-lg border border-zinc-200/80 dark:border-zinc-800 text-[11px] text-zinc-500 dark:text-zinc-400 space-y-1">
+                                <div className="hidden sm:block p-2.5 bg-zinc-50 dark:bg-zinc-900/50 rounded-lg border border-zinc-200/80 dark:border-zinc-800 text-[11px] text-zinc-500 dark:text-zinc-400 space-y-1">
                                   <div className="font-medium text-zinc-800 dark:text-zinc-200">VS Code Remote - SSH config:</div>
                                   <pre className="p-2 rounded bg-zinc-100 dark:bg-zinc-950 font-mono text-[10px] text-zinc-800 dark:text-zinc-300 overflow-x-auto leading-relaxed">
 {`Host lbtech-${selectedServer.name}
@@ -2803,7 +2806,7 @@ Payload:
                               </div>
 
                               {/* 3. Specs Details Card with Live Streaming Resource Stats */}
-                              <div className="p-4 bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 space-y-3 shadow-xs text-xs">
+                              <div className="p-3 sm:p-4 bg-zinc-50/50 sm:bg-white dark:bg-zinc-900/40 dark:sm:bg-zinc-900 rounded-none sm:rounded-xl border-0 sm:border border-zinc-200 dark:border-zinc-800 space-y-2.5 sm:space-y-3 shadow-none sm:shadow-xs text-xs">
                                 <div className="flex items-center justify-between pb-2 border-b border-zinc-100 dark:border-zinc-800">
                                   <div className="flex items-center gap-2 font-semibold text-zinc-900 dark:text-white">
                                     <Cpu className="h-4 w-4 text-zinc-600 dark:text-zinc-300" />
@@ -2885,14 +2888,14 @@ Payload:
                                     </div>
                                   )}
 
-                                  {/* IP */}
-                                  <div className="py-2 flex items-center justify-between">
+                                  {/* IP (Hidden on mobile as it is in banner) */}
+                                  <div className="hidden sm:flex py-2 items-center justify-between">
                                     <span className="text-zinc-500 dark:text-zinc-400">IP ภายในวิทยาลัย</span>
                                     <code className="font-mono text-zinc-900 dark:text-white font-semibold">{selectedServer.ip}</code>
                                   </div>
 
-                                  {/* Uptime */}
-                                  <div className="py-2 flex items-center justify-between">
+                                  {/* Uptime (Hidden on mobile to save space) */}
+                                  <div className="hidden sm:flex py-2 items-center justify-between">
                                     <span className="text-zinc-500 dark:text-zinc-400">เวลาทำงาน (Uptime)</span>
                                     <span className="font-mono text-zinc-900 dark:text-white">{isRunning ? selectedServer.uptime || 'กำลังทำงาน' : 'ปิดอยู่'}</span>
                                   </div>
@@ -3067,20 +3070,20 @@ Payload:
                           </Button>
                         </div>
                       ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                           {studentActiveServers.map((server) => {
                             const isRunning = server.status === 'running'
                             return (
                               <div
                                 key={server.vmid}
-                                className="border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-zinc-900 p-4 sm:p-5 shadow-xs flex flex-col justify-between space-y-4 transition-all hover:border-zinc-300 dark:hover:border-zinc-700"
+                                className="border-0 sm:border border-zinc-200 dark:border-zinc-800 rounded-lg sm:rounded-xl bg-zinc-50/60 sm:bg-white dark:bg-zinc-900/50 dark:sm:bg-zinc-900 p-3 sm:p-5 shadow-none sm:shadow-xs flex flex-col justify-between space-y-3 sm:space-y-4 transition-all hover:border-zinc-300 dark:hover:border-zinc-700"
                               >
-                                <div className="space-y-3">
+                                <div className="space-y-2.5 sm:space-y-3">
                                   {/* Card Top: Logo, Name, Status */}
                                   <div className="flex items-start justify-between gap-2">
-                                    <div className="flex items-center gap-3">
+                                    <div className="flex items-center gap-2.5 sm:gap-3">
                                       <div className="shrink-0">
-                                        {renderOSLogo(server.osKey, 'h-9 w-9')}
+                                        {renderOSLogo(server.osKey, 'h-8 w-8 sm:h-9 sm:w-9')}
                                       </div>
                                       <div>
                                         <div className="flex items-center gap-2">
@@ -3111,33 +3114,23 @@ Payload:
                                       />
                                       {isRunning ? 'Online' : 'Stopped'}
                                     </span>
-                                    {isRunning && liveStats?.running && (
-                                      <>
-                                        <span className="hidden sm:inline-flex items-center gap-1 font-mono text-[10px] text-zinc-600 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded border border-zinc-200 dark:border-zinc-700">
-                                          CPU: {liveStats.cpuPercent}%
-                                        </span>
-                                        <span className="hidden sm:inline-flex items-center gap-1 font-mono text-[10px] text-zinc-600 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded border border-zinc-200 dark:border-zinc-700">
-                                          RAM: {liveStats.memPercent}%
-                                        </span>
-                                      </>
-                                    )}
                                   </div>
 
                                   {/* Specs Chips */}
-                                  <div className="grid grid-cols-3 gap-2 text-xs">
-                                    <div className="p-2 rounded-lg bg-zinc-50 dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 text-center">
+                                  <div className="grid grid-cols-3 gap-1.5 sm:gap-2 text-xs">
+                                    <div className="p-1.5 sm:p-2 rounded-lg bg-white sm:bg-zinc-50 dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 text-center">
                                       <div className="text-[10px] text-zinc-400">vCPU</div>
                                       <div className="font-mono font-semibold text-zinc-900 dark:text-white text-xs mt-0.5">
                                         {server.vcpu} Core
                                       </div>
                                     </div>
-                                    <div className="p-2 rounded-lg bg-zinc-50 dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 text-center">
+                                    <div className="p-1.5 sm:p-2 rounded-lg bg-white sm:bg-zinc-50 dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 text-center">
                                       <div className="text-[10px] text-zinc-400">RAM</div>
                                       <div className="font-mono font-semibold text-zinc-900 dark:text-white text-xs mt-0.5">
                                         {server.ram} MB
                                       </div>
                                     </div>
-                                    <div className="p-2 rounded-lg bg-zinc-50 dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 text-center">
+                                    <div className="p-1.5 sm:p-2 rounded-lg bg-white sm:bg-zinc-50 dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 text-center">
                                       <div className="text-[10px] text-zinc-400">SSD</div>
                                       <div className="font-mono font-semibold text-zinc-900 dark:text-white text-xs mt-0.5">
                                         {server.disk} GB
@@ -3152,7 +3145,7 @@ Payload:
                                 </div>
 
                                 {/* Card Bottom Actions */}
-                                <div className="pt-3 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-between gap-2">
+                                <div className="pt-2.5 sm:pt-3 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-between gap-2">
                                   <div className="flex items-center gap-1.5">
                                     <Button
                                       size="sm"
@@ -3203,7 +3196,7 @@ Payload:
                                       setTerminalServer(server)
                                       setTerminalMode('embedded')
                                     }}
-                                    className="h-8 text-xs px-3.5 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 hover:bg-zinc-800 dark:hover:bg-zinc-200 font-semibold cursor-pointer shadow-2xs inline-flex items-center gap-1.5"
+                                    className="h-8 text-xs px-2.5 sm:px-3.5 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 hover:bg-zinc-800 dark:hover:bg-zinc-200 font-semibold cursor-pointer shadow-2xs inline-flex items-center gap-1 sm:gap-1.5"
                                   >
                                     <Terminal className="h-3.5 w-3.5" />
                                     <span>เข้าทำงานในเครื่อง</span>

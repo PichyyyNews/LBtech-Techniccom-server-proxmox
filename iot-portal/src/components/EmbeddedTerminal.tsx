@@ -68,13 +68,14 @@ export function EmbeddedTerminal({
       xtermInstance.current = null
     }
 
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 640
     const term = new XTerm({
       cursorBlink: true,
       cursorStyle: 'block',
-      fontSize: 13,
+      fontSize: isMobile ? 11 : 13,
       fontFamily: 'Menlo, Monaco, "Courier New", monospace, "Noto Sans Thai"',
       letterSpacing: 0.5,
-      lineHeight: 1.25,
+      lineHeight: isMobile ? 1.2 : 1.25,
       theme: {
         background: '#0d1117',
         foreground: '#e6edf3',
@@ -292,24 +293,24 @@ export function EmbeddedTerminal({
   // FULLSCREEN OR EMBEDDED CONTAINER STYLES
   const containerClasses = mode === 'fullscreen'
     ? 'fixed inset-0 z-50 bg-[#0d1117] flex flex-col'
-    : `border border-zinc-800 rounded-xl overflow-hidden bg-[#0d1117] shadow-xs flex flex-col w-full ${className || 'h-full min-h-[580px]'}`
+    : `border-0 sm:border border-zinc-800 rounded-none sm:rounded-xl overflow-hidden bg-[#0d1117] shadow-none sm:shadow-xs flex flex-col w-full ${className || 'h-[65vh] sm:h-full min-h-[380px] sm:min-h-[580px]'}`
 
   const terminalHeight = mode === 'fullscreen'
     ? 'flex-1 h-full'
-    : 'flex-1 w-full min-h-[460px]'
+    : 'flex-1 w-full min-h-[340px] sm:min-h-[460px]'
 
   return (
     <div className={containerClasses}>
       {/* Top Header Bar - Clean Monochrome Engineering Grade */}
-      <div className="flex items-center justify-between px-3.5 py-2.5 bg-zinc-900 border-b border-zinc-800 text-xs">
-        <div className="flex items-center gap-2.5">
-          <div className="flex items-center gap-2 font-mono">
-            <Terminal className="h-3.5 w-3.5 text-zinc-400" />
-            <span className="font-semibold text-zinc-100 tracking-tight">{server.name}</span>
+      <div className="flex items-center justify-between px-2.5 sm:px-3.5 py-1.5 sm:py-2.5 bg-zinc-900 border-b border-zinc-800 text-xs">
+        <div className="flex items-center gap-1.5 sm:gap-2.5 min-w-0">
+          <div className="flex items-center gap-1.5 sm:gap-2 font-mono min-w-0">
+            <Terminal className="h-3.5 w-3.5 text-zinc-400 shrink-0" />
+            <span className="font-semibold text-zinc-100 tracking-tight truncate max-w-[110px] sm:max-w-none">{server.name}</span>
             <span className="text-[11px] text-zinc-400 hidden md:inline">({server.os})</span>
           </div>
 
-          <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-medium ${
+          <span className={`inline-flex items-center gap-1 px-1.5 sm:px-2 py-0.5 rounded text-[9px] sm:text-[10px] font-medium shrink-0 ${
             connStatus === 'connected'
               ? 'bg-zinc-800 text-zinc-200 border border-zinc-700'
               : connStatus === 'connecting'
@@ -322,12 +323,12 @@ export function EmbeddedTerminal({
         </div>
 
         {/* Window Controls */}
-        <div className="flex items-center gap-1 text-zinc-400">
+        <div className="flex items-center gap-0.5 sm:gap-1 text-zinc-400 shrink-0">
           {/* Reconnect */}
           <button
             type="button"
             onClick={connectTerminal}
-            className="p-1.5 rounded-md text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/80 transition-colors cursor-pointer"
+            className="p-1 sm:p-1.5 rounded-md text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/80 transition-colors cursor-pointer"
             title="รีคอนเน็กต์ (Reconnect)"
           >
             <RotateCw className="h-3.5 w-3.5" />
@@ -347,7 +348,7 @@ export function EmbeddedTerminal({
           <button
             type="button"
             onClick={() => onModeChange('minimized')}
-            className="p-1.5 rounded-md text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/80 transition-colors cursor-pointer"
+            className="p-1.5 rounded-md text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/80 transition-colors cursor-pointer hidden sm:inline-flex"
             title="ย่อขนาดเก็บไว้ที่แถบล่าง (Minimize)"
           >
             <Minimize2 className="h-3.5 w-3.5" />
@@ -357,7 +358,7 @@ export function EmbeddedTerminal({
           <button
             type="button"
             onClick={() => onModeChange(mode === 'fullscreen' ? 'embedded' : 'fullscreen')}
-            className="p-1.5 rounded-md text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/80 transition-colors cursor-pointer"
+            className="p-1 sm:p-1.5 rounded-md text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/80 transition-colors cursor-pointer"
             title={mode === 'fullscreen' ? 'คืนค่าขนาดเดิม' : 'ขยายเต็มหน้าจอ (Full Screen)'}
           >
             <Maximize2 className="h-3.5 w-3.5" />
@@ -367,7 +368,7 @@ export function EmbeddedTerminal({
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-md text-zinc-400 hover:text-red-400 hover:bg-zinc-800/80 transition-colors cursor-pointer ml-1"
+            className="p-1 sm:p-1.5 rounded-md text-zinc-400 hover:text-red-400 hover:bg-zinc-800/80 transition-colors cursor-pointer ml-0.5 sm:ml-1"
             title="ปิดคอนโซล"
           >
             <X className="h-3.5 w-3.5" />
@@ -378,8 +379,8 @@ export function EmbeddedTerminal({
       {/* Terminal Canvas */}
       <div
         ref={terminalRef}
-        className={`${terminalHeight} p-2 bg-[#0d1117] overflow-hidden`}
-        style={{ minHeight: '280px' }}
+        className={`${terminalHeight} p-1 sm:p-2 bg-[#0d1117] overflow-hidden`}
+        style={{ minHeight: '320px' }}
       />
     </div>
   )
