@@ -242,3 +242,10 @@ node scratch/deploy_all.cjs
 - หากการเชื่อมต่อหลุด ระบบจะกู้คืนเซสชันใหม่อัตโนมัติใน 3 วินาทีโดยไม่สูญเสียประวัติหน้าจอ xterm
 - หน้าต่าง Popout Terminal อิสระรองรับที่ `/terminal/:vmid` และ `#/terminal/:vmid` แสดงผลเต็มหน้าต่างทันที
 
+### 4.7 ระบบ Subdomain ประจำกลุ่ม (Single-Level Subdomain)
+- **รูปแบบ:** `https://<studentId>.pichyy.qzz.io` (เช่น `https://69123456789.pichyy.qzz.io`)
+- **Cloudflare Tunnel Routing:** โฮสต์กำหนด Ingress `*.pichyy.qzz.io` ชี้เข้าสู่ `http://10.10.10.108:3000`
+- **Nginx Ingress:** Regex `~^(?<std_id>[0-9a-zA-Z_-]+)\.pichyy\.qzz\.io$` ส่งต่อเข้าสู่ `/api/preview/$std_id$request_uri`
+- **การตั้งค่าใน Cloudflare DNS:** เพิ่ม CNAME Name: `*` หรือ `<studentId>` ชี้ไปยัง `ae270dc3-cd44-46cb-abd6-3a409f94d423.cfargotunnel.com` (เปิด Proxied)
+
+
