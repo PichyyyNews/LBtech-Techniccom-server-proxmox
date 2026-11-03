@@ -461,6 +461,7 @@ export default function App() {
 
   // Web & Domain Management State
   const [selectedWebPort, setSelectedWebPort] = useState<number>(80)
+  const [starterWebLang, setStarterWebLang] = useState<'python' | 'node' | 'nginx'>('python')
   const [customDomainInput, setCustomDomainInput] = useState<string>('')
   const [isSavingDomain, setIsSavingDomain] = useState(false)
   const [domainSaveSuccess, setDomainSaveSuccess] = useState('')
@@ -3487,473 +3488,313 @@ Payload:
               {/* TAB: DOMAINS & WEB HOSTING */}
               {activeTab === 'domains' && (
                 <div className="space-y-6">
+                  {/* Header */}
                   <div>
-                    <div className="flex items-center gap-2">
-                      <div className="h-7 w-7 rounded-lg bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 flex items-center justify-center">
-                        <Globe className="h-4 w-4" />
-                      </div>
-                      <h1 className="text-lg sm:text-xl font-bold tracking-tight text-zinc-900 dark:text-white">
-                        โดเมนและเว็บไซต์ (Web & Domain Hosting)
-                      </h1>
-                    </div>
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1.5 leading-relaxed">
-                      จัดการการเปิดหน้าเว็บส่วนตัว ผูกซับโดเมนวิทยาลัยฟรี หรือผูก Custom Domain ของตนเอง พร้อมตรวจสอบสถานะการออกอินเทอร์เน็ตของคอนเทนเนอร์
+                    <h1 className="text-lg font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
+                      โดเมนและเว็บไซต์
+                    </h1>
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+                      กำหนดค่าโดเมนประจำกลุ่ม พอร์ตของเว็บเซิร์ฟเวอร์ และการเชื่อมต่อภายนอก
                     </p>
                   </div>
 
                   {domainSaveSuccess && (
-                    <div className="p-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-xs text-emerald-700 dark:text-emerald-300 flex items-center gap-2 animate-in fade-in">
-                      <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" />
+                    <div className="p-3 rounded-lg bg-zinc-100 dark:bg-zinc-800 text-xs text-zinc-800 dark:text-zinc-200 flex items-center gap-2">
+                      <Check className="h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
                       <span>{domainSaveSuccess}</span>
                     </div>
                   )}
 
-                  {/* 1. OUTBOUND INTERNET STATUS */}
-                  <div id="sec-outbound-status" className="border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-zinc-900 p-4 sm:p-5 shadow-xs space-y-4">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-zinc-100 dark:border-zinc-800 pb-3">
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                          <h3 className="font-semibold text-sm text-zinc-900 dark:text-zinc-100">
-                            1. สถานะการออกอินเทอร์เน็ต (Outbound Internet Access)
-                          </h3>
-                        </div>
-                        <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
-                          คอนเทนเนอร์ทุกเครื่องเชื่อมต่อออกสู่อินเทอร์เน็ตภายนอกได้โดยตรงผ่าน Docker Bridge NAT
-                        </p>
-                      </div>
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 self-start sm:self-auto">
-                        <Check className="h-3 w-3" />
-                        <span>เชื่อมต่อเน็ตได้ปกติ</span>
-                      </span>
+                  {studentActiveServers.length === 0 ? (
+                    <div className="border border-zinc-200 dark:border-zinc-800 rounded-xl p-8 text-center text-xs text-zinc-500">
+                      ยังไม่มีเครื่องเซิร์ฟเวอร์ กรุณาขอเครื่องในเมนู{' '}
+                      <button
+                        type="button"
+                        onClick={() => setActiveTab('ct-servers')}
+                        className="text-zinc-900 dark:text-zinc-100 underline font-medium cursor-pointer"
+                      >
+                        ขอเครื่องเซิร์ฟเวอร์
+                      </button>{' '}
+                      ก่อนเปิดใช้งานเว็บไซต์
                     </div>
+                  ) : (
+                    <div className="space-y-5">
+                      {studentActiveServers.map(server => {
+                        const stdId = server.studentId || session?.studentId || '69123456789'
+                        const primarySubdomain = `https://${stdId}.pichyy.qzz.io`
+                        const fallbackUrl = `https://iot.pichyy.qzz.io/preview/${stdId}/`
+                        const currentPort = selectedWebPort || server.webPort || 80
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2.5 text-xs">
-                      <div className="p-3 rounded-lg bg-zinc-50 dark:bg-zinc-950 border border-zinc-100 dark:border-zinc-800">
-                        <span className="text-[10px] text-zinc-400 font-medium block">DNS Server</span>
-                        <span className="font-mono font-semibold text-zinc-800 dark:text-zinc-200 text-xs mt-0.5 block">8.8.8.8</span>
-                        <span className="text-[10px] text-zinc-400">Google Public DNS</span>
-                      </div>
-                      <div className="p-3 rounded-lg bg-zinc-50 dark:bg-zinc-950 border border-zinc-100 dark:border-zinc-800">
-                        <span className="text-[10px] text-zinc-400 font-medium block">Default Gateway</span>
-                        <span className="font-mono font-semibold text-zinc-800 dark:text-zinc-200 text-xs mt-0.5 block">172.17.0.1</span>
-                        <span className="text-[10px] text-zinc-400">CT 108 Bridge Host</span>
-                      </div>
-                      <div className="p-3 rounded-lg bg-zinc-50 dark:bg-zinc-950 border border-zinc-100 dark:border-zinc-800">
-                        <span className="text-[10px] text-zinc-400 font-medium block">Package Managers</span>
-                        <span className="font-semibold text-emerald-600 dark:text-emerald-400 text-xs mt-0.5 block">apt, pip, npm, git</span>
-                        <span className="text-[10px] text-zinc-400">ดาวน์โหลดไลบรารีได้ทันที</span>
-                      </div>
-                      <div className="p-3 rounded-lg bg-zinc-50 dark:bg-zinc-950 border border-zinc-100 dark:border-zinc-800">
-                        <span className="text-[10px] text-zinc-400 font-medium block">Outbound Protocols</span>
-                        <span className="font-mono font-semibold text-zinc-800 dark:text-zinc-200 text-xs mt-0.5 block">HTTP / HTTPS / DNS</span>
-                        <span className="text-[10px] text-zinc-400">ไม่มีบล็อกพอร์ตออก</span>
-                      </div>
-                    </div>
-
-                    <div className="space-y-1.5 pt-1">
-                      <div className="flex items-center justify-between text-xs">
-                        <span className="text-zinc-600 dark:text-zinc-400 font-medium">คำสั่งทดสอบการออกเน็ตใน Terminal ของเครื่อง:</span>
-                        <button
-                          type="button"
-                          onClick={() => copyNetText('apt update && apt install -y curl && curl -I https://google.com', 'test_net_cmd')}
-                          className="text-[11px] text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 cursor-pointer inline-flex items-center gap-1"
-                        >
-                          {copiedNetKey === 'test_net_cmd' ? <Check className="h-3 w-3 text-emerald-600" /> : <Copy className="h-3 w-3" />}
-                          <span>{copiedNetKey === 'test_net_cmd' ? 'คัดลอกแล้ว' : 'คัดลอกคำสั่ง'}</span>
-                        </button>
-                      </div>
-                      <pre className="p-2.5 rounded-lg bg-zinc-100 dark:bg-zinc-950 font-mono text-[11px] text-zinc-800 dark:text-zinc-300 overflow-x-auto select-all">
-apt update && apt install -y curl && curl -I https://google.com
-                      </pre>
-                    </div>
-                  </div>
-
-                  {/* 2. FREE LBTECH SUBDOMAIN */}
-                  <div id="sec-subdomain" className="border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-zinc-900 p-4 sm:p-5 shadow-xs space-y-4">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-zinc-100 dark:border-zinc-800 pb-3">
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <Globe className="h-4 w-4 text-zinc-500" />
-                          <h3 className="font-semibold text-sm text-zinc-900 dark:text-zinc-100">
-                            2. ซับโดเมนฟรีของวิทยาลัย (LBTech Free Subdomain)
-                          </h3>
-                        </div>
-                        <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
-                          นักศึกษาทุกคนได้รับ Subdomain ประจำกลุ่มฟรี พร้อมระบบรักษาความปลอดภัย HTTPS / TLS
-                        </p>
-                      </div>
-                      <span className="text-xs font-mono font-semibold text-emerald-600 dark:text-emerald-400">
-                        HTTPS SSL Active
-                      </span>
-                    </div>
-
-                    {studentActiveServers.length === 0 ? (
-                      <div className="border border-dashed border-zinc-200 dark:border-zinc-800 rounded-xl p-6 text-center text-xs text-zinc-500">
-                        กรุณายื่นขอเครื่องเซิร์ฟเวอร์ในเมนู <button type="button" onClick={() => setActiveTab('ct-servers')} className="text-zinc-900 dark:text-zinc-100 underline font-semibold cursor-pointer">ขอเครื่องเซิร์ฟเวอร์ (Cloud CT)</button> ก่อน จึงจะสามารถเปิดใช้งานเว็บไซต์ได้
-                      </div>
-                    ) : (
-                      <div className="space-y-4">
-                        {studentActiveServers.map(server => {
-                          const stdId = server.studentId || session?.studentId || '69123456789'
-                          const instantUrl = `https://iot.pichyy.qzz.io/preview/${stdId}/`
-                          const subdomainUrl = `https://${stdId}.iot.pichyy.qzz.io`
-                          const currentPort = selectedWebPort || server.webPort || 80
-
-                          const starterHtmlCode = `mkdir -p /workspace/www && cat << 'EOF' > /workspace/www/index.html
+                        const pyStarterCode = `mkdir -p /workspace/www && cat << 'EOF' > /workspace/www/index.html
 <!DOCTYPE html>
 <html lang="th">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LBTech IoT Web Dashboard - ${stdId}</title>
+  <title>IoT Node - ${stdId}</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-zinc-950 text-zinc-100 min-h-screen flex flex-col font-sans">
-  <header class="border-b border-zinc-800 bg-zinc-900/60 backdrop-blur px-6 py-4 flex items-center justify-between">
-    <div class="flex items-center gap-3">
-      <div class="h-8 w-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-xs tracking-wider">IoT</div>
+  <header class="border-b border-zinc-800 px-6 py-4 flex items-center justify-between">
+    <div class="flex items-center gap-2.5">
+      <div class="h-7 w-7 rounded-md bg-zinc-800 text-zinc-200 flex items-center justify-center font-semibold text-xs">IoT</div>
       <div>
-        <h1 class="font-semibold text-sm sm:text-base">LBTech IoT Project Node</h1>
-        <p class="text-xs text-zinc-400">ID: ${stdId} • Container Web Server</p>
+        <h1 class="font-medium text-sm">IoT Project Node</h1>
+        <p class="text-xs text-zinc-400">ID: ${stdId}</p>
       </div>
     </div>
-    <div class="flex items-center gap-2">
-      <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-        <span class="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-        Online
-      </span>
-      <span id="clock" class="text-xs text-zinc-400 font-mono">00:00:00</span>
-    </div>
+    <span id="clock" class="text-xs text-zinc-400 font-mono">00:00:00</span>
   </header>
-  <main class="flex-1 p-6 max-w-5xl mx-auto w-full space-y-6">
-    <div class="p-6 rounded-xl border border-zinc-800 bg-zinc-900/40">
-      <h2 class="text-lg font-semibold mb-1">🎉 ยินดีต้อนรับสู่เว็บเซิร์ฟเวอร์ IoT ของคุณ!</h2>
-      <p class="text-sm text-zinc-400">หน้าเว็บนี้ถูกสร้างขึ้นสำเร็จจากคอนเทนเนอร์ของคุณ และพร้อมให้นำไปต่อยอดแสดงผลข้อมูลเซนเซอร์ผ่าน MQTT หรือ REST API</p>
+  <main class="flex-1 p-6 max-w-4xl mx-auto w-full space-y-4">
+    <div class="p-5 rounded-lg border border-zinc-800 bg-zinc-900/40">
+      <h2 class="text-sm font-medium mb-1">ยินดีต้อนรับสู่เว็บเซิร์ฟเวอร์ของคุณ</h2>
+      <p class="text-xs text-zinc-400">หน้าเว็บพร้อมสำหรับการพัฒนาเชื่อมต่อ MQTT หรือ REST API</p>
     </div>
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-      <div class="p-4 rounded-xl border border-zinc-800 bg-zinc-900/30">
-        <div class="text-xs text-zinc-400 font-medium">เซนเซอร์อุณหภูมิ (Temp)</div>
-        <div class="text-2xl font-bold mt-2 text-emerald-400">28.4 °C</div>
-        <div class="text-[11px] text-zinc-500 mt-1">อัปเดตแบบเรียลไทม์</div>
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      <div class="p-4 rounded-lg border border-zinc-800 bg-zinc-900/30">
+        <div class="text-xs text-zinc-400">อุณหภูมิ</div>
+        <div class="text-xl font-semibold mt-1 text-zinc-100">28.4 °C</div>
       </div>
-      <div class="p-4 rounded-xl border border-zinc-800 bg-zinc-900/30">
-        <div class="text-xs text-zinc-400 font-medium">ความชื้นสัมพัทธ์ (Humidity)</div>
-        <div class="text-2xl font-bold mt-2 text-sky-400">62.0 %</div>
-        <div class="text-[11px] text-zinc-500 mt-1">อัปเดตแบบเรียลไทม์</div>
+      <div class="p-4 rounded-lg border border-zinc-800 bg-zinc-900/30">
+        <div class="text-xs text-zinc-400">ความชื้น</div>
+        <div class="text-xl font-semibold mt-1 text-zinc-100">62.0 %</div>
       </div>
-      <div class="p-4 rounded-xl border border-zinc-800 bg-zinc-900/30">
-        <div class="text-xs text-zinc-400 font-medium">สถานะรีเลย์ (Relay Status)</div>
-        <div class="text-2xl font-bold mt-2 text-amber-400">Active (ON)</div>
-        <div class="text-[11px] text-zinc-500 mt-1">GPIO 2 (ESP32)</div>
+      <div class="p-4 rounded-lg border border-zinc-800 bg-zinc-900/30">
+        <div class="text-xs text-zinc-400">สถานะรีเลย์</div>
+        <div class="text-xl font-semibold mt-1 text-zinc-100">Active (ON)</div>
       </div>
     </div>
   </main>
   <script>
-    function updateClock() {
-      document.getElementById('clock').textContent = new Date().toLocaleTimeString('th-TH');
-    }
+    function updateClock() { document.getElementById('clock').textContent = new Date().toLocaleTimeString('th-TH'); }
     setInterval(updateClock, 1000); updateClock();
   </script>
 </body>
 </html>
 EOF
 python3 -m http.server ${currentPort} --directory /workspace/www > /workspace/www/web.log 2>&1 &
-echo -e "\n\\e[32m[OK] เว็บไซต์เริ่มต้นทำงานแล้วบนพอร์ต ${currentPort}! เปิดดูได้ทันที\\e[0m"`
+echo "[OK] เว็บไซต์เริ่มทำงานแล้วบนพอร์ต ${currentPort}"`
 
-                          return (
-                            <div key={server.vmid} className="space-y-4 bg-zinc-50/60 dark:bg-zinc-950 p-4 rounded-xl border border-zinc-200 dark:border-zinc-800">
-                              {/* INSTANT LIVE URL (PATH BASED - 100% GUARANTEED) */}
-                              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-lg bg-emerald-500/5 dark:bg-emerald-500/10 border border-emerald-500/20">
+                        const nodeStarterCode = `mkdir -p /workspace/app && cat << 'EOF' > /workspace/app/server.js
+const http = require('http');
+const server = http.createServer((req, res) => {
+  res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+  res.end('<h1>LBTech IoT Node</h1><p>Student ID: ${stdId}</p>');
+});
+server.listen(${currentPort}, () => console.log('Ready on port ${currentPort}'));
+EOF
+node /workspace/app/server.js > /workspace/app/web.log 2>&1 &
+echo "[OK] Node.js server เริ่มทำงานแล้วบนพอร์ต ${currentPort}"`
+
+                        const nginxStarterCode = `apt update && apt install -y nginx
+echo "<h1>LBTech IoT Node (${stdId})</h1>" > /var/www/html/index.html
+service nginx restart`
+
+                        const activeCode = starterWebLang === 'python'
+                          ? pyStarterCode
+                          : starterWebLang === 'node'
+                            ? nodeStarterCode
+                            : nginxStarterCode
+
+                        return (
+                          <div key={server.vmid} className="space-y-4">
+                            {/* Card 1: Domain and Access */}
+                            <div className="border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-zinc-900 p-5 space-y-4">
+                              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-zinc-100 dark:border-zinc-800">
                                 <div>
-                                  <div className="flex items-center gap-1.5">
-                                    <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                                    <span className="text-[11px] font-semibold text-emerald-800 dark:text-emerald-300">
-                                      URL เปิดเว็บทันที (Instant Live Preview - 100% พร้อมใช้งาน):
-                                    </span>
+                                  <div className="text-xs font-medium text-zinc-900 dark:text-zinc-100">
+                                    โดเมนประจำกลุ่ม
                                   </div>
-                                  <div className="flex items-center gap-2 mt-1">
-                                    <code className="font-mono text-sm font-bold text-zinc-900 dark:text-white select-all">
-                                      {instantUrl}
-                                    </code>
-                                    <button
-                                      type="button"
-                                      onClick={() => copyNetText(instantUrl, `instant_url_${server.vmid}`)}
-                                      className="p-1 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 cursor-pointer"
-                                      title="คัดลอก URL"
-                                    >
-                                      {copiedNetKey === `instant_url_${server.vmid}` ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
-                                    </button>
-                                  </div>
-                                  <div className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-0.5">
-                                    ✓ ไม่ต้องตั้งค่า DNS ใช้งานได้ทันทีแม้ยังไม่ผูกโดเมน หากเว็บยังไม่เริ่มทำงานจะมีหน้า Fallback แนะนำคำสั่ง
+                                  <div className="text-[11px] text-zinc-500 mt-0.5">
+                                    เข้าชมหน้าเว็บที่รันอยู่ในคอนเทนเนอร์
                                   </div>
                                 </div>
-
-                                <a
-                                  href={instantUrl}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-xs transition-all shrink-0 cursor-pointer"
-                                >
-                                  <span>เปิดเว็บไซต์ทันที</span>
-                                  <ExternalLink className="h-3.5 w-3.5" />
-                                </a>
-                              </div>
-
-                              {/* SUBDOMAIN OPTION */}
-                              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-1 text-xs text-zinc-500">
                                 <div className="flex items-center gap-2">
-                                  <span>ซับโดเมนตามชื่อกลุ่ม:</span>
-                                  <code className="font-mono text-zinc-700 dark:text-zinc-300">{subdomainUrl}</code>
+                                  <a
+                                    href={primarySubdomain}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 text-xs font-medium cursor-pointer hover:bg-zinc-800 dark:hover:bg-zinc-200"
+                                  >
+                                    <span>เปิดเว็บไซต์</span>
+                                    <ExternalLink className="h-3.5 w-3.5" />
+                                  </a>
                                 </div>
-                                <span className="text-[10px] text-zinc-400">
-                                  (สำหรับใช้งานผ่าน DNS Wildcard / Cloudflare Tunnel)
-                                </span>
                               </div>
 
-                              {/* PORT SELECTOR */}
-                              <div className="pt-2 border-t border-zinc-200/60 dark:border-zinc-800/80 space-y-2">
-                                <label className="text-xs font-medium text-zinc-700 dark:text-zinc-300 block">
-                                  กำหนดพอร์ตของ Web Server ในเครื่องของคุณ (Target Port):
-                                </label>
-                                <div className="flex flex-wrap items-center gap-2">
-                                  {[
-                                    { port: 80, label: 'Port 80 (Nginx / Python)' },
-                                    { port: 3000, label: 'Port 3000 (Node.js / React)' },
-                                    { port: 5000, label: 'Port 5000 (Python Flask)' },
-                                    { port: 8080, label: 'Port 8080 (Web API)' }
-                                  ].map(p => (
+                              <div className="space-y-2">
+                                <div className="flex items-center justify-between gap-2 p-2.5 rounded-lg bg-zinc-50 dark:bg-zinc-950 border border-zinc-100 dark:border-zinc-800 text-xs">
+                                  <div className="flex items-center gap-2 overflow-hidden">
+                                    <Globe className="h-3.5 w-3.5 text-zinc-400 shrink-0" />
+                                    <code className="font-mono text-zinc-900 dark:text-zinc-100 font-medium truncate select-all">
+                                      {primarySubdomain}
+                                    </code>
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={() => copyNetText(primarySubdomain, `sub_${server.vmid}`)}
+                                    className="p-1 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 cursor-pointer shrink-0"
+                                    title="คัดลอก"
+                                  >
+                                    {copiedNetKey === `sub_${server.vmid}` ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
+                                  </button>
+                                </div>
+
+                                <div className="text-[11px] text-zinc-400 px-1 flex items-center justify-between">
+                                  <span>URL สำรอง (Path-based):</span>
+                                  <a
+                                    href={fallbackUrl}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="font-mono text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200 underline"
+                                  >
+                                    {fallbackUrl}
+                                  </a>
+                                </div>
+                              </div>
+
+                              {/* Port Selector */}
+                              <div className="pt-3 border-t border-zinc-100 dark:border-zinc-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                                <div>
+                                  <label className="text-xs font-medium text-zinc-700 dark:text-zinc-300 block">
+                                    พอร์ตเว็บเซิร์ฟเวอร์
+                                  </label>
+                                  <span className="text-[11px] text-zinc-400">
+                                    พอร์ตที่โปรแกรมของคุณเปิดรับคำขอภายในคอนเทนเนอร์
+                                  </span>
+                                </div>
+
+                                <div className="flex items-center gap-1.5 flex-wrap">
+                                  {[80, 3000, 5000, 8080].map(p => (
                                     <button
-                                      key={p.port}
+                                      key={p}
                                       type="button"
-                                      onClick={() => setSelectedWebPort(p.port)}
-                                      className={`px-3 py-1.5 rounded-lg text-xs font-medium cursor-pointer transition-colors ${
-                                        selectedWebPort === p.port
-                                          ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 font-semibold shadow-2xs'
-                                          : 'bg-white dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100'
+                                      onClick={() => setSelectedWebPort(p)}
+                                      className={`px-2.5 py-1 rounded-md text-xs font-medium cursor-pointer transition-colors ${
+                                        selectedWebPort === p
+                                          ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900'
+                                          : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100'
                                       }`}
                                     >
-                                      {p.label}
+                                      {p}
                                     </button>
                                   ))}
                                   <Button
                                     size="sm"
                                     disabled={isSavingDomain}
                                     onClick={() => handleSaveDomainSettings(server.vmid)}
-                                    className="h-7 text-xs ml-auto cursor-pointer"
+                                    className="h-6 px-2.5 text-xs ml-1 cursor-pointer"
                                   >
-                                    {isSavingDomain ? 'กำลังบันทึก...' : 'บันทึกพอร์ต'}
+                                    {isSavingDomain ? 'กำลังบันทึก...' : 'บันทึก'}
                                   </Button>
                                 </div>
                               </div>
+                            </div>
 
-                              {/* 1-CLICK INSTANT STARTER WEB PAGE */}
-                              <div className="pt-3 border-t border-zinc-200/60 dark:border-zinc-800/80 space-y-2">
-                                <div className="flex items-center justify-between">
-                                  <div>
-                                    <div className="text-xs font-semibold text-zinc-800 dark:text-zinc-200 flex items-center gap-1.5">
-                                      <span>⚡ คำสั่งสร้างหน้าเว็บเริ่มต้น (1-Click Instant Starter Web Page):</span>
-                                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 font-normal">
-                                        พอร์ต {currentPort}
-                                      </span>
-                                    </div>
-                                    <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5">
-                                      คัดลอกคำสั่งด้านล่างไปวางใน Web Terminal เพียง 1 คำสั่ง จะได้หน้าเว็บ IoT Dashboard สวยงามพร้อมรันทันที
-                                    </p>
+                            {/* Card 2: Starter Web Page */}
+                            <div className="border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-zinc-900 p-5 space-y-3">
+                              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-zinc-100 dark:border-zinc-800">
+                                <div>
+                                  <div className="text-xs font-medium text-zinc-900 dark:text-zinc-100">
+                                    คำสั่งสร้างหน้าเว็บเริ่มต้น
                                   </div>
-
-                                  <div className="flex items-center gap-2">
-                                    <button
-                                      type="button"
-                                      onClick={() => copyNetText(starterHtmlCode, `starter_cmd_${server.vmid}`)}
-                                      className="px-2.5 py-1 rounded bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 text-[11px] font-semibold cursor-pointer inline-flex items-center gap-1 shadow-2xs"
-                                    >
-                                      {copiedNetKey === `starter_cmd_${server.vmid}` ? <Check className="h-3 w-3 text-emerald-400" /> : <Copy className="h-3 w-3" />}
-                                      <span>{copiedNetKey === `starter_cmd_${server.vmid}` ? 'คัดลอกคำสั่งแล้ว' : 'คัดลอกคำสั่งทั้งหมด'}</span>
-                                    </button>
-
-                                    <button
-                                      type="button"
-                                      onClick={() => window.open(`/terminal/${server.vmid}`, `terminal_${server.vmid}`, 'width=960,height=600')}
-                                      className="px-2.5 py-1 rounded border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-[11px] font-medium cursor-pointer inline-flex items-center gap-1 hover:bg-zinc-100 dark:hover:bg-zinc-700"
-                                    >
-                                      <Terminal className="h-3 w-3" />
-                                      <span>เปิด Terminal ไปวาง</span>
-                                    </button>
+                                  <div className="text-[11px] text-zinc-500 mt-0.5">
+                                    คัดลอกไปรันใน Web Terminal เพื่อสร้างและเปิดหน้าเว็บทันที
                                   </div>
                                 </div>
 
-                                <pre className="p-3 rounded-lg bg-zinc-900 dark:bg-black font-mono text-[11px] text-zinc-200 overflow-x-auto max-h-40 border border-zinc-800 select-all">
-{starterHtmlCode}
+                                <div className="flex items-center gap-1 bg-zinc-100 dark:bg-zinc-800 p-0.5 rounded-lg text-xs">
+                                  {(['python', 'node', 'nginx'] as const).map(lang => (
+                                    <button
+                                      key={lang}
+                                      type="button"
+                                      onClick={() => setStarterWebLang(lang)}
+                                      className={`px-2.5 py-1 rounded-md transition-all cursor-pointer capitalize ${
+                                        starterWebLang === lang
+                                          ? 'bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white shadow-2xs font-medium'
+                                          : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100'
+                                      }`}
+                                    >
+                                      {lang === 'python' ? 'Python 3' : lang === 'node' ? 'Node.js' : 'Nginx'}
+                                    </button>
+                                  ))}
+                                </div>
+                              </div>
+
+                              <div className="relative">
+                                <pre className="p-3.5 rounded-lg bg-zinc-950 font-mono text-[11px] text-zinc-200 overflow-x-auto max-h-48 leading-relaxed select-all">
+{activeCode}
                                 </pre>
+
+                                <div className="flex items-center justify-end gap-2 pt-2.5">
+                                  <button
+                                    type="button"
+                                    onClick={() => copyNetText(activeCode, `starter_${server.vmid}`)}
+                                    className="px-3 py-1.5 rounded-md bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 text-xs font-medium cursor-pointer inline-flex items-center gap-1.5 hover:bg-zinc-800 dark:hover:bg-zinc-200"
+                                  >
+                                    {copiedNetKey === `starter_${server.vmid}` ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5" />}
+                                    <span>{copiedNetKey === `starter_${server.vmid}` ? 'คัดลอกแล้ว' : 'คัดลอกคำสั่ง'}</span>
+                                  </button>
+
+                                  <button
+                                    type="button"
+                                    onClick={() => window.open(`/terminal/${server.vmid}`, `terminal_${server.vmid}`, 'width=960,height=600')}
+                                    className="px-3 py-1.5 rounded-md border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-xs font-medium cursor-pointer inline-flex items-center gap-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-700"
+                                  >
+                                    <Terminal className="h-3.5 w-3.5" />
+                                    <span>เปิด Terminal</span>
+                                  </button>
+                                </div>
                               </div>
                             </div>
-                          )
-                        })}
-                      </div>
-                    )}
-                  </div>
 
-                  {/* 3. CUSTOM DOMAIN PLANS */}
-                  <div id="sec-custom-domain" className="border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-zinc-900 p-4 sm:p-5 shadow-xs space-y-4">
-                    <div className="border-b border-zinc-100 dark:border-zinc-800 pb-3">
-                      <h3 className="font-semibold text-sm text-zinc-900 dark:text-zinc-100">
-                        3. แผนการผูก Custom Domain ของตนเอง (เช่น mysmartfarm.com)
-                      </h3>
-                      <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
-                        สำหรับกลุ่มที่ต้องการนำโดเมนที่จดทะเบียนส่วนตัวมาใช้งาน มี 2 แนวทางที่รองรับ:
-                      </p>
+                            {/* Card 3: Network & Custom Domain (Quiet 2-column) */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                              <div className="border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-zinc-900 p-4 space-y-2">
+                                <div className="font-medium text-zinc-900 dark:text-zinc-100">
+                                  การเชื่อมต่อเครือข่าย
+                                </div>
+                                <div className="space-y-1.5 text-zinc-500 dark:text-zinc-400 text-[11px]">
+                                  <div className="flex justify-between">
+                                    <span>Gateway:</span>
+                                    <span className="font-mono text-zinc-700 dark:text-zinc-300">172.17.0.1</span>
+                                  </div>
+                                  <div className="flex justify-between">
+                                    <span>DNS:</span>
+                                    <span className="font-mono text-zinc-700 dark:text-zinc-300">8.8.8.8</span>
+                                  </div>
+                                  <div className="flex justify-between">
+                                    <span>Outbound:</span>
+                                    <span className="text-zinc-700 dark:text-zinc-300">HTTP / HTTPS / Git</span>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className="border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-zinc-900 p-4 space-y-2">
+                                <div className="font-medium text-zinc-900 dark:text-zinc-100">
+                                  ผูกโดเมนส่วนตัว
+                                </div>
+                                <p className="text-[11px] text-zinc-500 leading-relaxed">
+                                  ติดตั้ง Cloudflare Tunnel เพื่อชี้โดเมนส่วนตัวเข้าสู่เครื่องโดยตรง:
+                                </p>
+                                <div className="flex items-center justify-between gap-1 p-2 rounded bg-zinc-50 dark:bg-zinc-950 font-mono text-[10px] text-zinc-600 dark:text-zinc-400">
+                                  <span className="truncate">curl -L -o cf.deb https://...</span>
+                                  <button
+                                    type="button"
+                                    onClick={() => copyNetText('curl -L -o cf.deb https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb && dpkg -i cf.deb', 'cf_cmd')}
+                                    className="p-1 hover:text-zinc-900 dark:hover:text-zinc-100 cursor-pointer shrink-0"
+                                    title="คัดลอกคำสั่งติดตั้ง"
+                                  >
+                                    {copiedNetKey === 'cf_cmd' ? <Check className="h-3 w-3 text-emerald-600" /> : <Copy className="h-3 w-3" />}
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        )
+                      })}
                     </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {/* OPTION 1: CLOUDFLARE TUNNEL */}
-                      <div className="p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-950 space-y-3 flex flex-col justify-between">
-                        <div className="space-y-2">
-                          <div className="flex items-center gap-2">
-                            <span className="font-mono text-[10px] font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-950/60 px-2 py-0.5 rounded">
-                              วิธีที่ 1 (แนะนำที่สุด)
-                            </span>
-                            <h4 className="font-semibold text-xs text-zinc-900 dark:text-zinc-100">
-                              Cloudflare Tunnel ประจำกลุ่ม
-                            </h4>
-                          </div>
-                          <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
-                            สมัคร Cloudflare ฟรี ผูกโดเมนของคุณ แล้วรันคำสั่ง <code className="font-mono text-zinc-800 dark:text-zinc-200">cloudflared</code> ใน Terminal เพียงบรรทัดเดียว ได้ HTTPS ฟรีทันที
-                          </p>
-                          <div className="space-y-1 pt-1">
-                            <span className="text-[11px] text-zinc-400">คำสั่งติดตั้ง cloudflared ในเครื่อง:</span>
-                            <pre className="p-2 rounded bg-zinc-100 dark:bg-zinc-900 text-[10px] font-mono text-zinc-800 dark:text-zinc-300 overflow-x-auto select-all">
-curl -L -o cf.deb https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb && dpkg -i cf.deb
-                            </pre>
-                          </div>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => copyNetText('curl -L -o cf.deb https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb && dpkg -i cf.deb', 'cf_cmd')}
-                          className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-xs font-medium text-zinc-700 dark:text-zinc-200 hover:bg-zinc-50 cursor-pointer"
-                        >
-                          {copiedNetKey === 'cf_cmd' ? <Check className="h-3 w-3 text-emerald-600" /> : <Copy className="h-3 w-3" />}
-                          <span>{copiedNetKey === 'cf_cmd' ? 'คัดลอกคำสั่งแล้ว' : 'คัดลอกคำสั่งติดตั้ง'}</span>
-                        </button>
-                      </div>
-
-                      {/* OPTION 2: CNAME MAPPING */}
-                      <div className="p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-950 space-y-3 flex flex-col justify-between">
-                        <div className="space-y-2">
-                          <div className="flex items-center gap-2">
-                            <span className="font-mono text-[10px] font-semibold text-blue-700 dark:text-blue-400 bg-blue-100 dark:bg-blue-950/60 px-2 py-0.5 rounded">
-                              วิธีที่ 2 (ระบบกลาง CNAME)
-                            </span>
-                            <h4 className="font-semibold text-xs text-zinc-900 dark:text-zinc-100">
-                              ชี้ CNAME มายังเซิร์ฟเวอร์
-                            </h4>
-                          </div>
-                          <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
-                            ตั้งค่า DNS ของโดเมนคุณให้ชี้ CNAME มาที่ระบบ แล้วบันทึกชื่อโดเมนลงในระบบเพื่อให้อาจารย์อนุมัติเส้นทาง:
-                          </p>
-                          <div className="p-2 rounded bg-zinc-100 dark:bg-zinc-900 text-xs space-y-1">
-                            <div className="text-[11px] text-zinc-400 font-mono">CNAME Record:</div>
-                            <code className="font-mono text-[11px] text-zinc-800 dark:text-zinc-200 block">
-                              Name: @ (หรือ www) &rarr; cname.pichyy.qzz.io
-                            </code>
-                          </div>
-                          <div className="space-y-1 pt-1">
-                            <Input
-                              placeholder="เช่น mysmartfarm.com"
-                              value={customDomainInput}
-                              onChange={(e) => setCustomDomainInput(e.target.value)}
-                              className="h-8 text-xs font-mono"
-                            />
-                          </div>
-                        </div>
-                        {studentActiveServers[0] && (
-                          <Button
-                            size="sm"
-                            disabled={isSavingDomain || !customDomainInput.trim()}
-                            onClick={() => handleSaveDomainSettings(studentActiveServers[0].vmid)}
-                            className="h-8 text-xs cursor-pointer"
-                          >
-                            {isSavingDomain ? 'กำลังบันทึก...' : 'บันทึก Custom Domain'}
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* 4. STARTER WEB SERVERS */}
-                  <div id="sec-starter-servers" className="border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-zinc-900 p-4 sm:p-5 shadow-xs space-y-4">
-                    <div className="border-b border-zinc-100 dark:border-zinc-800 pb-3">
-                      <h3 className="font-semibold text-sm text-zinc-900 dark:text-zinc-100">
-                        4. ตัวอย่างคำสั่งรัน Web Server ทันที (Web Starter One-Liners)
-                      </h3>
-                      <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
-                        คัดลอกคำสั่งด้านล่างไปวางใน Terminal เพื่อทดสอบเปิดหน้าเว็บได้ทันที:
-                      </p>
-                    </div>
-
-                    <div className="space-y-3 text-xs">
-                      {/* PYTHON HTTP SERVER */}
-                      <div className="p-3 rounded-lg bg-zinc-50 dark:bg-zinc-950 border border-zinc-100 dark:border-zinc-800 space-y-1.5">
-                        <div className="flex items-center justify-between">
-                          <span className="font-semibold text-zinc-800 dark:text-zinc-200">
-                            วิธีที่ 1: Python HTTP Server (เปิดเว็บจากโฟลเดอร์ปัจจุบันทันที ไม่ต้องลงเพิ่ม)
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => copyNetText('python3 -m http.server 80', 'py_srv')}
-                            className="text-[11px] text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 cursor-pointer inline-flex items-center gap-1"
-                          >
-                            {copiedNetKey === 'py_srv' ? <Check className="h-3 w-3 text-emerald-600" /> : <Copy className="h-3 w-3" />}
-                            <span>{copiedNetKey === 'py_srv' ? 'คัดลอกแล้ว' : 'คัดลอก'}</span>
-                          </button>
-                        </div>
-                        <pre className="p-2 rounded bg-zinc-100 dark:bg-zinc-900 font-mono text-[11px] text-zinc-800 dark:text-zinc-300 overflow-x-auto select-all">
-python3 -m http.server 80
-                        </pre>
-                      </div>
-
-                      {/* NGINX INSTALL */}
-                      <div className="p-3 rounded-lg bg-zinc-50 dark:bg-zinc-950 border border-zinc-100 dark:border-zinc-800 space-y-1.5">
-                        <div className="flex items-center justify-between">
-                          <span className="font-semibold text-zinc-800 dark:text-zinc-200">
-                            วิธีที่ 2: ติดตั้ง Nginx Production Web Server (พอร์ต 80)
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => copyNetText('apt update && apt install -y nginx && service nginx start', 'nginx_srv')}
-                            className="text-[11px] text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 cursor-pointer inline-flex items-center gap-1"
-                          >
-                            {copiedNetKey === 'nginx_srv' ? <Check className="h-3 w-3 text-emerald-600" /> : <Copy className="h-3 w-3" />}
-                            <span>{copiedNetKey === 'nginx_srv' ? 'คัดลอกแล้ว' : 'คัดลอก'}</span>
-                          </button>
-                        </div>
-                        <pre className="p-2 rounded bg-zinc-100 dark:bg-zinc-900 font-mono text-[11px] text-zinc-800 dark:text-zinc-300 overflow-x-auto select-all">
-apt update && apt install -y nginx && service nginx start
-                        </pre>
-                      </div>
-
-                      {/* NODE.JS EXPRESS */}
-                      <div className="p-3 rounded-lg bg-zinc-50 dark:bg-zinc-950 border border-zinc-100 dark:border-zinc-800 space-y-1.5">
-                        <div className="flex items-center justify-between">
-                          <span className="font-semibold text-zinc-800 dark:text-zinc-200">
-                            วิธีที่ 3: รัน Node.js Express Server (พอร์ต 3000)
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => copyNetText('npm init -y && npm i express && node -e "const app = require(\'express\')(); app.get(\'/\', (r,s) => s.send(\'Hello from LBTech IoT Cloud!\')); app.listen(3000, () => console.log(\'Ready on 3000\'))"', 'node_srv')}
-                            className="text-[11px] text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 cursor-pointer inline-flex items-center gap-1"
-                          >
-                            {copiedNetKey === 'node_srv' ? <Check className="h-3 w-3 text-emerald-600" /> : <Copy className="h-3 w-3" />}
-                            <span>{copiedNetKey === 'node_srv' ? 'คัดลอกแล้ว' : 'คัดลอก'}</span>
-                          </button>
-                        </div>
-                        <pre className="p-2 rounded bg-zinc-100 dark:bg-zinc-900 font-mono text-[11px] text-zinc-800 dark:text-zinc-300 overflow-x-auto select-all">
-{`node -e "const app = require('express')(); app.get('/', (r,s) => s.send('LBTech IoT Cloud Web')); app.listen(3000)"`}
-                        </pre>
-                      </div>
-                    </div>
-                  </div>
+                  )}
                 </div>
               )}
 
