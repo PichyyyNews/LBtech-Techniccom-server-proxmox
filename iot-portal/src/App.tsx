@@ -49,6 +49,7 @@ import {
 } from 'lucide-react'
 import { DebianLogo, UbuntuLogo, AlpineLogo, renderOSLogo } from '@/components/OSLogos'
 import { AdminPanel } from '@/components/AdminPanel'
+import { EmbeddedTerminal } from '@/components/EmbeddedTerminal'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -289,8 +290,8 @@ export default function App() {
 
   // Modals for CT System
   const [isTermsModalOpen, setIsTermsModalOpen] = useState(false)
-  const [isTerminalOpen, setIsTerminalOpen] = useState(false)
-  const [activeTerminalServer, setActiveTerminalServer] = useState<CTServer | null>(null)
+  const [terminalServer, setTerminalServer] = useState<CTServer | null>(null)
+  const [terminalMode, setTerminalMode] = useState<'embedded' | 'minimized' | 'fullscreen'>('embedded')
 
   // Admin PIN Protection & Mode
   const [isAdminUnlocked, setIsAdminUnlocked] = useState(false)
@@ -362,7 +363,7 @@ export default function App() {
         setIsMobileMenuOpen(false)
         setIsMobileTocOpen(false)
         setIsTermsModalOpen(false)
-        setIsTerminalOpen(false)
+        if (terminalMode === 'fullscreen') setTerminalMode('embedded')
         handleCloseAdminPinModal()
       }
     }
@@ -2530,13 +2531,25 @@ Payload:
                                     size="sm"
                                     disabled={!isRunning}
                                     onClick={() => {
-                                      setActiveTerminalServer(server)
-                                      setIsTerminalOpen(true)
+                                      if (terminalServer?.vmid === server.vmid) {
+                                        if (terminalMode === 'minimized') {
+                                          setTerminalMode('embedded')
+                                        } else {
+                                          setTerminalServer(null)
+                                        }
+                                      } else {
+                                        setTerminalServer(server)
+                                        setTerminalMode('embedded')
+                                      }
                                     }}
                                     className="h-8 text-xs bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 hover:bg-zinc-800 dark:hover:bg-zinc-200 shadow-2xs font-semibold cursor-pointer"
                                   >
                                     <Terminal className="h-3.5 w-3.5 mr-1.5" />
-                                    <span>เปิด Web Console</span>
+                                    <span>
+                                      {terminalServer?.vmid === server.vmid && terminalMode === 'embedded'
+                                        ? 'ซ่อน Web Console'
+                                        : 'เปิด Web Console'}
+                                    </span>
                                   </Button>
 
                                   <Button
@@ -2657,6 +2670,16 @@ Payload:
                                   )}
                                 </Button>
                               </div>
+
+                              {/* EMBEDDED WEB TERMINAL (In-Page, Not Modal) */}
+                              {terminalServer?.vmid === server.vmid && terminalMode === 'embedded' && (
+                                <EmbeddedTerminal
+                                  server={terminalServer}
+                                  mode={terminalMode}
+                                  onModeChange={setTerminalMode}
+                                  onClose={() => setTerminalServer(null)}
+                                />
+                              )}
                             </div>
                           )
                         })}
@@ -2686,8 +2709,8 @@ Payload:
                   onReboot={handleReboot}
                   onDestroyServer={handleDestroyServer}
                   onOpenTerminal={(srv) => {
-                    setActiveTerminalServer(srv)
-                    setIsTerminalOpen(true)
+                    setTerminalServer(srv)
+                    setTerminalMode('fullscreen')
                   }}
                   ctRequests={ctRequests}
                   ctServers={ctServers}
@@ -3927,14 +3950,13 @@ Payload:
         </div>
       )}
 
-      {/* WEB TERMINAL MODAL */}
-      {isTerminalOpen && activeTerminalServer && (
-        <WebTerminalModal
-          server={activeTerminalServer}
-          onClose={() => {
-            setIsTerminalOpen(false)
-            setActiveTerminalServer(null)
-          }}
+      {/* FLOATING MINIMIZED OR FULLSCREEN TERMINAL */}
+      {terminalServer && (terminalMode === 'minimized' || terminalMode === 'fullscreen') && (
+        <EmbeddedTerminal
+          server={terminalServer}
+          mode={terminalMode}
+          onModeChange={setTerminalMode}
+          onClose={() => setTerminalServer(null)}
         />
       )}
 
@@ -4006,156 +4028,4 @@ Payload:
   )
 }
 
-// =========================================================================
-// INTERACTIVE WEB TERMINAL COMPONENT
-// =========================================================================
-function WebTerminalModal({
-  server,
-  onClose,
-}: {
-  server: CTServer
-  onClose: () => void
-}) {
-  const [history, setHistory] = useState<Array<{ cmd?: string; output?: string | React.ReactNode }>>([
-    {
-      output: (
-        <div className="space-y-1 text-zinc-400 text-xs">
-          <div className="text-emerald-400 font-bold">
-            Linux {server.name} 6.8.12-2-pve #1 SMP PREEMPT_DYNAMIC x86_64
-          </div>
-          <div>Connected to {server.os} (CT {server.vmid} @ {server.ip}) via Web Console.</div>
-          <div>Type <span className="text-white font-mono">'help'</span> for a list of available built-in commands.</div>
-          <div className="text-zinc-600">------------------------------------------------------------</div>
-        </div>
-      ),
-    },
-  ])
-  const [inputVal, setInputVal] = useState('')
-  const terminalEndRef = useRef<HTMLDivElement>(null)
-  const inputRef = useRef<HTMLInputElement>(null)
 
-  useEffect(() => {
-    terminalEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [history])
-
-  const handleCommand = (e: React.FormEvent) => {
-    e.preventDefault()
-    const cmd = inputVal.trim()
-    if (!cmd) return
-
-    let output: string | React.ReactNode = ''
-    const lower = cmd.toLowerCase()
-
-    if (lower === 'help') {
-      output = (
-        <div className="space-y-0.5 text-zinc-300 text-xs">
-          <div>Available commands:</div>
-          <div>  <span className="text-emerald-400 font-mono">status</span>        - Display current container health and uptime</div>
-          <div>  <span className="text-emerald-400 font-mono">uname -a</span>      - Print kernel and architecture details</div>
-          <div>  <span className="text-emerald-400 font-mono">cat /etc/os-release</span> - Display Linux OS distribution</div>
-          <div>  <span className="text-emerald-400 font-mono">df -h</span>         - Check file system disk space</div>
-          <div>  <span className="text-emerald-400 font-mono">free -m</span>       - Check allocated memory & RAM usage</div>
-          <div>  <span className="text-emerald-400 font-mono">ip a</span>          - Display network interfaces and IP addresses</div>
-          <div>  <span className="text-emerald-400 font-mono">docker ps</span>     - List running Docker containers</div>
-          <div>  <span className="text-emerald-400 font-mono">clear</span>         - Clear console screen</div>
-        </div>
-      )
-    } else if (lower === 'clear') {
-      setHistory([])
-      setInputVal('')
-      return
-    } else if (lower === 'uname -a') {
-      output = `Linux ${server.name} 6.8.12-2-pve #1 SMP PREEMPT_DYNAMIC x86_64 GNU/Linux`
-    } else if (lower === 'cat /etc/os-release') {
-      output = `PRETTY_NAME="${server.os}"\nNAME="${server.osKey}"\nID_LIKE="debian"\nPVE_LXC_TYPE="unprivileged"\nIP="${server.ip}"`
-    } else if (lower === 'status' || lower === 'uptime') {
-      output = `CT ${server.vmid} (${server.name}): status=${server.status}, load average: 0.08, 0.04, 0.01`
-    } else if (lower.startsWith('df')) {
-      output = `Filesystem      Size  Used Avail Use% Mounted on\n/dev/loop${server.vmid}   ${server.disk}G  1.8G   ${server.disk - 2}G  12% /\nnone            492K     0  492K   0% /dev`
-    } else if (lower.startsWith('free')) {
-      output = `               total        used        free      shared  buff/cache   available\nMem:            ${server.ram}Mi       ${server.ramUsage}Mi       ${server.ram - server.ramUsage - 100}Mi        12Mi       100Mi       ${server.ram - server.ramUsage}Mi\nSwap:            512Mi          0Mi       512Mi`
-    } else if (lower === 'ip a' || lower === 'ifconfig') {
-      output = `1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN\n    inet 127.0.0.1/8 scope host lo\n2: eth0@if${server.vmid}: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500\n    inet ${server.ip}/24 brd 10.10.10.255 scope global dynamic eth0`
-    } else if (lower.startsWith('docker ps')) {
-      output = `CONTAINER ID   IMAGE     COMMAND   CREATED   STATUS    PORTS     NAMES\n(No active docker containers currently running)`
-    } else {
-      output = `bash: ${cmd}: command executed successfully (exit code 0)`
-    }
-
-    setHistory((prev) => [...prev, { cmd, output }])
-    setInputVal('')
-  }
-
-  return (
-    <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-2 sm:p-4">
-      <div className="bg-[#0c0c0e] rounded-2xl border border-zinc-800 shadow-2xl w-full max-w-4xl h-[85vh] flex flex-col overflow-hidden font-mono">
-        {/* Terminal Header */}
-        <div className="px-4 py-3 bg-zinc-900 border-b border-zinc-800 flex items-center justify-between text-xs shrink-0 select-none">
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1.5 mr-2">
-              <span className="h-3 w-3 rounded-full bg-red-500/80 inline-block" />
-              <span className="h-3 w-3 rounded-full bg-amber-500/80 inline-block" />
-              <span className="h-3 w-3 rounded-full bg-emerald-500/80 inline-block" />
-            </div>
-            <span className="text-zinc-300 font-semibold truncate">
-              root@{server.name} ({server.ip}) — CT {server.vmid}
-            </span>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] text-zinc-500 hidden sm:inline">Web Console v2.0</span>
-            <button
-              type="button"
-              onClick={onClose}
-              className="p-1 rounded text-zinc-400 hover:text-white hover:bg-zinc-800 cursor-pointer"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          </div>
-        </div>
-
-        {/* Terminal Body */}
-        <div
-          onClick={() => inputRef.current?.focus()}
-          className="flex-1 p-4 overflow-y-auto text-xs space-y-2 cursor-text"
-        >
-          {history.map((h, idx) => (
-            <div key={idx} className="space-y-1">
-              {h.cmd && (
-                <div className="flex items-center gap-2 text-zinc-200">
-                  <span className="text-emerald-400 select-none">root@{server.name}:~#</span>
-                  <span>{h.cmd}</span>
-                </div>
-              )}
-              {h.output && (
-                <div className="text-zinc-300 whitespace-pre-wrap leading-relaxed pl-2 border-l border-zinc-800/80">
-                  {h.output}
-                </div>
-              )}
-            </div>
-          ))}
-
-          {/* Active Input Line */}
-          <form onSubmit={handleCommand} className="flex items-center gap-2 pt-1">
-            <span className="text-emerald-400 shrink-0 select-none">root@{server.name}:~#</span>
-            <input
-              ref={inputRef}
-              type="text"
-              autoFocus
-              value={inputVal}
-              onChange={(e) => setInputVal(e.target.value)}
-              className="flex-1 bg-transparent text-zinc-100 outline-none border-none p-0 font-mono text-xs"
-            />
-          </form>
-          <div ref={terminalEndRef} />
-        </div>
-
-        {/* Terminal Footer */}
-        <div className="px-4 py-2 bg-zinc-900/60 border-t border-zinc-800/80 text-[10px] text-zinc-500 flex items-center justify-between select-none">
-          <span>Session: Terminal Socket Ready • Host: HP DL20 Gen9</span>
-          <span>Press ESC or close button to exit</span>
-        </div>
-      </div>
-    </div>
-  )
-}
