@@ -105,6 +105,7 @@ interface CTServer {
   status: 'running' | 'stopped'
   uptime: string
   sshPort: number
+  rootPassword?: string
   cpuUsage: number
   ramUsage: number
 }
@@ -269,6 +270,15 @@ export default function App() {
   const [reqSuccess, setReqSuccess] = useState('')
   const [copiedSshCmd, setCopiedSshCmd] = useState<number | null>(null)
   const [isCreatingServer, setIsCreatingServer] = useState(false)
+
+  // Server Credentials reveal & copy states
+  const [showServerPasswords, setShowServerPasswords] = useState<Record<number, boolean>>({})
+  const [copiedServerKey, setCopiedServerKey] = useState<string | null>(null)
+  const copyServerText = (text: string, key: string) => {
+    navigator.clipboard.writeText(text)
+    setCopiedServerKey(key)
+    setTimeout(() => setCopiedServerKey(null), 2000)
+  }
 
   // InfluxDB UI Credentials reveal state
   const [showDbPassword, setShowDbPassword] = useState(false)
@@ -2639,36 +2649,129 @@ Payload:
                                 </div>
                               </div>
 
-                              {/* SSH Access Box */}
-                              <div className="p-3 bg-zinc-50 dark:bg-zinc-800/40 rounded-xl border border-zinc-200 dark:border-zinc-800 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 text-xs">
-                                <div className="flex items-center gap-2 min-w-0">
-                                  <span className="text-zinc-500 shrink-0 text-[11px]">External SSH:</span>
-                                  <code className="font-mono text-zinc-900 dark:text-zinc-100 bg-white dark:bg-zinc-900 px-2 py-1 rounded border border-zinc-200 dark:border-zinc-700 select-all truncate text-[11px]">
-                                    ssh root@ssh.pichyy.qzz.io -p 2222
-                                  </code>
+                              {/* Server Credentials & Access Section */}
+                              <div className="space-y-2.5">
+                                {/* Credentials Box */}
+                                <div className="p-3 bg-zinc-50 dark:bg-zinc-800/40 rounded-xl border border-zinc-200 dark:border-zinc-800 space-y-2 text-xs">
+                                  <div className="flex items-center justify-between text-xs pb-1 border-b border-zinc-200/60 dark:border-zinc-700/60">
+                                    <div className="flex items-center gap-1.5 font-medium text-zinc-800 dark:text-zinc-200">
+                                      <Key className="h-3.5 w-3.5 text-amber-500" />
+                                      <span>ข้อมูลเข้าสู่ระบบเซิร์ฟเวอร์ (Credentials)</span>
+                                    </div>
+                                    <span className="text-[10px] text-zinc-400">สิทธิ์ Root System</span>
+                                  </div>
+
+                                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                                    {/* Username */}
+                                    <div className="flex items-center justify-between bg-white dark:bg-zinc-900 px-2.5 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-700">
+                                      <div className="flex items-center gap-2 min-w-0">
+                                        <span className="text-zinc-400 text-[11px] shrink-0">User:</span>
+                                        <code className="font-mono font-semibold text-zinc-900 dark:text-zinc-100 text-xs">root</code>
+                                      </div>
+                                      <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        onClick={() => copyServerText('root', `user_${server.vmid}`)}
+                                        className="h-6 w-6 p-0 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100"
+                                        title="คัดลอก Username"
+                                      >
+                                        {copiedServerKey === `user_${server.vmid}` ? <Check className="h-3 w-3 text-emerald-600" /> : <Copy className="h-3 w-3" />}
+                                      </Button>
+                                    </div>
+
+                                    {/* Password */}
+                                    <div className="flex items-center justify-between bg-white dark:bg-zinc-900 px-2.5 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-700">
+                                      <div className="flex items-center gap-2 min-w-0">
+                                        <span className="text-zinc-400 text-[11px] shrink-0">Pass:</span>
+                                        <code className="font-mono text-zinc-900 dark:text-zinc-100 text-xs truncate">
+                                          {showServerPasswords[server.vmid] ? (server.rootPassword || 'News030347') : '••••••••••••'}
+                                        </code>
+                                      </div>
+                                      <div className="flex items-center gap-1 shrink-0">
+                                        <Button
+                                          size="sm"
+                                          variant="ghost"
+                                          onClick={() => setShowServerPasswords(prev => ({ ...prev, [server.vmid]: !prev[server.vmid] }))}
+                                          className="h-6 w-6 p-0 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100"
+                                          title={showServerPasswords[server.vmid] ? 'ซ่อนรหัสผ่าน' : 'แสดงรหัสผ่าน'}
+                                        >
+                                          {showServerPasswords[server.vmid] ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
+                                        </Button>
+                                        <Button
+                                          size="sm"
+                                          variant="ghost"
+                                          onClick={() => copyServerText(server.rootPassword || 'News030347', `pass_${server.vmid}`)}
+                                          className="h-6 w-6 p-0 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100"
+                                          title="คัดลอก Password"
+                                        >
+                                          {copiedServerKey === `pass_${server.vmid}` ? <Check className="h-3 w-3 text-emerald-600" /> : <Copy className="h-3 w-3" />}
+                                        </Button>
+                                      </div>
+                                    </div>
+                                  </div>
                                 </div>
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => {
-                                    navigator.clipboard.writeText('ssh root@ssh.pichyy.qzz.io -p 2222')
-                                    setCopiedSshCmd(server.vmid)
-                                    setTimeout(() => setCopiedSshCmd(null), 2000)
-                                  }}
-                                  className="h-7 text-xs px-2.5 shrink-0"
-                                >
-                                  {copiedSshCmd === server.vmid ? (
-                                    <>
-                                      <Check className="h-3 w-3 text-emerald-600 mr-1" />
-                                      <span>คัดลอกแล้ว</span>
-                                    </>
-                                  ) : (
-                                    <>
-                                      <Copy className="h-3 w-3 mr-1" />
-                                      <span>คัดลอกคำสั่ง</span>
-                                    </>
-                                  )}
-                                </Button>
+
+                                {/* Access Notice Box */}
+                                <div className="p-3 bg-zinc-50 dark:bg-zinc-800/40 rounded-xl border border-zinc-200 dark:border-zinc-800 space-y-2 text-xs">
+                                  {/* Web Console Recommended */}
+                                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 p-2 bg-emerald-50/70 dark:bg-emerald-950/20 border border-emerald-200/70 dark:border-emerald-800/40 rounded-lg">
+                                    <div className="flex items-center gap-2">
+                                      <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-600 text-white shrink-0">
+                                        แนะนำสูงสุด
+                                      </span>
+                                      <span className="text-zinc-700 dark:text-zinc-300 text-[11px]">
+                                        <strong>Web Console:</strong> กดเข้าใช้งานได้ทันทีจากทุกอุปกรณ์ ไม่ต้องลงโปรแกรม ไม่ต้องใช้ SSH
+                                      </span>
+                                    </div>
+                                    <Button
+                                      size="sm"
+                                      onClick={() => {
+                                        if (terminalServer?.vmid === server.vmid && terminalMode === 'embedded') {
+                                          setTerminalServer(null)
+                                        } else {
+                                          setTerminalServer(server)
+                                          setTerminalMode('embedded')
+                                        }
+                                      }}
+                                      className="h-7 text-xs px-3 bg-emerald-600 hover:bg-emerald-700 text-white font-medium shrink-0 cursor-pointer shadow-2xs"
+                                    >
+                                      <Terminal className="h-3 w-3 mr-1" />
+                                      <span>{terminalServer?.vmid === server.vmid && terminalMode === 'embedded' ? 'ซ่อน Console' : 'เปิด Web Console'}</span>
+                                    </Button>
+                                  </div>
+
+                                  {/* SSH Command (LAN/Tailscale) */}
+                                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 p-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg">
+                                    <div className="flex items-center gap-2 min-w-0">
+                                      <span className="text-zinc-400 shrink-0 text-[11px]">SSH (LAN/Tailscale):</span>
+                                      <code className="font-mono text-zinc-800 dark:text-zinc-200 select-all truncate text-[11px]">
+                                        ssh root@100.125.250.85 -p {server.sshPort || 2222}
+                                      </code>
+                                    </div>
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      onClick={() => copyServerText(`ssh root@100.125.250.85 -p ${server.sshPort || 2222}`, `ssh_${server.vmid}`)}
+                                      className="h-6 text-[11px] px-2 shrink-0"
+                                    >
+                                      {copiedServerKey === `ssh_${server.vmid}` ? (
+                                        <>
+                                          <Check className="h-3 w-3 text-emerald-600 mr-1" />
+                                          <span>คัดลอกแล้ว</span>
+                                        </>
+                                      ) : (
+                                        <>
+                                          <Copy className="h-3 w-3 mr-1" />
+                                          <span>คัดลอกคำสั่ง</span>
+                                        </>
+                                      )}
+                                    </Button>
+                                  </div>
+
+                                  <div className="text-[10px] text-zinc-500 dark:text-zinc-400 leading-relaxed px-1">
+                                    💡 <strong>ข้อแนะนำ:</strong> หากเข้าใช้งานจากอินเทอร์เน็ตภายนอก (เน็ตบ้าน/มือถือ) แนะนำให้ใช้ <strong>Web Console</strong> เป็นหลัก สำหรับคำสั่ง SSH ภายนอกจะสามารถใช้งานได้เมื่อเชื่อมต่อผ่านเครือข่ายแล็บวิทยาลัยหรือผ่าน Tailscale VPN
+                                  </div>
+                                </div>
                               </div>
 
                               {/* EMBEDDED WEB TERMINAL (In-Page, Not Modal) */}

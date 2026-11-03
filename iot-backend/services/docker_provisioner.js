@@ -109,18 +109,22 @@ export async function createStudentContainer({
   const info = await container.inspect()
   const ip = info.NetworkSettings?.IPAddress || '127.0.0.1'
 
-  // Set password if provided
-  if (password) {
-    try {
-      const exec = await container.exec({
-        AttachStdin: true,
-        AttachStdout: true,
-        Cmd: ['/bin/sh', '-c', `echo "root:${password}" | chpasswd`]
-      })
-      await exec.start({ hijack: true, stdin: true })
-    } catch (e) {
-      console.warn('[DOCKER] Password set warning:', e.message)
-    }
+  // Set password and initialize SSH daemon
+  const rootPass = password || 'News030347'
+  const initSshCmd = osKey === 'alpine-3'
+    ? `(apk add --no-cache openssh-server bash curl 2>/dev/null && ssh-keygen -A && echo "root:${rootPass}" | chpasswd && mkdir -p /var/run/sshd && echo "PermitRootLogin yes" >> /etc/ssh/sshd_config && /usr/sbin/sshd) &`
+    : `(apt-get update -qq 2>/dev/null && apt-get install -y --no-install-recommends openssh-server bash curl 2>/dev/null && mkdir -p /run/sshd && echo "root:${rootPass}" | chpasswd && echo "PermitRootLogin yes" >> /etc/ssh/sshd_config && /usr/sbin/sshd) &`
+
+  try {
+    const exec = await container.exec({
+      AttachStdin: false,
+      AttachStdout: false,
+      Cmd: ['/bin/sh', '-c', initSshCmd]
+    })
+    await exec.start({ detach: true })
+    console.log(`[DOCKER] Container ${containerName} SSH & password initialized.`)
+  } catch (e) {
+    console.warn('[DOCKER] Credentials init warning:', e.message)
   }
 
   console.log(`[DOCKER] Container ${containerName} started successfully (IP: ${ip})`)
