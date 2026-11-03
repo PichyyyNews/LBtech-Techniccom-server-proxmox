@@ -118,11 +118,11 @@ export async function createStudentContainer({
     // Network might not exist in dev or already attached
   }
 
-  // Set password and initialize SSH daemon
+  // Set password and initialize SSH daemon & standard dev tools (python3, curl)
   const rootPass = password || 'News030347'
   const initSshCmd = osKey === 'alpine-3'
-    ? `(apk add --no-cache openssh-server bash curl 2>/dev/null && ssh-keygen -A && echo "root:${rootPass}" | chpasswd && mkdir -p /var/run/sshd && echo "PermitRootLogin yes" >> /etc/ssh/sshd_config && /usr/sbin/sshd) &`
-    : `(apt-get update -qq 2>/dev/null && apt-get install -y --no-install-recommends openssh-server bash curl 2>/dev/null && mkdir -p /run/sshd && echo "root:${rootPass}" | chpasswd && echo "PermitRootLogin yes" >> /etc/ssh/sshd_config && /usr/sbin/sshd) &`
+    ? `(apk add --no-cache openssh-server bash curl python3 2>/dev/null && ssh-keygen -A && echo "root:${rootPass}" | chpasswd && mkdir -p /var/run/sshd && echo "PermitRootLogin yes" >> /etc/ssh/sshd_config && /usr/sbin/sshd) &`
+    : `(apt-get update -qq 2>/dev/null && apt-get install -y --no-install-recommends openssh-server bash curl python3 2>/dev/null && mkdir -p /run/sshd && echo "root:${rootPass}" | chpasswd && echo "PermitRootLogin yes" >> /etc/ssh/sshd_config && /usr/sbin/sshd) &`
 
   try {
     const exec = await container.exec({
