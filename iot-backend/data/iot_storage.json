@@ -284,6 +284,21 @@
       "mqttTopicPrefix": "lbtech/69319090039/",
       "createdAt": "2026-11-03T10:17:08.084Z",
       "updatedAt": "2026-11-03T11:48:00.000Z"
+    },
+    "69123456789": {
+      "studentId": "69123456789",
+      "fullName": "อาจารย์ / ผู้ทดสอบระบบ (News)",
+      "projectTitle": "ระบบแม่ข่าย IoT และ Telemetry ส่วนกลาง",
+      "department": "เทคโนโลยีคอมพิวเตอร์",
+      "password": "News030347",
+      "token": "News030347",
+      "influxBucket": "telemetry-69123456789",
+      "influxToken": "lbtech_69123456789_token_live",
+      "influxOrg": "lbtech",
+      "mqttUsername": "69123456789",
+      "mqttTopicPrefix": "lbtech/69123456789/",
+      "createdAt": "2026-11-03T11:57:04.863Z",
+      "updatedAt": "2026-11-03T11:57:04.864Z"
     }
   },
   "ct_requests": [

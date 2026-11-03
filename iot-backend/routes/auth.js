@@ -20,10 +20,10 @@ router.post('/register', async (req, res) => {
 
     console.log(`[AUTH] Registering student: ${cleanId} (${fullName})`)
 
-    // 1. Auto-provision InfluxDB
-    const influxResult = await provisionStudentTelemetry(cleanId)
+    // 1. Auto-provision InfluxDB with the student's exact chosen password
+    const influxResult = await provisionStudentTelemetry(cleanId, password)
 
-    // 2. Auto-provision EMQX MQTT User
+    // 2. Auto-provision EMQX MQTT User with the same password
     const emqxResult = await provisionMqttUser(cleanId, password)
 
     // 3. Save student in centralized database
@@ -32,7 +32,7 @@ router.post('/register', async (req, res) => {
       fullName: (fullName || '').trim() || 'นักศึกษาโครงงาน',
       projectTitle: (projectTitle || '').trim() || 'โปรเจกต์ IoT ประจำกลุ่ม',
       department: (department || '').trim() || 'เทคโนโลยีคอมพิวเตอร์',
-      password: password, // Stored for teacher review
+      password: password, // Stored for teacher review & unified login
       token: password,
       influxBucket: influxResult.bucket,
       influxToken: influxResult.token,
@@ -71,6 +71,9 @@ router.post('/login', async (req, res) => {
 
     if (!student) {
       // Auto-create on first valid login for ease of student testing
+      const influxResult = await provisionStudentTelemetry(cleanId, password)
+      const emqxResult = await provisionMqttUser(cleanId, password)
+
       student = {
         studentId: cleanId,
         fullName: 'นักศึกษาโครงงาน',
@@ -78,9 +81,11 @@ router.post('/login', async (req, res) => {
         department: 'เทคโนโลยีคอมพิวเตอร์',
         password: password,
         token: password,
-        influxBucket: `telemetry-${cleanId}`,
-        influxToken: `lbtech_${cleanId}_token`,
-        influxOrg: 'lbtech',
+        influxBucket: influxResult.bucket,
+        influxToken: influxResult.token,
+        influxOrg: influxResult.org,
+        mqttUsername: emqxResult.username,
+        mqttTopicPrefix: emqxResult.topicPrefix,
         createdAt: new Date().toISOString()
       }
       db.saveStudent(student)
@@ -89,6 +94,9 @@ router.post('/login', async (req, res) => {
       if (student.password && student.password !== password) {
         return res.status(401).json({ error: 'รหัสผ่านไม่ถูกต้องสำหรับรหัสนักศึกษานี้' })
       }
+      // Ensure InfluxDB and EMQX are in sync with this password
+      provisionStudentTelemetry(cleanId, password).catch(() => {})
+      provisionMqttUser(cleanId, password).catch(() => {})
     }
 
     db.addLog('STUDENT_LOGIN', { studentId: cleanId })
@@ -100,7 +108,7 @@ router.post('/login', async (req, res) => {
 })
 
 // Update student profile
-router.put('/profile', (req, res) => {
+router.put('/profile', async (req, res) => {
   try {
     const { studentId, fullName, projectTitle, department, password } = req.body
     const cleanId = (studentId || '').trim()
@@ -116,6 +124,9 @@ router.put('/profile', (req, res) => {
     if (password) {
       student.password = password
       student.token = password
+      // Sync to InfluxDB and EMQX
+      await provisionStudentTelemetry(cleanId, password)
+      await provisionMqttUser(cleanId, password)
     }
 
     db.saveStudent(student)

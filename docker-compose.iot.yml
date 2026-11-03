@@ -57,6 +57,7 @@ services:
       - INFLUX_ADMIN_USER=iotadmin
       - INFLUX_ADMIN_PASS=Techniccom.Influx2026
       - INFLUX_ORG=lbtech
+      - INFLUX_TOKEN=3oSD6wIOp8AiuGi8RIByohv-GufR7fIAaT5aHVB0eQOy2eyGOVucgdt35zx_ZS4FOdKbYsGBdtzTpYQl0L29CA==
       - EMQX_URL=http://emqx:18083
       - EMQX_USER=tc-iotadmin
       - EMQX_PASS=Techniccom.IoT2026
