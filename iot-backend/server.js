@@ -12,6 +12,7 @@ import adminRoutes from './routes/admin.js'
 import telemetryRoutes from './routes/telemetry.js'
 import { db } from './database.js'
 import { createTerminalSession } from './services/docker_provisioner.js'
+import { startSshBastion } from './services/ssh_bastion.js'
 
 dotenv.config()
 
@@ -181,3 +182,7 @@ server.listen(PORT, '0.0.0.0', () => {
   console.log(`🖥️ WebSocket Terminal: ws://0.0.0.0:${PORT}/api/ct/terminal/:id`)
   console.log(`====================================================`)
 })
+
+// Start Smart SSH Bastion for Public Tailscale Funnel Access
+const SSH_BASTION_PORT = Number(process.env.SSH_BASTION_PORT) || 2222
+startSshBastion(SSH_BASTION_PORT)

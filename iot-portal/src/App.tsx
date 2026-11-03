@@ -2740,19 +2740,19 @@ Payload:
                                     </Button>
                                   </div>
 
-                                  {/* SSH Command (LAN/Tailscale) */}
+                                  {/* SSH Command (Global One-Click Access via Tailscale Funnel) */}
                                   <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 p-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg">
                                     <div className="flex items-center gap-2 min-w-0">
-                                      <span className="text-zinc-400 shrink-0 text-[11px]">SSH (LAN/Tailscale):</span>
+                                      <span className="text-zinc-400 shrink-0 text-[11px]">SSH (จากทุกที่ทั่วโลก):</span>
                                       <code className="font-mono text-zinc-800 dark:text-zinc-200 select-all truncate text-[11px]">
-                                        ssh root@100.125.250.85 -p {server.sshPort || 2222}
+                                        ssh {server.studentId}@techniccom.tail59415d.ts.net -p 10000
                                       </code>
                                     </div>
                                     <Button
                                       size="sm"
                                       variant="outline"
-                                      onClick={() => copyServerText(`ssh root@100.125.250.85 -p ${server.sshPort || 2222}`, `ssh_${server.vmid}`)}
-                                      className="h-6 text-[11px] px-2 shrink-0"
+                                      onClick={() => copyServerText(`ssh ${server.studentId}@techniccom.tail59415d.ts.net -p 10000`, `ssh_${server.vmid}`)}
+                                      className="h-6 text-[11px] px-2 shrink-0 cursor-pointer"
                                     >
                                       {copiedServerKey === `ssh_${server.vmid}` ? (
                                         <>
@@ -2769,7 +2769,7 @@ Payload:
                                   </div>
 
                                   <div className="text-[10px] text-zinc-500 dark:text-zinc-400 leading-relaxed px-1">
-                                    💡 <strong>ข้อแนะนำ:</strong> หากเข้าใช้งานจากอินเทอร์เน็ตภายนอก (เน็ตบ้าน/มือถือ) แนะนำให้ใช้ <strong>Web Console</strong> เป็นหลัก สำหรับคำสั่ง SSH ภายนอกจะสามารถใช้งานได้เมื่อเชื่อมต่อผ่านเครือข่ายแล็บวิทยาลัยหรือผ่าน Tailscale VPN
+                                    💡 <strong>วิธีเข้าใช้งานจากที่บ้าน/ภายนอก:</strong> ก๊อปปี้คำสั่งด้านบนไปวางใน CMD / PowerShell / Terminal บนคอมตัวเอง กด Enter แล้วใส่รหัสผ่าน root ระบบจะโยนเข้าเครื่องของคุณทันทีโดยไม่ต้องลงโปรแกรมเพิ่ม หรือกดเปิด <strong>Web Console</strong> ด้านบนเพื่อใช้งานผ่านเบราว์เซอร์ได้ทันที
                                   </div>
                                 </div>
                               </div>

@@ -8,6 +8,7 @@ RUN npm install --omit=dev
 COPY . .
 
 EXPOSE 5000
+EXPOSE 2222
 
 ENV PORT=5000
 ENV NODE_ENV=production

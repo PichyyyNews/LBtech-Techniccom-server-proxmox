@@ -3,7 +3,7 @@ import fs from 'fs'
 import path from 'path'
 
 // Connect to Docker daemon via local unix socket
-const docker = new Docker({ socketPath: '/var/run/docker.sock' })
+export const docker = new Docker({ socketPath: '/var/run/docker.sock' })
 
 const IMAGE_MAP = {
   'debian-12': 'debian:12-slim',
@@ -234,4 +234,4 @@ export async function createTerminalSession(containerId, { cols = 80, rows = 24 
   }
 }
 
-export { docker }
+
