@@ -104,7 +104,12 @@
 | 18 | `69319090038` | นางสาวโสธิตา มีผล | [https://lab.pichyy.qzz.io/69319090038](https://lab.pichyy.qzz.io/69319090038) |
 | 19 | `69319090039` | นายอนาวินทร์ แก้วเก้า | [https://lab.pichyy.qzz.io/69319090039](https://lab.pichyy.qzz.io/69319090039) |
 
-
+### 4.5 คลาวด์สตอเรจ Nextcloud Community Edition (CT 104)
+* **URL:** [https://cloud.pichyy.qzz.io](https://cloud.pichyy.qzz.io)
+* **ข้อมูลล็อกอิน Admin:**
+  * **User name:** `tc-admin`
+  * **Password:** `Techniccom.admin14072569`
+* **ฟีเจอร์:** พื้นที่จัดเก็บ 250 GB, ระบบ File Sync, ซิงก์ปฏิทิน/รายชื่อ, รองรับ Mobile App (Nextcloud บน iOS/Android)
 
 ---
 
@@ -114,6 +119,7 @@
 
 * **URL ของ Proxmox VE WebUI (IP ปัจจุบันจาก DHCP):** [https://192.168.1.141:8006](https://192.168.1.141:8006)
 * **URL ของ Proxmox VE WebUI (IP สำรองฉุกเฉิน Static):** [https://192.168.1.250:8006](https://192.168.1.250:8006)
+* **URL ของ Nextcloud (Local):** [http://10.10.10.104](http://10.10.10.104) หรือ [http://192.168.1.145](http://192.168.1.145)
 * **การตรวจสอบ IP:** หากมีการย้ายเราเตอร์หรือสถานที่ ให้ตรวจสอบ IP ที่ได้รับผ่านเราเตอร์ หรือล็อกอินผ่าน Tailscale / Cloudflare
 
 ---
@@ -139,6 +145,9 @@ ssh root@10.10.10.100
 
 # CT 102 (Database Server)
 ssh root@10.10.10.102
+
+# CT 104 (Nextcloud Server)
+ssh root@10.10.10.104
 
 # VM 103 (CloudPanel Server)
 ssh tc-admin@10.10.10.103

@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  # 1. EMQX Broker v5 (Core MQTT & WebSocket Engine)
+  emqx:
+    image: emqx/emqx:5.8.0
+    container_name: iot-emqx
+    restart: always
+    environment:
+      - "EMQX_NODE__NAME=emqx@127.0.0.1"
+      - "EMQX_DASHBOARD__DEFAULT_USERNAME=tc-iotadmin"
+      - "EMQX_DASHBOARD__DEFAULT_PASSWORD=Techniccom.IoT2026"
+    ports:
+      - "8083:8083"    # MQTT over WebSocket (ชี้จาก Cloudflare Tunnel เข้าพอร์ตนี้)
+      - "18083:18083"  # EMQX Admin Console
+    volumes:
+      - emqx-data:/opt/emqx/data
+      - emqx-log:/opt/emqx/log
+
+  # 2. InfluxDB v2 (TimeSeries Storage สำหรับจัดเก็บประวัติเซนเซอร์ย้อนหลัง)
+  influxdb:
+    image: influxdb:2.7
+    container_name: iot-influxdb
+    restart: always
+    ports:
+      - "8086:8086"
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=iotadmin
+      - DOCKER_INFLUXDB_INIT_PASSWORD=Techniccom.Influx2026
+      - DOCKER_INFLUXDB_INIT_ORG=lbtech
+      - DOCKER_INFLUXDB_INIT_BUCKET=iot-telemetry
+      - DOCKER_INFLUXDB_INIT_RETENTION=30d # ลบข้อมูลเก่าอัตโนมัติ 30 วัน
+    volumes:
+      - influxdb-data:/var/lib/influxdb2
+
+  # 3. Student IoT Portal (UI สมัครสมาชิก, แจกสิทธิ์ Topic & โค้ดตัวอย่าง)
+  portal:
+    build:
+      context: ./iot-portal
+      dockerfile: Dockerfile
+    container_name: iot-portal
+    restart: always
+    ports:
+      - "3000:80"
+    depends_on:
+      - emqx
+
+volumes:
+  emqx-data:
+  emqx-log:
+  influxdb-data:

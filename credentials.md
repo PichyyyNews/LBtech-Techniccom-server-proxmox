@@ -62,6 +62,67 @@
 | **Password** | `07072569` |
 | **SSH Command** | `ssh root@10.10.10.102` *(ยิงตรงผ่าน Proxmox Host)* |
 
+### CT 104 — Nextcloud Server (`techniccom-nc`)
+คอนเทนเนอร์ระบบคลาวด์สตอเรจ Nextcloud Community Edition (Native Stack + Redis + MariaDB)
+
+| รายการ | ข้อมูลการเข้าใช้งาน |
+| :--- | :--- |
+| **IP Address (Local LAN)** | รับผ่าน DHCP (`192.168.1.145`) |
+| **IP Address (Internal Static)** | `10.10.10.104` *(ใช้เชื่อมต่อ Cloudflare Tunnel)* |
+| **พื้นที่ดิสก์ (Rootfs)** | `600 GB` *(บนไดรฟ์ pve-extra รองรับ 10 บัญชี x 50 GB)* |
+| **URL (External - โดเมนสาธารณะ)** | [https://cloud.pichyy.qzz.io](https://cloud.pichyy.qzz.io) |
+| **Nextcloud Admin User** | `tc-admin` |
+| **Nextcloud Admin Password** | `Techniccom.admin14072569` |
+| **MariaDB Database / User** | `nextcloud` / `nextcloud` |
+| **MariaDB Password** | `Nextcloud.db14072569!` |
+| **SSH User** | `root` |
+| **SSH Password** | `07072569` |
+| **SSH Command** | `ssh root@10.10.10.104` *(ยิงตรงผ่าน Proxmox Host)* |
+
+---
+
+### CT 105 — Management Hub & Homepage (`techniccom-hub`)
+...
+---
+
+### CT 108 — IoT & MQTT Hub Server (`techniccom-iot`)
+คอนเทนเนอร์ระบบ IoT Hub สำหรับนักศึกษาทำโครงงานวิชาชีพทั้งแผนก (EMQX + InfluxDB + Student Portal)
+
+| รายการ | ข้อมูลการเข้าใช้งาน |
+| :--- | :--- |
+| **IP Address (Local LAN)** | `192.168.1.52` (รับผ่าน DHCP) |
+| **IP Address (Internal Static)** | `10.10.10.108` *(ใช้เชื่อมต่อ Cloudflare Tunnel)* |
+| **พื้นที่ดิสก์ (Rootfs)** | `40 GB` *(บนไดรฟ์ pve-extra)* |
+| **Student Portal (Local)** | [http://192.168.1.52:3000](http://192.168.1.52:3000) |
+| **Student Portal URL (ภายนอก)** | [https://iot.pichyy.qzz.io](https://iot.pichyy.qzz.io) |
+| **MQTT Broker (WSS ภายนอก)** | `wss://mqtt.pichyy.qzz.io/mqtt` (พอร์ต 443) |
+| **EMQX Admin Console (Local)** | [http://192.168.1.52:18083](http://192.168.1.52:18083) |
+| **EMQX Admin Console (ภายนอก)** | [https://emqx.pichyy.qzz.io](https://emqx.pichyy.qzz.io) |
+| **EMQX Admin Username** | `tc-iotadmin` |
+| **EMQX Admin Password** | `Techniccom.IoT2026` |
+| **InfluxDB Admin (Local)** | [http://192.168.1.52:8086](http://192.168.1.52:8086) |
+| **InfluxDB Admin URL (ภายนอก)** | [https://influx.pichyy.qzz.io](https://influx.pichyy.qzz.io) |
+| **InfluxDB Username** | `iotadmin` |
+| **InfluxDB Password** | `Techniccom.Influx2026` |
+| **SSH User** | `root` |
+| **SSH Password** | `07072569` |
+| **SSH Command** | `ssh root@10.10.10.108` *(หรือ pct enter 108 บน Host)* |
+
+---
+คอนเทนเนอร์ศูนย์กลางการบริหารจัดการและ Homepage Dashboard (Docker + Homepage + Portainer Ready)
+
+| รายการ | ข้อมูลการเข้าใช้งาน |
+| :--- | :--- |
+| **IP Address (Local LAN)** | `192.168.1.175` (รับผ่าน DHCP) |
+| **IP Address (Internal Static)** | `10.10.10.105` *(ใช้เชื่อมต่อ Cloudflare Tunnel & Internal Services)* |
+| **พื้นที่ดิสก์ (Rootfs)** | `15 GB` *(บนไดรฟ์ pve-extra)* |
+| **URL (Internal)** | `http://10.10.10.105:3000` |
+| **URL (External - โดเมนสาธารณะ)** | [https://homepage.pichyy.qzz.io](https://homepage.pichyy.qzz.io) |
+| **SSH User** | `root` |
+| **SSH Password** | `07072569` |
+| **SSH Command** | `ssh root@10.10.10.105` *(หรือ sudo pct enter 105 บน Host)* |
+| **Path ไดเรกทอรีบริการ** | `/opt/homepage/` (รันผ่าน Docker Compose) |
+
 ---
 
 ## 3. Virtual Machines (VMs)
@@ -136,6 +197,28 @@
 | `69319090037` | นายศุภกร แสงจันทร์ | `std69319090037` | `Std@69319090037` | `/69319090037/` |
 | `69319090038` | นางสาวโสธิตา มีผล | `std69319090038` | `Std@69319090038` | `/69319090038/` |
 | `69319090039` | นายอนาวินทร์ แก้วเก้า | `std69319090039` | `Std@69319090039` | `/69319090039/` |
+
+---
+
+## 6. บัญชีผู้ใช้งานครู/อาจารย์ Nextcloud (Teacher Accounts) 👨‍🏫📁
+
+* **URL แผงควบคุม Nextcloud:** [https://cloud.pichyy.qzz.io](https://cloud.pichyy.qzz.io)
+* **กลุ่มในระบบ:** `Teachers`
+* **โควตาพื้นที่จัดเก็บ:** 50 GB ต่อคน (รวม 500 GB บนดิสก์ CT 104 ขนาด 600 GB)
+
+| ลำดับ | Username | Display Name | กลุ่ม (Group) | รหัสผ่าน (Random Secure Password) | Quota |
+| :---: | :---: | :--- | :---: | :---: | :---: |
+| 1 | `teacher01` | Teacher 01 | `Teachers` | `XiTuI*6do8sYfT` | 50 GB |
+| 2 | `teacher02` | Teacher 02 | `Teachers` | `Qjhdb5RZ4vD-Ru` | 50 GB |
+| 3 | `teacher03` | Teacher 03 | `Teachers` | `_eFmDm0eIgFV1z` | 50 GB |
+| 4 | `teacher04` | Teacher 04 | `Teachers` | `h%ccnLoMUiFs2Q` | 50 GB |
+| 5 | `teacher05` | Teacher 05 | `Teachers` | `MgQwAyaeihE3_k` | 50 GB |
+| 6 | `teacher06` | Teacher 06 | `Teachers` | `Gf8lh_rst5nkJJ` | 50 GB |
+| 7 | `teacher07` | Teacher 07 | `Teachers` | `7fvt*P6emC6yws` | 50 GB |
+| 8 | `teacher08` | Teacher 08 | `Teachers` | `ImxA2wnf5pJc@V` | 50 GB |
+| 9 | `teacher09` | Teacher 09 | `Teachers` | `yx#RpJ2TsLCbPV` | 50 GB |
+| 10 | `teacher10` | Teacher 10 | `Teachers` | `4E92T3jZwBMA6#` | 50 GB |
+
 
 
 

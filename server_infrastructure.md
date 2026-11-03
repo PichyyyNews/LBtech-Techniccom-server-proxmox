@@ -9,9 +9,9 @@
 * **โมเดลฮาร์ดแวร์ (Hardware Model):** HP ProLiant DL20 Gen9 (1U Rack Server)
 * **หน่วยประมวลผล (CPU):** Intel(R) Xeon(R) CPU E3-1220 v6 @ 3.00GHz (4 Cores / 4 Threads, Turbo 3.50GHz, 8MB Cache)
 * **หน่วยความจำ (RAM):** 40 GB DDR4 ECC (40,985 MB) — *ใช้งานจริงเฉลี่ย ~11.8 GB (~29%) ว่างเหลือเฟือ ~28.2 GB (~71%)*
-* **ฮาร์ดดิสก์หลัก (Storage Disks):** 2x 2.0 TB Enterprise Surveillance HDD (Western Digital WD Purple — `WD22PURZ-85B4ZY0`)
-  * `/dev/sda` (2TB): ติดตั้ง OS Root (`/`), `/var`, `/home`, Swap (S.M.A.R.T. Health: PASSED, อุณหภูมิ 32°C, 0 Bad Sector)
-  * `/dev/sdb` (2TB): พาร์ทิชันจัดเก็บข้อมูลหลัก `/mnt/pve-extra` (VMs/LXCs Disks, ISOs, Data) (S.M.A.R.T. Health: PASSED, อุณหภูมิ 33°C, 0 Bad Sector)
+* **ฮาร์ดดิสก์หลัก (Storage Disks):** 2x 2.0 TB Enterprise Surveillance HDD (Western Digital WD Purple — `WD22PURZ-85B4ZY0`) ความจุรวม 4.0 TB:
+  * **HDD 1 (`/dev/sda` - 2TB):** ติดตั้ง OS Root (`/`), `/var`, Swap และ **Storage Pool `pve-home` (`/home/pve-storage` ขนาด 1.8 TB / 1,780 GB)** สำหรับจัดเก็บ VM/LXC Disks, Backups ข้ามลูกดิสก์, ISOs และ Templates (S.M.A.R.T. Health: PASSED, อุณหภูมิ 32°C, 0 Bad Sector)
+  * **HDD 2 (`/dev/sdb` - 2TB):** **Storage Pool `pve-extra` (`/mnt/pve-extra` ขนาด 1.8 TB / 1,833 GB)** สำหรับจัดเก็บดิสก์ระบบหลักของ VMs/LXCs, ISOs, Data (S.M.A.R.T. Health: PASSED, อุณหภูมิ 33°C, 0 Bad Sector)
 * **ระบบปฏิบัติการ:** Debian 12 (Bookworm) / Proxmox VE 8.x (Kernel: `Linux 6.8.12-33-pve`)
 * **ความร้อนและเสถียรภาพ:** อุณหภูมิ CPU Package ~36-37°C (Powersave governor), ฮาร์ดดิสก์ ~28°C, Uptime เฉลี่ย 14+ วันต่อเนื่อง
 * **หน้าที่หลัก:** คอยควบคุม จัดสรรทรัพยากร และทำหน้าที่เป็น Hypervisor ให้กับระบบจำลอง (Virtualization) ทั้งหมด
@@ -83,6 +83,53 @@
 
 ---
 
+### CT 104 — Nextcloud Server (`techniccom-nc`)
+...
+---
+
+### CT 108 — IoT & MQTT Hub Server (`techniccom-iot`)
+คอนเทนเนอร์สำหรับให้บริการระบบเซิร์ฟเวอร์ IoT (Modular Stack) แก่นักศึกษาทำโครงงานวิชาชีพทั้งแผนก
+* **ระบบปฏิบัติการ:** Debian 12 Standard (LXC)
+* **ทรัพยากรที่จัดสรร:**
+  * **vCPU:** 2 Cores
+  * **RAM:** 4 GB (4096 MB)
+  * **Swap:** 1024 MB
+  * **พื้นที่ดิสก์ (Rootfs):** 40 GB (บนไดรฟ์ `pve-extra`)
+* **การตั้งค่าเครือข่าย:**
+  * **`net0` (แลนหลัก/vmbr0):** DHCP (`192.168.1.52/24` จากเราเตอร์ในบ้าน)
+  * **`net1` (แลนจำลอง/vmbr1):** Static IP `10.10.10.108/24` (เชื่อมต่อ Cloudflare Tunnel)
+* **ซอฟต์แวร์และบริการหลัก (Docker Stack):**
+  * `emqx` (EMQX v5 Broker รับส่ง MQTT และ WebSocket พอร์ต 8083/18083)
+  * `influxdb` (InfluxDB v2 จัดเก็บข้อมูลเซนเซอร์ Time-Series ลบประวัติเก่า 30 วันอัตโนมัติ)
+  * `portal` (Student IoT Portal - เว็บสมัครสมาชิก แจกสิทธิ์ Topic และโค้ดตัวอย่าง ESP32/ESP8266/Web)
+* **โดเมนสาธารณะ (ผ่าน Cloudflare Tunnel):**
+  * [https://iot.pichyy.qzz.io](https://iot.pichyy.qzz.io) (Student IoT Portal & Code Generator)
+  * `wss://mqtt.pichyy.qzz.io/mqtt` (MQTT over Secure WebSocket พอร์ต 443 สำหรับบอร์ดและเว็บ)
+  * [https://emqx.pichyy.qzz.io](https://emqx.pichyy.qzz.io) (EMQX Admin Console)
+  * [https://influx.pichyy.qzz.io](https://influx.pichyy.qzz.io) (InfluxDB Admin GUI)
+
+---
+คอนเทนเนอร์สำหรับให้บริการคลาวด์สตอเรจ Nextcloud Community Edition แบบ Native Stack
+* **ระบบปฏิบัติการ:** Debian 12 (Bookworm)
+* **ทรัพยากรที่จัดสรร:**
+  * **vCPU:** 2 Cores
+  * **RAM:** 4 GB (4096 MB)
+  * **Swap:** 1024 MB
+  * **พื้นที่ดิสก์ (Rootfs):** 600 GB (บนไดรฟ์ `pve-extra` เพื่อรองรับ 10 บัญชีผู้ใช้ x 50 GB)
+* **การตั้งค่าเครือข่าย:**
+  * **`net0` (แลนหลัก/vmbr0):** DHCP (รับ IP จากเราเตอร์ในบ้านอัตโนมัติ)
+  * **`net1` (แลนจำลอง/vmbr1):** Static IP `10.10.10.104/24` (เชื่อมต่อ Cloudflare Tunnel)
+* **ซอฟต์แวร์และบริการหลัก:**
+  * `apache2` (เว็บเซิร์ฟเวอร์หลักสำหรับ Nextcloud)
+  * `php8.2` (Apache Module / PHP 8.2 พร้อม APCu, OPcache และ Extension ครบชุด)
+  * `mariadb-server` (ฐานข้อมูล MariaDB สำหรับ Nextcloud)
+  * `redis-server` (ทำ Memory Cache และ Transactional File Locking)
+  * System Cron: ทุก 5 นาที (`crontab -u www-data`)
+  * กลุ่มผู้ใช้: `Teachers` (10 บัญชีครู/อาจารย์ โควตาคนละ 50 GB)
+* **โดเมนสาธารณะ:** [https://cloud.pichyy.qzz.io](https://cloud.pichyy.qzz.io)
+
+---
+
 ## 3. ข้อมูลรายละเอียด Virtual Machines (VMs)
 
 ### VM 103 — CloudPanel Server (`techniccom-cp`)
@@ -132,7 +179,11 @@
 | **iLO 4** | IPMI | `iLO-Techniccom` | `192.168.1.73` (Shared LOM eno1) | - | - | แผงควบคุมฮาร์ดแวร์ระยะไกลระดับ BIOS/IPMI |
 | **100** | LXC | `web-server` | รับจากเราเตอร์ | `10.10.10.100` | `aas.pichyy.qzz.io`<br/>`techsar.pichyy.qzz.io` | ระบบ Activity Attendance System และ TechSAR |
 | **102** | LXC | `database-server` | รับจากเราเตอร์ | `10.10.10.102` | - | ตัวเก็บสำรองฐานข้อมูลหลัก |
+| **104** | LXC | `techniccom-nc` | รับจากเราเตอร์ | `10.10.10.104` | `cloud.pichyy.qzz.io` | คลาวด์สตอเรจ Nextcloud Community Edition (600GB - 10 Users x 50GB) |
+| **105** | LXC | `techniccom-hub` | `192.168.1.175` | `10.10.10.105` | `homepage.pichyy.qzz.io` | หน้าหลัก Dashboard / Homepage |
+| **108** | LXC | `techniccom-iot` | `192.168.1.52` | `10.10.10.108` | `iot.pichyy.qzz.io`<br/>`mqtt.pichyy.qzz.io` | บริการ IoT Hub, EMQX MQTT Broker, InfluxDB, Student Portal |
 | **103** | VM | `techniccom-cp` | รับจากเราเตอร์ (`192.168.1.114`) | `10.10.10.103` | `techniccom-cp.pichyy.qzz.io`<br/>`lab.pichyy.qzz.io` | จัดการเว็บ / CloudPanel / Student Hub |
 | **101** | VM | `win10-light` | รับจากเราเตอร์ | - | - | เครื่องวินโดวส์ใช้งานทั่วไป |
+
 
 

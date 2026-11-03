@@ -30,7 +30,9 @@ flowchart TB
     subgraph Host_Node["🖥️ Proxmox Host: Techniccom (Debian 12 / PVE 8.x)"]
         PVE["Proxmox VE Control\n(Port 8006)"]
         CFT["cloudflared agent\n(/etc/cloudflared/config.yml)"]
-        Storage["Shared Bind Mount Storage\n/mnt/pve-extra/shared-attendance-data/"]
+        Storage1["Storage Pool: pve-extra (1.8 TB)\n/mnt/pve-extra/ (VM/CT Disks)"]
+        Storage2["Storage Pool: pve-home (1.8 TB)\n/home/pve-storage/ (Backups/Disks)"]
+        SharedData["Shared Bind Mount Storage\n/mnt/pve-extra/shared-attendance-data/"]
         
         subgraph Bridges["Network Bridges"]
             VMBR0["vmbr0 (LAN Bridge - DHCP / Fallback 192.168.1.250)"]
@@ -44,11 +46,13 @@ flowchart TB
     subgraph Guests["📦 Virtual Environments"]
         CT100["CT 100: web-server\n(Debian 12 LXC)\n• Web Apps / Front-end\n• IP: 10.10.10.100\n• Domain: aas.pichyy.qzz.io"]
         CT102["CT 102: database-server\n(Debian 12 LXC)\n• SQLite Sync & Backups\n• IP: 10.10.10.102"]
+        CT104["CT 104: techniccom-nc\n(Debian 12 LXC)\n• Nextcloud Storage (600GB)\n• IP: 10.10.10.104\n• Domain: cloud.pichyy.qzz.io"]
         VM103["VM 103: techniccom-cp\n(Debian 12 Full VM)\n• CloudPanel / Nginx / MySQL 8.4\n• IP: 10.10.10.103\n• Domain: techniccom-cp.pichyy.qzz.io"]
         VM101["VM 101: win10-light\n(Tiny10 x64 VM)\n• Utility Windows OS\n• Access: Console / RDP"]
     end
 
     CFT -- "HTTP -> 10.10.10.100" --> CT100
+    CFT -- "HTTP -> 10.10.10.104" --> CT104
     CFT -- "HTTPS:8443 -> 10.10.10.103" --> VM103
     CFT -- "HTTPS:8006 -> 10.10.10.1" --> PVE
 
@@ -65,8 +69,10 @@ flowchart TB
 | **Host** | Host | `Techniccom` (HP DL20 Gen9) | Debian 12 / PVE 8.x | 40 GB DDR4 / 4 Cores (Xeon E3-1220 v6) | `10.10.10.1`<br/>LAN: `192.168.1.141` | `techniccom-pve.pichyy.qzz.io`<br/>Tailscale: `100.125.250.85` | แม่ข่าย Hypervisor ควบคุม VM/LXC ทั้งหมด |
 | **CT 100** | LXC | `web-server` | Debian 12 | 4 GB / 1 vCPU | `10.10.10.100` | `https://aas.pichyy.qzz.io`<br/>`https://techsar.pichyy.qzz.io` | ระบบ Activity Attendance System (AAS) และ TechSAR QA Web |
 | **CT 102** | LXC | `database-server` | Debian 12 | 2 GB / 1 vCPU | `10.10.10.102` | - *(ใช้งานภายใน)* | พื้นที่จัดเก็บ SQLite และสำรองข้อมูล |
+| **CT 104** | LXC | `techniccom-nc` | Debian 12 | 4 GB / 2 vCPU | `10.10.10.104`<br/>LAN: `192.168.1.145` | `https://cloud.pichyy.qzz.io` | คลาวด์สตอเรจ Nextcloud Community Edition (600GB - 10 Users x 50GB) |
 | **VM 103** | VM | `techniccom-cp` | Debian 12 | 8 GB / 2 vCPU | `10.10.10.103`<br/>LAN: `192.168.1.114` | `https://techniccom-cp.pichyy.qzz.io`<br/>`https://lab.pichyy.qzz.io` | แผงควบคุม CloudPanel, Nginx, MySQL 8.4, Student Project Hub |
 | **VM 101** | VM | `win10-light` | Tiny10 x64 | 4 GB / 2 vCPU | DHCP | - *(เข้าผ่าน Console/RDP)* | ระบบปฏิบัติการ Windows 10 ขนาดเบา |
+| **CT 108** | LXC | `techniccom-iot` | Debian 12 | 4 GB / 2 vCPU | `10.10.10.108`<br/>LAN: `192.168.1.52` | `https://iot.pichyy.qzz.io`<br/>`wss://mqtt.pichyy.qzz.io/mqtt` | ศูนย์กลาง IoT และ MQTT Hub สำหรับโปรเจกต์จบนักศึกษา (EMQX + InfluxDB + Portal) |
 
 ---
 
@@ -77,9 +83,12 @@ flowchart TB
 * **Proxmox VE Web UI (Tailscale VPN):** [https://100.125.250.85:8006](https://100.125.250.85:8006)
 * **Proxmox VE Web UI (Local LAN):** [https://192.168.1.141:8006](https://192.168.1.141:8006) *(Fallback Static: `192.168.1.250:8006`)*
 * **Hardware & Fan Monitor Dashboard:** [https://hardware.pichyy.qzz.io](https://hardware.pichyy.qzz.io) *(สำรอง: [https://fan.pichyy.qzz.io](https://fan.pichyy.qzz.io) — สตรีมเซนเซอร์สด + ควบคุมรอบพัดลม + Responsive)*
+* **Student IoT Hub & Portal (แผนกวิชาช่างเทคนิคคอมพิวเตอร์):** [https://iot.pichyy.qzz.io](https://iot.pichyy.qzz.io) *(Local: http://192.168.1.52:3000)*
+* **EMQX Admin Console:** [https://emqx.pichyy.qzz.io](https://emqx.pichyy.qzz.io) *(Local: http://192.168.1.52:18083 บัญชี: 	c-iotadmin / Techniccom.IoT2026)*
+* **CloudPanel Admin (External Domain):** [https://techniccom-cp.pichyy.qzz.io](https://techniccom-cp.pichyy.qzz.io)
+* **Nextcloud Storage (External Domain):** [https://cloud.pichyy.qzz.io](https://cloud.pichyy.qzz.io) *(บัญชี: 	c-admin / Techniccom.admin14072569)*
 * **Activity Attendance System (AAS):** [https://aas.pichyy.qzz.io](https://aas.pichyy.qzz.io)
 * **TechSAR Web App:** [https://techsar.pichyy.qzz.io](https://techsar.pichyy.qzz.io)
-* **CloudPanel Admin (External Domain):** [https://techniccom-cp.pichyy.qzz.io](https://techniccom-cp.pichyy.qzz.io)
 * **Student Project Hub (วิชา 31909-0003):** [https://lab.pichyy.qzz.io](https://lab.pichyy.qzz.io)
 
 ### 2. เข้าใช้งานผ่าน SSH (Terminal / PowerShell)
@@ -95,6 +104,9 @@ ssh root@10.10.10.100
 
 # CT 102 Database Server (เข้าผ่าน Host)
 ssh root@10.10.10.102
+
+# CT 104 Nextcloud Server (เข้าผ่าน Host)
+ssh root@10.10.10.104
 
 # VM 103 CloudPanel Server (เข้าผ่าน Host)
 ssh tc-admin@10.10.10.103
