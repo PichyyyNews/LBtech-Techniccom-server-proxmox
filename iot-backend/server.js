@@ -12,6 +12,7 @@ import adminRoutes from './routes/admin.js'
 import telemetryRoutes from './routes/telemetry.js'
 import ticketsRoutes from './routes/tickets.js'
 import mcpRoutes from './routes/mcp.js'
+import { handlePreviewRequest } from './services/preview_proxy.js'
 import { db } from './database.js'
 import { createTerminalSession } from './services/docker_provisioner.js'
 import { startSshBastion } from './services/ssh_bastion.js'
@@ -42,6 +43,9 @@ app.use('/api/tickets', ticketsRoutes)
 app.use('/api/mcp', mcpRoutes)
 app.use('/api/v1', telemetryRoutes)
 app.use('/api', telemetryRoutes)
+
+// Web Preview Proxy for student containers
+app.all(['/api/preview/:target', '/api/preview/:target/*'], handlePreviewRequest)
 
 // Health Check
 app.get('/api/health', (req, res) => {
@@ -126,12 +130,15 @@ wss.on('connection', async (ws, req, url) => {
       `\x1b[90mWorkspace: /workspace (Persistent Storage)\x1b[0m\r\n\r\n`
     ws.send(welcome)
 
-    // Periodic Heartbeat Keepalive (25s) to prevent Cloudflare/NGINX idle drops
+    // Periodic Heartbeat Keepalive (15s) to prevent Cloudflare/NGINX idle drops
     const keepAliveTimer = setInterval(() => {
       if (ws.readyState === ws.OPEN) {
-        ws.ping()
+        try {
+          ws.ping()
+          ws.send(JSON.stringify({ type: 'heartbeat', timestamp: Date.now() }))
+        } catch {}
       }
-    }, 25000)
+    }, 15000)
 
     // Pipe Container Output -> WebSocket Client
     session.stream.on('data', (chunk) => {
@@ -155,7 +162,10 @@ wss.on('connection', async (ws, req, url) => {
         if (text.startsWith('{') && text.endsWith('}')) {
           const parsed = JSON.parse(text)
           if (parsed.type === 'ping') {
-            return // Ignored keepalive ping
+            if (ws.readyState === ws.OPEN) {
+              ws.send(JSON.stringify({ type: 'pong', timestamp: Date.now() }))
+            }
+            return
           }
           if (parsed.type === 'resize' && parsed.cols && parsed.rows) {
             session.resize(parsed.cols, parsed.rows)
@@ -182,7 +192,13 @@ wss.on('connection', async (ws, req, url) => {
         const text = msg.toString().trim()
         if (text.startsWith('{') && text.endsWith('}')) {
           const parsed = JSON.parse(text)
-          if (parsed.type === 'resize' || parsed.type === 'ping') {
+          if (parsed.type === 'ping') {
+            if (ws.readyState === ws.OPEN) {
+              ws.send(JSON.stringify({ type: 'pong', timestamp: Date.now() }))
+            }
+            return
+          }
+          if (parsed.type === 'resize') {
             return
           }
         }

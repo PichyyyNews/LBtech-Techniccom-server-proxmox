@@ -109,6 +109,15 @@ export async function createStudentContainer({
   const info = await container.inspect()
   const ip = info.NetworkSettings?.IPAddress || '127.0.0.1'
 
+  // Connect container to iot-stack_default network for internal web preview routing
+  try {
+    const net = docker.getNetwork('iot-stack_default')
+    await net.connect({ Container: container.id })
+    console.log(`[DOCKER] Connected ${containerName} to iot-stack_default network`)
+  } catch (netErr) {
+    // Network might not exist in dev or already attached
+  }
+
   // Set password and initialize SSH daemon
   const rootPass = password || 'News030347'
   const initSshCmd = osKey === 'alpine-3'

@@ -148,16 +148,20 @@ export function EmbeddedTerminal({
         }))
       } catch {}
 
-      // Keepalive heartbeat every 20s to prevent Cloudflare / Nginx idle connection drop
+      // Keepalive heartbeat every 10s to prevent Cloudflare / Nginx idle connection drop
       pingTimerRef.current = setInterval(() => {
         if (ws.readyState === WebSocket.OPEN) {
-          ws.send(JSON.stringify({ type: 'ping' }))
+          ws.send(JSON.stringify({ type: 'ping', t: Date.now() }))
         }
-      }, 20000)
+      }, 10000)
     }
 
     ws.onmessage = (event) => {
       if (typeof event.data === 'string') {
+        // Silently consume heartbeat / pong keepalive frames
+        if (event.data.startsWith('{') && (event.data.includes('"pong"') || event.data.includes('"heartbeat"'))) {
+          return
+        }
         term.write(event.data)
       } else if (event.data instanceof ArrayBuffer) {
         term.write(new Uint8Array(event.data))
@@ -175,8 +179,16 @@ export function EmbeddedTerminal({
         clearInterval(pingTimerRef.current)
         pingTimerRef.current = null
       }
-      term.writeln(`\r\n\x1b[33m[Connection Closed] การเชื่อมต่อถูกปิด (หมดเวลา Idle หรือไม่มีการส่งข้อมูล)\x1b[0m`)
-      term.writeln(`\x1b[90m💡 กดปุ่ม [Enter] บนคีย์บอร์ด หรือคลิกปุ่มรีคอนเน็กต์ที่มุมบนขวา เพื่อเชื่อมต่อใหม่ทันที\x1b[0m\r\n`)
+      term.writeln(`\r\n\x1b[33m[Connection Notice] สัญญาณการเชื่อมต่อหยุดชั่วคราว (ระบบจะเชื่อมต่อใหม่อัตโนมัติใน 3 วินาที)\x1b[0m`)
+      term.writeln(`\x1b[90m💡 หรือกดปุ่ม [Enter] บนคีย์บอร์ดเพื่อเชื่อมต่อใหม่ทันที\x1b[0m\r\n`)
+
+      // Graceful auto-reconnect attempt
+      setTimeout(() => {
+        if (terminalRef.current && wsRef.current === ws) {
+          term.writeln(`\x1b[36m[Auto-Reconnect] กำลังกลับเข้าสู่เซสชัน Terminal...\x1b[0m`)
+          connectTerminal()
+        }
+      }, 3000)
     }
 
     // Forward user key input to WebSocket

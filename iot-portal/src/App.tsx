@@ -1648,8 +1648,10 @@ Payload:
     </div>
   )
 
-  // Standalone Popout Window Route: /terminal/:vmid
-  const terminalMatch = typeof window !== 'undefined' ? window.location.pathname.match(/^\/terminal\/([^/]+)/i) : null
+  // Standalone Popout Window Route: /terminal/:vmid or #/terminal/:vmid
+  const terminalMatch = typeof window !== 'undefined'
+    ? (window.location.pathname.match(/^\/terminal\/([^/]+)/i) || window.location.hash.match(/^#\/terminal\/([^/]+)/i))
+    : null
   const standaloneTargetId = terminalMatch ? terminalMatch[1] : null
 
   if (standaloneTargetId) {
@@ -3593,36 +3595,121 @@ apt update && apt install -y curl && curl -I https://google.com
                     ) : (
                       <div className="space-y-4">
                         {studentActiveServers.map(server => {
-                          const targetUrl = `https://${server.studentId || session?.studentId}.iot.pichyy.qzz.io`
+                          const stdId = server.studentId || session?.studentId || '69123456789'
+                          const instantUrl = `https://iot.pichyy.qzz.io/preview/${stdId}/`
+                          const subdomainUrl = `https://${stdId}.iot.pichyy.qzz.io`
+                          const currentPort = selectedWebPort || server.webPort || 80
+
+                          const starterHtmlCode = `mkdir -p /workspace/www && cat << 'EOF' > /workspace/www/index.html
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LBTech IoT Web Dashboard - ${stdId}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-zinc-950 text-zinc-100 min-h-screen flex flex-col font-sans">
+  <header class="border-b border-zinc-800 bg-zinc-900/60 backdrop-blur px-6 py-4 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <div class="h-8 w-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-xs tracking-wider">IoT</div>
+      <div>
+        <h1 class="font-semibold text-sm sm:text-base">LBTech IoT Project Node</h1>
+        <p class="text-xs text-zinc-400">ID: ${stdId} • Container Web Server</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-2">
+      <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+        <span class="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+        Online
+      </span>
+      <span id="clock" class="text-xs text-zinc-400 font-mono">00:00:00</span>
+    </div>
+  </header>
+  <main class="flex-1 p-6 max-w-5xl mx-auto w-full space-y-6">
+    <div class="p-6 rounded-xl border border-zinc-800 bg-zinc-900/40">
+      <h2 class="text-lg font-semibold mb-1">🎉 ยินดีต้อนรับสู่เว็บเซิร์ฟเวอร์ IoT ของคุณ!</h2>
+      <p class="text-sm text-zinc-400">หน้าเว็บนี้ถูกสร้างขึ้นสำเร็จจากคอนเทนเนอร์ของคุณ และพร้อมให้นำไปต่อยอดแสดงผลข้อมูลเซนเซอร์ผ่าน MQTT หรือ REST API</p>
+    </div>
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div class="p-4 rounded-xl border border-zinc-800 bg-zinc-900/30">
+        <div class="text-xs text-zinc-400 font-medium">เซนเซอร์อุณหภูมิ (Temp)</div>
+        <div class="text-2xl font-bold mt-2 text-emerald-400">28.4 °C</div>
+        <div class="text-[11px] text-zinc-500 mt-1">อัปเดตแบบเรียลไทม์</div>
+      </div>
+      <div class="p-4 rounded-xl border border-zinc-800 bg-zinc-900/30">
+        <div class="text-xs text-zinc-400 font-medium">ความชื้นสัมพัทธ์ (Humidity)</div>
+        <div class="text-2xl font-bold mt-2 text-sky-400">62.0 %</div>
+        <div class="text-[11px] text-zinc-500 mt-1">อัปเดตแบบเรียลไทม์</div>
+      </div>
+      <div class="p-4 rounded-xl border border-zinc-800 bg-zinc-900/30">
+        <div class="text-xs text-zinc-400 font-medium">สถานะรีเลย์ (Relay Status)</div>
+        <div class="text-2xl font-bold mt-2 text-amber-400">Active (ON)</div>
+        <div class="text-[11px] text-zinc-500 mt-1">GPIO 2 (ESP32)</div>
+      </div>
+    </div>
+  </main>
+  <script>
+    function updateClock() {
+      document.getElementById('clock').textContent = new Date().toLocaleTimeString('th-TH');
+    }
+    setInterval(updateClock, 1000); updateClock();
+  </script>
+</body>
+</html>
+EOF
+python3 -m http.server ${currentPort} --directory /workspace/www > /workspace/www/web.log 2>&1 &
+echo -e "\n\\e[32m[OK] เว็บไซต์เริ่มต้นทำงานแล้วบนพอร์ต ${currentPort}! เปิดดูได้ทันที\\e[0m"`
+
                           return (
-                            <div key={server.vmid} className="space-y-3.5 bg-zinc-50/60 dark:bg-zinc-950 p-4 rounded-xl border border-zinc-200 dark:border-zinc-800">
-                              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                            <div key={server.vmid} className="space-y-4 bg-zinc-50/60 dark:bg-zinc-950 p-4 rounded-xl border border-zinc-200 dark:border-zinc-800">
+                              {/* INSTANT LIVE URL (PATH BASED - 100% GUARANTEED) */}
+                              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-lg bg-emerald-500/5 dark:bg-emerald-500/10 border border-emerald-500/20">
                                 <div>
-                                  <div className="text-[11px] text-zinc-400">URL เว็บไซต์ประจำเครื่องของคุณ:</div>
-                                  <div className="flex items-center gap-2 mt-0.5">
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                                    <span className="text-[11px] font-semibold text-emerald-800 dark:text-emerald-300">
+                                      URL เปิดเว็บทันที (Instant Live Preview - 100% พร้อมใช้งาน):
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center gap-2 mt-1">
                                     <code className="font-mono text-sm font-bold text-zinc-900 dark:text-white select-all">
-                                      {targetUrl}
+                                      {instantUrl}
                                     </code>
                                     <button
                                       type="button"
-                                      onClick={() => copyNetText(targetUrl, `sub_url_${server.vmid}`)}
+                                      onClick={() => copyNetText(instantUrl, `instant_url_${server.vmid}`)}
                                       className="p-1 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 cursor-pointer"
                                       title="คัดลอก URL"
                                     >
-                                      {copiedNetKey === `sub_url_${server.vmid}` ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
+                                      {copiedNetKey === `instant_url_${server.vmid}` ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
                                     </button>
+                                  </div>
+                                  <div className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-0.5">
+                                    ✓ ไม่ต้องตั้งค่า DNS ใช้งานได้ทันทีแม้ยังไม่ผูกโดเมน หากเว็บยังไม่เริ่มทำงานจะมีหน้า Fallback แนะนำคำสั่ง
                                   </div>
                                 </div>
 
                                 <a
-                                  href={targetUrl}
+                                  href={instantUrl}
                                   target="_blank"
                                   rel="noreferrer"
-                                  className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-lg bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-zinc-200 text-white dark:text-zinc-900 text-xs font-semibold shadow-2xs transition-all shrink-0 cursor-pointer"
+                                  className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-xs transition-all shrink-0 cursor-pointer"
                                 >
-                                  <span>เปิดเว็บไซต์ของคุณ</span>
+                                  <span>เปิดเว็บไซต์ทันที</span>
                                   <ExternalLink className="h-3.5 w-3.5" />
                                 </a>
+                              </div>
+
+                              {/* SUBDOMAIN OPTION */}
+                              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-1 text-xs text-zinc-500">
+                                <div className="flex items-center gap-2">
+                                  <span>ซับโดเมนตามชื่อกลุ่ม:</span>
+                                  <code className="font-mono text-zinc-700 dark:text-zinc-300">{subdomainUrl}</code>
+                                </div>
+                                <span className="text-[10px] text-zinc-400">
+                                  (สำหรับใช้งานผ่าน DNS Wildcard / Cloudflare Tunnel)
+                                </span>
                               </div>
 
                               {/* PORT SELECTOR */}
@@ -3632,7 +3719,7 @@ apt update && apt install -y curl && curl -I https://google.com
                                 </label>
                                 <div className="flex flex-wrap items-center gap-2">
                                   {[
-                                    { port: 80, label: 'Port 80 (Nginx / Apache)' },
+                                    { port: 80, label: 'Port 80 (Nginx / Python)' },
                                     { port: 3000, label: 'Port 3000 (Node.js / React)' },
                                     { port: 5000, label: 'Port 5000 (Python Flask)' },
                                     { port: 8080, label: 'Port 8080 (Web API)' }
@@ -3659,6 +3746,47 @@ apt update && apt install -y curl && curl -I https://google.com
                                     {isSavingDomain ? 'กำลังบันทึก...' : 'บันทึกพอร์ต'}
                                   </Button>
                                 </div>
+                              </div>
+
+                              {/* 1-CLICK INSTANT STARTER WEB PAGE */}
+                              <div className="pt-3 border-t border-zinc-200/60 dark:border-zinc-800/80 space-y-2">
+                                <div className="flex items-center justify-between">
+                                  <div>
+                                    <div className="text-xs font-semibold text-zinc-800 dark:text-zinc-200 flex items-center gap-1.5">
+                                      <span>⚡ คำสั่งสร้างหน้าเว็บเริ่มต้น (1-Click Instant Starter Web Page):</span>
+                                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 font-normal">
+                                        พอร์ต {currentPort}
+                                      </span>
+                                    </div>
+                                    <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5">
+                                      คัดลอกคำสั่งด้านล่างไปวางใน Web Terminal เพียง 1 คำสั่ง จะได้หน้าเว็บ IoT Dashboard สวยงามพร้อมรันทันที
+                                    </p>
+                                  </div>
+
+                                  <div className="flex items-center gap-2">
+                                    <button
+                                      type="button"
+                                      onClick={() => copyNetText(starterHtmlCode, `starter_cmd_${server.vmid}`)}
+                                      className="px-2.5 py-1 rounded bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 text-[11px] font-semibold cursor-pointer inline-flex items-center gap-1 shadow-2xs"
+                                    >
+                                      {copiedNetKey === `starter_cmd_${server.vmid}` ? <Check className="h-3 w-3 text-emerald-400" /> : <Copy className="h-3 w-3" />}
+                                      <span>{copiedNetKey === `starter_cmd_${server.vmid}` ? 'คัดลอกคำสั่งแล้ว' : 'คัดลอกคำสั่งทั้งหมด'}</span>
+                                    </button>
+
+                                    <button
+                                      type="button"
+                                      onClick={() => window.open(`/terminal/${server.vmid}`, `terminal_${server.vmid}`, 'width=960,height=600')}
+                                      className="px-2.5 py-1 rounded border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-[11px] font-medium cursor-pointer inline-flex items-center gap-1 hover:bg-zinc-100 dark:hover:bg-zinc-700"
+                                    >
+                                      <Terminal className="h-3 w-3" />
+                                      <span>เปิด Terminal ไปวาง</span>
+                                    </button>
+                                  </div>
+                                </div>
+
+                                <pre className="p-3 rounded-lg bg-zinc-900 dark:bg-black font-mono text-[11px] text-zinc-200 overflow-x-auto max-h-40 border border-zinc-800 select-all">
+{starterHtmlCode}
+                                </pre>
                               </div>
                             </div>
                           )

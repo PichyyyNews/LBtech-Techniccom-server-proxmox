@@ -227,3 +227,18 @@ npm --prefix iot-portal run build
 # แพ็กเกจและอัปโหลดขึ้นเซิร์ฟเวอร์
 node scratch/deploy_all.cjs
 ```
+
+### 4.5 ระบบ Web Preview และ Fallback Page อัตโนมัติ
+- **URL เข้าชมเว็บทันที (Path-based):** `https://iot.pichyy.qzz.io/preview/:studentId/`
+- **กลไกการทำงาน:**
+  - Nginx ส่งต่อไปยัง `iot-backend:5000/api/preview/:studentId`
+  - Backend ค้นหาคอนเทนเนอร์เป้าหมายและเชื่อมต่อไปยังพอร์ตของนักศึกษา (Default: 80 หรือพอร์ตที่ตั้งค่าไว้ เช่น 3000, 5000)
+  - **หากเว็บเซิร์ฟเวอร์ยังไม่พร้อมใช้งาน:** ระบบจะส่งคืนหน้า **Fallback Page ภาษาไทย** แสดงสถานะ, ข้อมูลกลุ่ม, และปุ่มคัดลอก **1-Click Starter HTML Dashboard** ไปรันใน Terminal พร้อมเวลานับถอยหลังรีเฟรชอัตโนมัติ
+
+### 4.6 กลไก Terminal Keepalive และ Auto-Reconnect
+- ไคลเอนต์ส่ง `{ type: 'ping' }` ทุก 10 วินาที
+- เซิร์ฟเวอร์ส่ง `{ type: 'pong' }` ตอบกลับ และส่ง `{ type: 'heartbeat' }` ทุก 15 วินาที
+- ป้องกัน Cloudflare Edge และ Nginx ตัดการเชื่อมต่อขณะรันคำสั่งยาวนาน เช่น `apt update` หรือคอมไพล์โค้ด
+- หากการเชื่อมต่อหลุด ระบบจะกู้คืนเซสชันใหม่อัตโนมัติใน 3 วินาทีโดยไม่สูญเสียประวัติหน้าจอ xterm
+- หน้าต่าง Popout Terminal อิสระรองรับที่ `/terminal/:vmid` และ `#/terminal/:vmid` แสดงผลเต็มหน้าต่างทันที
+
