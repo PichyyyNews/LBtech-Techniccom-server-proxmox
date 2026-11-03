@@ -1700,7 +1700,7 @@ Payload:
                 </span>
               </div>
               <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
-                Infrastructure for Technicomputer • วิทยาลัยเทคนิคลพบุรี
+                Infrastructure for Technical Computer • เทคโนโลยีคอมพิวเตอร์ วิทยาลัยเทคนิคลพบุรี
               </p>
             </div>
 
@@ -1850,7 +1850,7 @@ Payload:
               <div className="flex items-center gap-1.5 sm:gap-2">
                 <span className="font-bold font-mono text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 leading-tight">infra-techcom</span>
                 <span className="text-zinc-300 dark:text-zinc-700 hidden sm:inline">/</span>
-                <span className="text-xs text-zinc-500 dark:text-zinc-400 font-medium hidden sm:inline">Infrastructure for Technicomputer</span>
+                <span className="text-xs text-zinc-500 dark:text-zinc-400 font-medium hidden sm:inline">Infrastructure for Technical Computer</span>
               </div>
             </div>
 
