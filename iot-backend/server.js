@@ -178,7 +178,19 @@ wss.on('connection', async (ws, req, url) => {
       `\x1b[90mกำลังเปิดโหมดจำลองคำสั่งฉุกเฉิน...\x1b[0m\r\n\r\nroot@${serverObj?.name || 'lbtech'}:~# `)
 
     ws.on('message', (msg) => {
+      try {
+        const text = msg.toString().trim()
+        if (text.startsWith('{') && text.endsWith('}')) {
+          const parsed = JSON.parse(text)
+          if (parsed.type === 'resize' || parsed.type === 'ping') {
+            return
+          }
+        }
+      } catch {}
+
       const cmd = msg.toString().trim()
+      if (!cmd) return
+
       if (cmd === 'help') {
         ws.send(`\r\nคำสั่งที่ใช้ได้: help, uname -a, free -m, df -h, ls -la, exit\r\nroot@${serverObj?.name || 'lbtech'}:~# `)
       } else if (cmd === 'uname -a') {

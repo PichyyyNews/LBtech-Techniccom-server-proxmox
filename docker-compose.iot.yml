@@ -85,6 +85,8 @@ services:
       - ADMIN_PIN=2569
     volumes:
       - backend-data:/app/data
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /opt/iot-workspaces:/opt/iot-workspaces
     depends_on:
       - emqx
       - influxdb
