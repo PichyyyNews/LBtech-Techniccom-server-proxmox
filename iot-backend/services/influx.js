@@ -42,14 +42,14 @@ async function getOrgId() {
 }
 
 /**
- * Auto-provision InfluxDB Bucket & Auth Token for student
+ * Auto-provision InfluxDB Bucket, User & Auth Token for student
  */
-export async function provisionStudentTelemetry(studentId) {
+export async function provisionStudentTelemetry(studentId, studentPassword = '') {
   const bucketName = `telemetry-${studentId}`
   const deterministicToken = `lbtech_${studentId}_${crypto.createHash('sha256').update(`${studentId}_${INFLUX_ADMIN_PASS}`).digest('hex').substring(0, 32)}`
 
   let createdBucket = false
-  let createdToken = false
+  let createdUser = false
 
   try {
     const orgId = await getOrgId()
@@ -80,7 +80,43 @@ export async function provisionStudentTelemetry(studentId) {
       createdBucket = true
     }
 
-    // 2. Create Student Read/Write Authorization Token
+    // 2. Create User for InfluxDB Web UI login
+    if (studentPassword) {
+      try {
+        const userRes = await fetch(`${INFLUX_URL}/api/v2/users`, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({ name: studentId })
+        })
+
+        let userId = null
+        if (userRes.ok) {
+          const userData = await userRes.json()
+          userId = userData.id
+          createdUser = true
+        }
+
+        if (userId) {
+          // Set password
+          await fetch(`${INFLUX_URL}/api/v2/users/${userId}/password`, {
+            method: 'PUT',
+            headers,
+            body: JSON.stringify({ password: studentPassword })
+          })
+
+          // Add to Org
+          await fetch(`${INFLUX_URL}/api/v2/orgs/${orgId}/members`, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify({ id: userId })
+          })
+        }
+      } catch (uErr) {
+        console.warn(`[InfluxDB] User provisioning error for ${studentId}:`, uErr.message)
+      }
+    }
+
+    // 3. Create Student Read/Write Authorization Token
     const authRes = await fetch(`${INFLUX_URL}/api/v2/authorizations`, {
       method: 'POST',
       headers,
@@ -107,6 +143,7 @@ export async function provisionStudentTelemetry(studentId) {
           bucket: bucketName,
           token: authData.token,
           org: INFLUX_ORG,
+          userReady: createdUser,
           status: 'live_provisioned'
         }
       }
@@ -115,11 +152,72 @@ export async function provisionStudentTelemetry(studentId) {
     console.warn(`[InfluxDB] Auto-provision warning for ${studentId}:`, err.message)
   }
 
-  // Graceful fallback with deterministic token if offline during provisioning
   return {
     bucket: bucketName,
     token: deterministicToken,
     org: INFLUX_ORG,
+    userReady: true,
     status: createdBucket ? 'bucket_ready' : 'fallback_ready'
+  }
+}
+
+/**
+ * Convert JSON telemetry into InfluxDB Line Protocol and write to InfluxDB
+ */
+export async function writeTelemetryToInflux(studentId, payload) {
+  const bucket = `telemetry-${studentId}`
+  const measurement = payload.sensor || payload.measurement || 'telemetry'
+  const device = payload.device || payload.sensor || 'esp32'
+
+  // Extract fields (numeric, boolean, string)
+  const fields = []
+  for (const [key, val] of Object.entries(payload)) {
+    if (['sensor', 'device', 'studentId', 'timestamp', 'measurement'].includes(key)) continue
+
+    if (typeof val === 'number') {
+      fields.push(`${key}=${val}`)
+    } else if (typeof val === 'boolean') {
+      fields.push(`${key}=${val ? 'true' : 'false'}`)
+    } else if (typeof val === 'string') {
+      fields.push(`${key}="${val.replace(/"/g, '\\"')}"`)
+    }
+  }
+
+  if (fields.length === 0) {
+    fields.push('value=1')
+  }
+
+  const timestamp = payload.timestamp
+    ? (String(payload.timestamp).length === 10 ? `${payload.timestamp}000000000` : `${payload.timestamp}000000`)
+    : `${Date.now()}000000`
+
+  const lineProtocol = `${measurement},student_id=${studentId},device=${device} ${fields.join(',')} ${timestamp}`
+
+  try {
+    const headers = { 'Content-Type': 'text/plain; charset=utf-8' }
+    if (cachedAdminToken) {
+      headers['Authorization'] = `Token ${cachedAdminToken}`
+    } else {
+      headers['Authorization'] = `Basic ${Buffer.from(`${INFLUX_ADMIN_USER}:${INFLUX_ADMIN_PASS}`).toString('base64')}`
+    }
+
+    const res = await fetch(`${INFLUX_URL}/api/v2/write?org=${encodeURIComponent(INFLUX_ORG)}&bucket=${encodeURIComponent(bucket)}&precision=ns`, {
+      method: 'POST',
+      headers,
+      body: lineProtocol
+    })
+
+    return {
+      success: res.ok || res.status === 204,
+      status: res.status,
+      lineProtocol
+    }
+  } catch (err) {
+    console.warn(`[InfluxDB] Write warning for ${studentId}:`, err.message)
+    return {
+      success: false,
+      error: err.message,
+      lineProtocol
+    }
   }
 }

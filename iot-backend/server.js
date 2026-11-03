@@ -7,6 +7,7 @@ import { fileURLToPath } from 'url'
 import authRoutes from './routes/auth.js'
 import ctRoutes from './routes/ct.js'
 import adminRoutes from './routes/admin.js'
+import telemetryRoutes from './routes/telemetry.js'
 import { db } from './database.js'
 
 dotenv.config()
@@ -31,6 +32,8 @@ app.use((req, res, next) => {
 app.use('/api/auth', authRoutes)
 app.use('/api/ct', ctRoutes)
 app.use('/api/admin', adminRoutes)
+app.use('/api/v1', telemetryRoutes)
+app.use('/api', telemetryRoutes)
 
 // Health Check
 app.get('/api/health', (req, res) => {

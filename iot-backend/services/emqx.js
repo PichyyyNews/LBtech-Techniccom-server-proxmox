@@ -77,3 +77,38 @@ export async function provisionMqttUser(studentId, password) {
     }
   }
 }
+
+/**
+ * Publish message to EMQX topic via HTTP API
+ */
+export async function publishMqttMessage(topic, payload) {
+  const base64Auth = Buffer.from(`${EMQX_USER}:${EMQX_PASS}`).toString('base64')
+  const payloadStr = typeof payload === 'string' ? payload : JSON.stringify(payload)
+
+  try {
+    const res = await fetch(`${EMQX_URL}/api/v5/publish`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Basic ${base64Auth}`
+      },
+      body: JSON.stringify({
+        topic: topic,
+        payload: payloadStr,
+        qos: 1,
+        retain: false
+      })
+    })
+
+    return {
+      success: res.ok,
+      status: res.status
+    }
+  } catch (err) {
+    console.warn(`[EMQX] Publish error on topic ${topic}:`, err.message)
+    return {
+      success: false,
+      error: err.message
+    }
+  }
+}

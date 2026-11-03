@@ -42,6 +42,7 @@ import {
   Lock,
   Unlock,
   Trash2,
+  Key,
   Plus,
   Minus,
   ArrowLeft,
@@ -267,6 +268,15 @@ export default function App() {
   const [reqSuccess, setReqSuccess] = useState('')
   const [copiedSshCmd, setCopiedSshCmd] = useState<number | null>(null)
   const [isCreatingServer, setIsCreatingServer] = useState(false)
+
+  // InfluxDB UI Credentials reveal state
+  const [showDbPassword, setShowDbPassword] = useState(false)
+  const [copiedDbKey, setCopiedDbKey] = useState<string | null>(null)
+  const copyDbText = (text: string, key: string) => {
+    navigator.clipboard.writeText(text)
+    setCopiedDbKey(key)
+    setTimeout(() => setCopiedDbKey(null), 2000)
+  }
 
   // Modals for CT System
   const [isTermsModalOpen, setIsTermsModalOpen] = useState(false)
@@ -2882,38 +2892,56 @@ Payload:
                         <code className="font-mono text-zinc-900 dark:text-zinc-100 sm:col-span-2 select-all bg-zinc-50 dark:bg-zinc-800 px-1.5 py-0.5 sm:p-0 rounded">lbtech</code>
                       </div>
                       <div className="flex flex-col sm:grid sm:grid-cols-3 p-3 sm:p-3.5 gap-1 sm:gap-2 items-start sm:items-center">
-                        <span className="text-zinc-500 dark:text-zinc-400 font-medium">Bucket</span>
-                        <code className="font-mono text-zinc-900 dark:text-zinc-100 sm:col-span-2 select-all bg-zinc-50 dark:bg-zinc-800 px-1.5 py-0.5 sm:p-0 rounded">iot-telemetry</code>
+                        <span className="text-zinc-500 dark:text-zinc-400 font-medium">Student Bucket</span>
+                        <code className="font-mono text-zinc-900 dark:text-zinc-100 sm:col-span-2 select-all bg-zinc-50 dark:bg-zinc-800 px-1.5 py-0.5 sm:p-0 rounded font-semibold text-purple-600 dark:text-purple-400">
+                          {session?.influxBucket || `telemetry-${session?.studentId || 'std'}`}
+                        </code>
                       </div>
                       <div className="flex flex-col sm:grid sm:grid-cols-3 p-3 sm:p-3.5 gap-1 sm:gap-2 items-start sm:items-center">
                         <span className="text-zinc-500 dark:text-zinc-400 font-medium">Data Retention</span>
                         <span className="text-zinc-800 dark:text-zinc-200 sm:col-span-2">30 วัน (ระบบลบข้อมูลเก่าทิ้งอัตโนมัติ)</span>
                       </div>
                       <div className="flex flex-col sm:grid sm:grid-cols-3 p-3 sm:p-3.5 gap-1 sm:gap-2 items-start sm:items-center">
-                        <span className="text-zinc-500 dark:text-zinc-400 font-medium">Authentication</span>
-                        <span className="text-zinc-800 dark:text-zinc-200 sm:col-span-2">ใช้ Bearer Token หรือ Project Password ใน Header</span>
+                        <span className="text-zinc-500 dark:text-zinc-400 font-medium">API Token (Line Protocol)</span>
+                        <div className="sm:col-span-2 flex items-center gap-2">
+                          <code className="font-mono text-zinc-900 dark:text-zinc-100 select-all break-all bg-zinc-50 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-[11px]">
+                            {session?.influxToken || `lbtech_${session?.studentId || 'token'}`}
+                          </code>
+                          <button
+                            type="button"
+                            onClick={() => copyDbText(session?.influxToken || `lbtech_${session?.studentId || 'token'}`, 'token_db')}
+                            className="p-1 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 cursor-pointer"
+                            title="คัดลอก Token"
+                          >
+                            {copiedDbKey === 'token_db' ? (
+                              <Check className="h-3.5 w-3.5 text-emerald-500" />
+                            ) : (
+                              <Copy className="h-3.5 w-3.5" />
+                            )}
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>
 
-                  {/* InfluxDB Admin UI Callout */}
-                  <div className="border border-zinc-200 dark:border-zinc-800 rounded-xl bg-zinc-50/70 dark:bg-zinc-900/40 p-4 shadow-2xs space-y-3">
+                  {/* InfluxDB Admin UI Callout with Student Login Credentials */}
+                  <div className="border border-purple-200 dark:border-purple-900/60 rounded-xl bg-purple-50/40 dark:bg-purple-950/20 p-4 sm:p-5 shadow-xs space-y-4">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                       <div className="flex items-start sm:items-center gap-3">
-                        <div className="h-9 w-9 rounded-lg bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 flex items-center justify-center shrink-0">
-                          <Database className="h-4.5 w-4.5" />
+                        <div className="h-10 w-10 rounded-xl bg-purple-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+                          <Database className="h-5 w-5" />
                         </div>
                         <div>
                           <div className="flex items-center gap-2">
-                            <h3 className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">
-                              InfluxDB v2 Management UI
+                            <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+                              InfluxDB v2 Management UI & Data Explorer
                             </h3>
-                            <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300">
-                              Data Explorer
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-purple-100 dark:bg-purple-900/60 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
+                              Web UI Ready
                             </span>
                           </div>
-                          <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5">
-                            หน้าเว็บค้นหาและสร้างกราฟวิเคราะห์ข้อมูล Time-Series พร้อมเครื่องมือ Query Flux Builder
+                          <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-0.5">
+                            หน้าเว็บค้นหาข้อมูล Time-Series สร้างแดชบอร์ดกราฟเส้น และใช้เครื่องมือ Query Flux Builder
                           </p>
                         </div>
                       </div>
@@ -2921,11 +2949,119 @@ Payload:
                         href="https://influx.pichyy.qzz.io"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-700 text-xs font-medium text-zinc-800 dark:text-zinc-200 transition-colors shadow-2xs shrink-0 cursor-pointer"
+                        className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold shadow-xs transition-all shrink-0 cursor-pointer"
                       >
                         <span>เปิดเว็บ InfluxDB</span>
-                        <ChevronRight className="h-3.5 w-3.5" />
+                        <ChevronRight className="h-4 w-4" />
                       </a>
+                    </div>
+
+                    {/* Student Web UI Login Credentials Card */}
+                    <div className="bg-white dark:bg-zinc-900 rounded-xl border border-purple-200/80 dark:border-purple-900/40 p-3.5 space-y-2.5">
+                      <div className="text-[11px] font-semibold text-purple-900 dark:text-purple-300 flex items-center gap-1.5 pb-2 border-b border-zinc-100 dark:border-zinc-800">
+                        <Key className="h-3.5 w-3.5 text-purple-500" />
+                        <span>ข้อมูลบัญชีสำหรับเข้าสู่ระบบหน้าเว็บ InfluxDB (User Login Credentials)</span>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2.5 text-xs">
+                        {/* Username */}
+                        <div className="p-2.5 rounded-lg bg-zinc-50 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700/60">
+                          <span className="text-[10px] text-zinc-400 font-medium block">ชื่อผู้ใช้ (Username)</span>
+                          <div className="flex items-center justify-between mt-1">
+                            <span className="font-mono font-bold text-zinc-900 dark:text-white text-xs select-all">
+                              {session?.studentId || '693190900xx'}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => copyDbText(session?.studentId || '', 'db_user')}
+                              className="p-1 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 cursor-pointer"
+                              title="คัดลอก Username"
+                            >
+                              {copiedDbKey === 'db_user' ? (
+                                <Check className="h-3.5 w-3.5 text-emerald-500" />
+                              ) : (
+                                <Copy className="h-3.5 w-3.5" />
+                              )}
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Password */}
+                        <div className="p-2.5 rounded-lg bg-zinc-50 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700/60">
+                          <span className="text-[10px] text-zinc-400 font-medium block">รหัสผ่าน (Password)</span>
+                          <div className="flex items-center justify-between mt-1">
+                            <span className={`font-mono text-xs select-all ${showDbPassword ? 'font-bold text-purple-600 dark:text-purple-400' : 'text-zinc-400 tracking-widest'}`}>
+                              {showDbPassword ? (session?.token || '••••••••') : '••••••••'}
+                            </span>
+                            <div className="flex items-center">
+                              <button
+                                type="button"
+                                onClick={() => setShowDbPassword(!showDbPassword)}
+                                className="p-1 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 cursor-pointer"
+                                title={showDbPassword ? 'ซ่อนรหัสผ่าน' : 'แสดงรหัสผ่าน'}
+                              >
+                                {showDbPassword ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => copyDbText(session?.token || '', 'db_pass')}
+                                className="p-1 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 cursor-pointer"
+                                title="คัดลอกรหัสผ่าน"
+                              >
+                                {copiedDbKey === 'db_pass' ? (
+                                  <Check className="h-3.5 w-3.5 text-emerald-500" />
+                                ) : (
+                                  <Copy className="h-3.5 w-3.5" />
+                                )}
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Organization */}
+                        <div className="p-2.5 rounded-lg bg-zinc-50 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700/60">
+                          <span className="text-[10px] text-zinc-400 font-medium block">องค์กร (Organization)</span>
+                          <div className="flex items-center justify-between mt-1">
+                            <span className="font-mono font-bold text-zinc-900 dark:text-white text-xs select-all">
+                              lbtech
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => copyDbText('lbtech', 'db_org')}
+                              className="p-1 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 cursor-pointer"
+                              title="คัดลอก Organization"
+                            >
+                              {copiedDbKey === 'db_org' ? (
+                                <Check className="h-3.5 w-3.5 text-emerald-500" />
+                              ) : (
+                                <Copy className="h-3.5 w-3.5" />
+                              )}
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Bucket */}
+                        <div className="p-2.5 rounded-lg bg-zinc-50 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700/60">
+                          <span className="text-[10px] text-zinc-400 font-medium block">ถังข้อมูลประจำตัว (Bucket)</span>
+                          <div className="flex items-center justify-between mt-1">
+                            <span className="font-mono font-bold text-zinc-900 dark:text-white text-xs select-all truncate max-w-[120px]">
+                              {session?.influxBucket || `telemetry-${session?.studentId || 'std'}`}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => copyDbText(session?.influxBucket || `telemetry-${session?.studentId || 'std'}`, 'db_bucket')}
+                              className="p-1 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 cursor-pointer"
+                              title="คัดลอก Bucket"
+                            >
+                              {copiedDbKey === 'db_bucket' ? (
+                                <Check className="h-3.5 w-3.5 text-emerald-500" />
+                              ) : (
+                                <Copy className="h-3.5 w-3.5" />
+                              )}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
 

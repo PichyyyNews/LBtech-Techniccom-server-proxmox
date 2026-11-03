@@ -155,6 +155,19 @@
   "ct_servers": [],
   "audit_logs": [
     {
+      "id": "log_1793702422033_cterl",
+      "action": "TELEMETRY_INGEST",
+      "details": {
+        "studentId": "69319090024",
+        "topic": "lbtech/69319090024/telemetry",
+        "bucket": "telemetry-69319090024",
+        "sensor": "DHT22",
+        "influxSuccess": false,
+        "emqxSuccess": false
+      },
+      "timestamp": "2026-11-03T10:40:22.033Z"
+    },
+    {
       "id": "log_1793701687955_bi6vt",
       "action": "ADMIN_VIEW_STUDENT_PASSWORDS",
       "details": {
