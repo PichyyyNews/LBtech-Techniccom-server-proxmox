@@ -1,0 +1,150 @@
+# LBTech IoT Cloud & Micro-Container Platform
+> Documentation and Machine-Readable Context for Large Language Models (LLMs) & AI Agents
+
+## 1. System Overview
+LBTech IoT Cloud Platform is a dedicated academic IoT infrastructure developed for Computer Technology students at Lopburi Technical College (วิทยาลัยเทคนิคลพบุรี). It provides each student group with isolated cloud containers, time-series telemetry storage, MQTT broker connectivity, and edge micro-controller integrations.
+
+- Official Portal URL: https://iot.pichyy.qzz.io
+- Machine Context / LLM Docs: https://iot.pichyy.qzz.io/llms.txt
+- Model Context Protocol (MCP) Endpoint: https://iot.pichyy.qzz.io/api/mcp
+
+---
+
+## 2. Platform Architecture & Service Endpoints
+
+### 2.1 MQTT Broker (EMQX v5.8 Enterprise Cluster)
+- Broker Host (WebSocket WSS): `mqtt.pichyy.qzz.io`
+- WSS Port & Path: Port `443` / Path `/mqtt` (TLS/SSL encrypted via Cloudflare)
+- Broker Host (Native TCP): `mqtt.pichyy.qzz.io` or `techniccom.tail59415d.ts.net` (Port `1883`)
+- Username: Student ID (e.g. `69123456789`)
+- Password: Group Student Password
+- Student Topic Namespace:
+  - Telemetry Upload: `project/{studentId}/sensor`
+  - Actuator / Relay Control: `project/{studentId}/control`
+  - Broadcast Status: `project/{studentId}/status`
+  - Subscribe Pattern: `project/{studentId}/#`
+
+### 2.2 Time-Series Database (InfluxDB v2.7)
+- Web UI & Flux Data Explorer: https://influx.pichyy.qzz.io
+- InfluxDB API Endpoint: `https://influx.pichyy.qzz.io` (or `https://iot.pichyy.qzz.io/api/v2`)
+- Organization (Org): `lbtech`
+- Default Bucket: `telemetry-{studentId}` (or `iot-telemetry`)
+- Retention Policy: 30 days automatic retention
+- Authentication: API Token passed in HTTP Header `Authorization: Token {influxToken}`
+- Write Protocol: InfluxDB Line Protocol via POST `/api/v2/write?org=lbtech&bucket=telemetry-{studentId}&precision=s`
+  Format: `sensor,student_id={studentId},device=esp32 temperature=28.5,humidity=65.2`
+
+### 2.3 Cloud Micro-Containers (Dedicated Linux CT)
+- Container Engine: Docker on Proxmox VE (Debian 12 Bookworm, Ubuntu 24.04 LTS, Alpine Linux 3.22)
+- Storage: Persistent bind mount at `/workspace` (Files are preserved across container reboots)
+- Resource Allocation: 1-2 vCPU, 512-2048 MB RAM, 5-10 GB SSD Quota
+- Root Access: Full sudo/root access inside container (`root`)
+- In-Browser Web Console: Integrated xterm.js terminal with direct PTY WebSocket (`wss://iot.pichyy.qzz.io/api/ct/terminal/{vmid}`)
+- External SSH Bastion Jump Host:
+  - Command: `ssh {studentId}@techniccom.tail59415d.ts.net -p 10000`
+  - Compatible with VS Code Remote - SSH extension.
+
+### 2.4 REST API & Webhooks
+- Telemetry Write (JSON): POST `https://iot.pichyy.qzz.io/api/telemetry/write`
+  Headers: `Content-Type: application/json`
+  Body: `{"studentId": "...", "temperature": 28.5, "humidity": 60}`
+- Telemetry Query (Flux): POST `https://iot.pichyy.qzz.io/api/telemetry/query`
+- Server Management:
+  - Power On: POST `https://iot.pichyy.qzz.io/api/ct/servers/{vmid}/power` (`action: "start"`)
+  - Power Off: POST `https://iot.pichyy.qzz.io/api/ct/servers/{vmid}/power` (`action: "stop"`)
+  - Reboot: POST `https://iot.pichyy.qzz.io/api/ct/servers/{vmid}/reboot`
+  - Real-Time Stats (SSE): GET `https://iot.pichyy.qzz.io/api/ct/servers/{vmid}/stats/stream`
+
+---
+
+## 3. Recommended Code Implementations for Micro-controllers
+
+### 3.1 ESP32 (Arduino C++ via PubSubClient & WiFiClientSecure)
+```cpp
+#include <WiFi.h>
+#include <PubSubClient.h>
+
+const char* ssid = "YOUR_WIFI_SSID";
+const char* password = "YOUR_WIFI_PASS";
+
+const char* mqtt_server = "mqtt.pichyy.qzz.io";
+const int mqtt_port = 1883;
+const char* mqtt_user = "YOUR_STUDENT_ID";
+const char* mqtt_pass = "YOUR_PASSWORD";
+const char* topic_pub = "project/YOUR_STUDENT_ID/sensor";
+
+WiFiClient espClient;
+PubSubClient client(espClient);
+
+void setup() {
+  Serial.begin(115200);
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) { delay(500); }
+  client.setServer(mqtt_server, mqtt_port);
+}
+
+void loop() {
+  if (!client.connected()) {
+    client.connect("ESP32_Client", mqtt_user, mqtt_pass);
+  }
+  client.loop();
+  // Example payload: {"temp": 28.4, "humi": 65.0}
+  String payload = "{\"temperature\":28.4,\"humidity\":65.0}";
+  client.publish(topic_pub, payload.c_str());
+  delay(5000);
+}
+```
+
+### 3.2 Python MQTT & InfluxDB Client (Running inside Container)
+```python
+import time
+import json
+import paho.mqtt.client as mqtt
+from influxdb_client import InfluxDBClient, Point
+from influxdb_client.client.write_api import SYNCHRONOUS
+
+STUDENT_ID = "YOUR_STUDENT_ID"
+INFLUX_URL = "https://influx.pichyy.qzz.io"
+INFLUX_TOKEN = "YOUR_INFLUX_TOKEN"
+INFLUX_ORG = "lbtech"
+INFLUX_BUCKET = f"telemetry-{STUDENT_ID}"
+
+influx = InfluxDBClient(url=INFLUX_URL, token=INFLUX_TOKEN, org=INFLUX_ORG)
+write_api = influx.write_api(write_options=SYNCHRONOUS)
+
+def on_message(client, userdata, msg):
+    data = json.loads(msg.payload.decode())
+    point = Point("sensor") \
+        .tag("student_id", STUDENT_ID) \
+        .field("temperature", float(data.get("temp", 0))) \
+        .field("humidity", float(data.get("humi", 0)))
+    write_api.write(bucket=INFLUX_BUCKET, record=point)
+    print("Logged to InfluxDB:", data)
+
+client = mqtt.Client(client_id=f"python_{STUDENT_ID}")
+client.username_pw_set(STUDENT_ID, "YOUR_PASSWORD")
+client.on_message = on_message
+client.connect("mqtt.pichyy.qzz.io", 1883, 60)
+client.subscribe(f"project/{STUDENT_ID}/#")
+client.loop_forever()
+```
+
+---
+
+## 4. Model Context Protocol (MCP) Integration
+AI coding assistants (Claude Desktop, Cursor, Antigravity) can connect directly to LBTech IoT Platform via the MCP JSON-RPC protocol:
+- MCP Server URL: `https://iot.pichyy.qzz.io/api/mcp`
+- Claude Desktop Config:
+```json
+{
+  "mcpServers": {
+    "lbtech-iot": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-fetch", "https://iot.pichyy.qzz.io/api/mcp"]
+    }
+  }
+}
+```
+
+---
+Generated by LBTech IoT Platform. Safe for public caching and AI ingestion.

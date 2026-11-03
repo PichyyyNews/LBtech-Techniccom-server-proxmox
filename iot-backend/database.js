@@ -22,7 +22,8 @@ class Database {
       ct_requests: [],
       ct_servers: [],
       audit_logs: [],
-      login_security: {} // identifier -> { failedCount, lockedUntil, lastAttempt }
+      login_security: {}, // identifier -> { failedCount, lockedUntil, lastAttempt }
+      tickets: []
     }
     this.pgPool = null
     this.isPgReady = false
@@ -44,7 +45,8 @@ class Database {
           ct_requests: parsed.ct_requests || [],
           ct_servers: parsed.ct_servers || [],
           audit_logs: parsed.audit_logs || [],
-          login_security: parsed.login_security || {}
+          login_security: parsed.login_security || {},
+          tickets: parsed.tickets || []
         }
       } else {
         this.save()
@@ -133,6 +135,19 @@ class Database {
           failed_count INT DEFAULT 0,
           locked_until TIMESTAMP,
           last_attempt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+
+        CREATE TABLE IF NOT EXISTS support_tickets (
+          id VARCHAR(64) PRIMARY KEY,
+          student_id VARCHAR(64) NOT NULL,
+          student_name VARCHAR(255),
+          category VARCHAR(64) NOT NULL,
+          subject VARCHAR(255) NOT NULL,
+          description TEXT NOT NULL,
+          status VARCHAR(32) DEFAULT 'pending',
+          admin_reply TEXT,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
       `)
 
@@ -449,6 +464,73 @@ class Database {
           .catch(() => {})
       }
     }
+  }
+
+  // --- SUPPORT TICKETS ---
+  getTickets({ studentId } = {}) {
+    let tickets = this.data.tickets || []
+    if (studentId) {
+      tickets = tickets.filter(t => t.studentId === studentId)
+    }
+    return [...tickets].sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
+  }
+
+  createTicket({ studentId, studentName = '', category, subject, description }) {
+    const id = `tkt_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`
+    const ticket = {
+      id,
+      studentId: String(studentId),
+      studentName: String(studentName || ''),
+      category: String(category || 'general'),
+      subject: String(subject || '').trim(),
+      description: String(description || '').trim(),
+      status: 'pending', // 'pending' | 'in_progress' | 'resolved'
+      adminReply: '',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    }
+
+    if (!this.data.tickets) this.data.tickets = []
+    this.data.tickets.unshift(ticket)
+    this.save()
+
+    this.addLog('TICKET_CREATED', { id, studentId, category, subject })
+
+    if (this.isPgReady && this.pgPool) {
+      this.pgPool.query(`
+        INSERT INTO support_tickets (id, student_id, student_name, category, subject, description, status, admin_reply, created_at, updated_at)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+      `, [ticket.id, ticket.studentId, ticket.studentName, ticket.category, ticket.subject, ticket.description, ticket.status, ticket.adminReply, ticket.createdAt, ticket.updatedAt])
+        .catch(err => console.error('[POSTGRES] Error inserting ticket:', err.message))
+    }
+
+    return ticket
+  }
+
+  updateTicket(id, { status, adminReply }) {
+    if (!this.data.tickets) this.data.tickets = []
+    const idx = this.data.tickets.findIndex(t => t.id === id)
+    if (idx === -1) return null
+
+    if (status !== undefined) this.data.tickets[idx].status = status
+    if (adminReply !== undefined) this.data.tickets[idx].adminReply = adminReply
+    this.data.tickets[idx].updatedAt = new Date().toISOString()
+
+    const updated = this.data.tickets[idx]
+    this.save()
+
+    this.addLog('TICKET_UPDATED', { id, status: updated.status })
+
+    if (this.isPgReady && this.pgPool) {
+      this.pgPool.query(`
+        UPDATE support_tickets
+        SET status = $1, admin_reply = $2, updated_at = $3
+        WHERE id = $4
+      `, [updated.status, updated.adminReply || '', updated.updatedAt, id])
+        .catch(err => console.error('[POSTGRES] Error updating ticket:', err.message))
+    }
+
+    return updated
   }
 }
 

@@ -50,6 +50,10 @@ import {
   BookOpen,
   HelpCircle,
   ExternalLink,
+  Bot,
+  Sparkles,
+  MessageSquare,
+  Share2,
 } from 'lucide-react'
 import { DebianLogo, UbuntuLogo, AlpineLogo, InfluxDBLogo, EMQXLogo, renderOSLogo } from '@/components/OSLogos'
 import { AdminPanel } from '@/components/AdminPanel'
@@ -73,7 +77,7 @@ interface StudentSession {
   mqttTopicPrefix?: string
 }
 
-type TabType = 'overview' | 'mqtt' | 'database' | 'rest-api' | 'ct-servers' | 'esp32' | 'esp8266' | 'web-js' | 'python' | 'admin'
+type TabType = 'overview' | 'mqtt' | 'database' | 'rest-api' | 'ct-servers' | 'esp32' | 'esp8266' | 'web-js' | 'python' | 'admin' | 'ai-prompts' | 'mcp-server' | 'tickets'
 type ThemeMode = 'light' | 'dark' | 'system'
 
 // CT Request Data Model
@@ -380,6 +384,78 @@ export default function App() {
       }
     }
   }, [selectedServerVmid])
+
+  // AI Link & Prompt Copy States
+  const [copiedAiLink, setCopiedAiLink] = useState(false)
+  const [copiedPromptKey, setCopiedPromptKey] = useState<string | null>(null)
+  const copyPromptText = (text: string, key: string) => {
+    navigator.clipboard.writeText(text)
+    setCopiedPromptKey(key)
+    setTimeout(() => setCopiedPromptKey(null), 2000)
+  }
+
+  // Student Tickets State
+  const [studentTickets, setStudentTickets] = useState<any[]>([])
+  const [isTicketSubmitting, setIsTicketSubmitting] = useState(false)
+  const [ticketSubject, setTicketSubject] = useState('')
+  const [ticketCategory, setTicketCategory] = useState('quota')
+  const [ticketDescription, setTicketDescription] = useState('')
+  const [ticketSubmitSuccess, setTicketSubmitSuccess] = useState('')
+
+  const fetchStudentTickets = async () => {
+    if (!session?.studentId) return
+    try {
+      const res = await fetch(`/api/tickets?studentId=${session.studentId}`)
+      if (res.ok) {
+        const data = await res.json()
+        if (data.tickets) {
+          setStudentTickets(data.tickets)
+        }
+      }
+    } catch (e) {
+      console.warn('Could not fetch student tickets:', e)
+    }
+  }
+
+  useEffect(() => {
+    if (activeTab === 'tickets') {
+      fetchStudentTickets()
+    }
+  }, [activeTab, session?.studentId])
+
+  const handleCreateTicket = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!ticketSubject.trim() || !ticketDescription.trim()) return
+    setIsTicketSubmitting(true)
+    setTicketSubmitSuccess('')
+    try {
+      const res = await fetch('/api/tickets', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          studentId: session?.studentId,
+          studentName: session?.fullName || '',
+          category: ticketCategory,
+          subject: ticketSubject.trim(),
+          description: ticketDescription.trim()
+        })
+      })
+      const data = await res.json()
+      if (res.ok && data.ticket) {
+        setStudentTickets(prev => [data.ticket, ...prev])
+        setTicketSubject('')
+        setTicketDescription('')
+        setTicketSubmitSuccess('ส่งคำร้องสำเร็จแล้ว! อาจารย์ผู้ดูแลระบบจะตรวจสอบและตอบกลับ')
+        setTimeout(() => setTicketSubmitSuccess(''), 4000)
+      } else {
+        alert(data.error || 'Failed to submit ticket')
+      }
+    } catch (err: any) {
+      alert('Error submitting ticket: ' + err.message)
+    } finally {
+      setIsTicketSubmitting(false)
+    }
+  }
 
   // Admin PIN Protection & Mode
   const [isAdminUnlocked, setIsAdminUnlocked] = useState(false)
@@ -1383,6 +1459,26 @@ Payload:
           { id: 'sec-admin-queue', label: 'คิวคำขอเครื่อง' },
           { id: 'sec-admin-servers', label: 'เครื่องบน Proxmox' },
         ]
+      case 'ai-prompts':
+        return [
+          { id: 'sec-ai-system', label: '1. System Prompt สำหรับ AI' },
+          { id: 'sec-ai-esp32', label: '2. Prompt เขียนโค้ด ESP32' },
+          { id: 'sec-ai-python', label: '3. Prompt สร้าง Data Pipeline' },
+          { id: 'sec-ai-dashboard', label: '4. Prompt พัฒนา Web Dashboard' },
+          { id: 'sec-ai-debug', label: '5. Prompt แก้บั๊กและ Network' },
+        ]
+      case 'mcp-server':
+        return [
+          { id: 'sec-mcp-about', label: 'สถาปัตยกรรม MCP' },
+          { id: 'sec-mcp-claude', label: 'การตั้งค่า Claude Desktop' },
+          { id: 'sec-mcp-cursor', label: 'การตั้งค่า Cursor IDE' },
+          { id: 'sec-mcp-tools', label: 'เครื่องมือ AI (Tools List)' },
+        ]
+      case 'tickets':
+        return [
+          { id: 'sec-ticket-form', label: 'สร้างคำร้องใหม่' },
+          { id: 'sec-ticket-list', label: 'รายการคำร้องของคุณ' },
+        ]
       default:
         return []
     }
@@ -1400,6 +1496,14 @@ Payload:
         { id: 'mqtt' as TabType, label: 'MQTT Broker (EMQX)', icon: Radio },
         { id: 'database' as TabType, label: 'Database (InfluxDB v2)', icon: Database },
         { id: 'rest-api' as TabType, label: 'REST API & Webhooks', icon: Globe },
+      ],
+    },
+    {
+      category: 'ช่วยเหลือ (Support & AI)',
+      items: [
+        { id: 'ai-prompts' as TabType, label: 'LLM Prompts (คัดลอกถาม AI)', icon: Sparkles },
+        { id: 'mcp-server' as TabType, label: 'MCP Server (เชื่อมต่อ AI)', icon: Bot },
+        { id: 'tickets' as TabType, label: 'ติดต่อผู้ดูแล (Support Tickets)', icon: HelpCircle },
       ],
     },
     ...(isAdminUnlocked
@@ -1684,7 +1788,33 @@ Payload:
             </div>
 
             {/* Right: Theme Toggle & Search Button (Admin access hidden at /admin) */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              {/* Copy link for AI (llms.txt) */}
+              <button
+                type="button"
+                onClick={() => {
+                  const url = 'https://iot.pichyy.qzz.io/llms.txt'
+                  navigator.clipboard.writeText(url)
+                  setCopiedAiLink(true)
+                  setTimeout(() => setCopiedAiLink(false), 2200)
+                }}
+                className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-700 text-xs font-medium text-zinc-700 dark:text-zinc-200 transition-colors shadow-2xs cursor-pointer"
+                title="คัดลอกลิงก์ llms.txt ให้ AI (ChatGPT, Claude, Cursor) อ่านโครงสร้างและสเปกระบบทั้งหมดได้ทันที"
+              >
+                {copiedAiLink ? (
+                  <>
+                    <Check className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                    <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">คัดลอกลิงก์ AI แล้ว!</span>
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="h-3.5 w-3.5 text-zinc-500 dark:text-zinc-400" />
+                    <span className="hidden sm:inline text-[11px]">ส่งให้ AI (llms.txt)</span>
+                    <span className="sm:hidden text-[11px]">AI</span>
+                  </>
+                )}
+              </button>
+
               <ThemeToggle />
 
               <button
@@ -4033,6 +4163,671 @@ Authorization: Bearer ${session.token}`}
                       title="iot_client.py"
                       theme={resolvedTheme}
                     />
+                  </div>
+                </div>
+              )}
+
+              {/* TAB 9: LLM PROMPTS HUB */}
+              {activeTab === 'ai-prompts' && (
+                <div className="space-y-6">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <div className="h-7 w-7 rounded-lg bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 flex items-center justify-center">
+                        <Sparkles className="h-4 w-4" />
+                      </div>
+                      <h1 className="text-lg sm:text-xl font-bold tracking-tight text-zinc-900 dark:text-white">
+                        LLM Prompts Hub (ชุดคำสั่งแนะนำสำหรับถาม AI)
+                      </h1>
+                    </div>
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1.5 leading-relaxed">
+                      รวม Prompt ที่ปรับแต่งโครงสร้างและแทรกพารามิเตอร์เฉพาะกลุ่มของคุณโดยอัตโนมัติ นำไปถาม ChatGPT, Claude, Gemini, หรือ Cursor ได้ทันทีโดยไม่ต้องแก้ค่าเอง
+                    </p>
+                  </div>
+
+                  {/* Context Sharing Callout */}
+                  <div className="p-3.5 rounded-xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div className="flex items-start gap-2.5">
+                      <Bot className="h-4 w-4 text-zinc-500 shrink-0 mt-0.5" />
+                      <div className="space-y-0.5">
+                        <div className="font-semibold text-zinc-900 dark:text-zinc-100">
+                          ส่งโครงสร้างทั้งระบบให้ AI อ่านในคลิกเดียว (llms.txt)
+                        </div>
+                        <div className="text-zinc-500 dark:text-zinc-400">
+                          คัดลอกลิงก์ <code className="font-mono text-zinc-800 dark:text-zinc-200">https://iot.pichyy.qzz.io/llms.txt</code> ให้ AI เปิดอ่านสเปกระบบ โค้ดตัวอย่าง และ API ทั้งหมดได้ทันที
+                        </div>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        navigator.clipboard.writeText('https://iot.pichyy.qzz.io/llms.txt')
+                        setCopiedAiLink(true)
+                        setTimeout(() => setCopiedAiLink(false), 2000)
+                      }}
+                      className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-zinc-200 text-white dark:text-zinc-900 text-xs font-semibold shrink-0 cursor-pointer shadow-2xs"
+                    >
+                      {copiedAiLink ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                      <span>{copiedAiLink ? 'คัดลอกลิงก์แล้ว' : 'คัดลอกลิงก์ llms.txt'}</span>
+                    </button>
+                  </div>
+
+                  {/* PROMPT 1: SYSTEM PROMPT / PERSONA */}
+                  <div id="sec-ai-system" className="border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-zinc-900 p-4 sm:p-5 shadow-xs space-y-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono text-[10px] font-semibold text-zinc-500 uppercase tracking-wider bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded">Prompt 1</span>
+                          <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">System Context / บทบาทที่ปรึกษา AI</span>
+                        </div>
+                        <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+                          ส่งเป็นข้อความแรกของการสนทนาเพื่อให้ AI เข้าใจข้อมูลการเชื่อมต่อและบริบทของกลุ่มคุณทั้งหมด
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => copyPromptText(`คุณคือ Senior IoT & Embedded Systems Engineer ผู้เชี่ยวชาญด้านสถาปัตยกรรมคลาวด์ กำลังเป็นพี่เลี้ยงให้นักศึกษารหัส ${session?.studentId || 'std'} วิทยาลัยเทคนิคลพบุรี ในโครงงาน "${session?.projectTitle || 'โครงงาน IoT'}"
+
+ระบบ LBTech IoT Cloud มีโครงสร้างและ Credentials ดังนี้:
+1. MQTT Broker (EMQX v5.8):
+   - WSS Host: mqtt.pichyy.qzz.io:443/mqtt (TLS เข้ารหัสผ่าน Cloudflare)
+   - TCP Host: mqtt.pichyy.qzz.io:1883
+   - Username: ${session?.studentId || 'std'}
+   - Password: ${session?.token || '••••••••'}
+   - Topic Telemetry: project/${session?.studentId || 'std'}/sensor
+   - Topic Control: project/${session?.studentId || 'std'}/control
+   - Topic Subscribe: project/${session?.studentId || 'std'}/#
+2. InfluxDB v2 Time-Series:
+   - Host: https://influx.pichyy.qzz.io
+   - Organization: lbtech
+   - Bucket: ${session?.influxBucket || `bucket_${session?.studentId || 'std'}`}
+   - API Token: ${session?.influxToken || `lbtech_${session?.studentId || 'token'}`}
+3. Cloud Linux Micro-Container:
+   - SSH Bastion: ssh ${session?.studentId || 'std'}@techniccom.tail59415d.ts.net -p 10000
+   - Workspace: /workspace (Persistent Storage)
+
+กรุณาแนะนำโค้ด, สถาปัตยกรรม, และแก้ไขปัญหาโดยอ้างอิงพารามิเตอร์ข้างต้นเสมอ ตอบด้วยภาษาไทยที่กระชับ ชัดเจน และให้โค้ดที่พร้อมรันได้ทันที`, 'prompt_sys')}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-750 text-xs font-medium text-zinc-700 dark:text-zinc-200 transition-colors shrink-0 cursor-pointer"
+                      >
+                        {copiedPromptKey === 'prompt_sys' ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
+                        <span>{copiedPromptKey === 'prompt_sys' ? 'คัดลอกแล้ว!' : 'คัดลอก Prompt'}</span>
+                      </button>
+                    </div>
+
+                    <pre className="p-3 rounded-lg bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 text-[11px] font-mono text-zinc-800 dark:text-zinc-300 overflow-x-auto whitespace-pre-wrap leading-relaxed">
+{`คุณคือ Senior IoT & Embedded Systems Engineer ผู้เชี่ยวชาญด้านสถาปัตยกรรมคลาวด์ กำลังเป็นพี่เลี้ยงให้นักศึกษารหัส ${session?.studentId || 'std'} วิทยาลัยเทคนิคลพบุรี ในโครงงาน "${session?.projectTitle || 'โครงงาน IoT'}"
+
+ระบบ LBTech IoT Cloud มีโครงสร้างและ Credentials ดังนี้:
+1. MQTT Broker (EMQX v5.8):
+   - WSS Host: mqtt.pichyy.qzz.io:443/mqtt (TLS เข้ารหัสผ่าน Cloudflare)
+   - TCP Host: mqtt.pichyy.qzz.io:1883
+   - Username: ${session?.studentId || 'std'}
+   - Password: ${session?.token || '••••••••'}
+   - Topic Telemetry: project/${session?.studentId || 'std'}/sensor
+   - Topic Control: project/${session?.studentId || 'std'}/control
+   - Topic Subscribe: project/${session?.studentId || 'std'}/#
+2. InfluxDB v2 Time-Series:
+   - Host: https://influx.pichyy.qzz.io
+   - Organization: lbtech
+   - Bucket: ${session?.influxBucket || `bucket_${session?.studentId || 'std'}`}
+   - API Token: ${session?.influxToken || `lbtech_${session?.studentId || 'token'}`}
+3. Cloud Linux Micro-Container:
+   - SSH Bastion: ssh ${session?.studentId || 'std'}@techniccom.tail59415d.ts.net -p 10000
+   - Workspace: /workspace (Persistent Storage)
+
+กรุณาแนะนำโค้ด, สถาปัตยกรรม, และแก้ไขปัญหาโดยอ้างอิงพารามิเตอร์ข้างต้นเสมอ ตอบด้วยภาษาไทยที่กระชับ ชัดเจน และให้โค้ดที่พร้อมรันได้ทันที`}
+                    </pre>
+                  </div>
+
+                  {/* PROMPT 2: ESP32 ARDUINO */}
+                  <div id="sec-ai-esp32" className="border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-zinc-900 p-4 sm:p-5 shadow-xs space-y-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono text-[10px] font-semibold text-zinc-500 uppercase tracking-wider bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded">Prompt 2</span>
+                          <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">ESP32: อ่านค่าเซนเซอร์ ส่งขึ้น MQTT & รับคำสั่งควบคุม</span>
+                        </div>
+                        <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+                          ขอโค้ด Arduino C++ สำหรับบอร์ด ESP32 ที่เชื่อมต่อ MQTT พร้อมระบบ Reconnect อัตโนมัติ
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => copyPromptText(`เขียนโค้ด Arduino C++ สำหรับบอร์ด ESP32 เชื่อมต่อ WiFi และส่งข้อมูลเข้าสู่ LBTech IoT Platform:
+
+ข้อมูลเชื่อมต่อของกลุ่มฉัน:
+- MQTT Broker Host: mqtt.pichyy.qzz.io
+- Port: 1883
+- Username: ${session?.studentId || 'std'}
+- Password: ${session?.token || 'รหัสผ่านของคุณ'}
+- Publish Topic: project/${session?.studentId || 'std'}/sensor
+- Subscribe Topic (สำหรับรับคำสั่ง): project/${session?.studentId || 'std'}/control
+
+ความต้องการในโค้ด:
+1. เชื่อมต่อ WiFi พร้อมกลไก Auto-reconnect หากสัญญาณหลุด
+2. ส่ง JSON payload ทุก 5 วินาที เช่น {"device":"esp32_01","temp":28.5,"hum":65.2}
+3. เขียน callback รอรับคำสั่งเปิด-ปิด Relay จาก Subscribe topic
+4. มีคอมเมนต์อธิบายขั้นตอนเป็นภาษาไทยเข้าใจง่าย`, 'prompt_esp')}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-750 text-xs font-medium text-zinc-700 dark:text-zinc-200 transition-colors shrink-0 cursor-pointer"
+                      >
+                        {copiedPromptKey === 'prompt_esp' ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
+                        <span>{copiedPromptKey === 'prompt_esp' ? 'คัดลอกแล้ว!' : 'คัดลอก Prompt'}</span>
+                      </button>
+                    </div>
+
+                    <pre className="p-3 rounded-lg bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 text-[11px] font-mono text-zinc-800 dark:text-zinc-300 overflow-x-auto whitespace-pre-wrap leading-relaxed">
+{`เขียนโค้ด Arduino C++ สำหรับบอร์ด ESP32 เชื่อมต่อ WiFi และส่งข้อมูลเข้าสู่ LBTech IoT Platform:
+
+ข้อมูลเชื่อมต่อของกลุ่มฉัน:
+- MQTT Broker Host: mqtt.pichyy.qzz.io (Port 1883)
+- Username: ${session?.studentId || 'std'}
+- Password: ${session?.token || 'รหัสผ่านของคุณ'}
+- Publish Topic: project/${session?.studentId || 'std'}/sensor
+- Subscribe Topic: project/${session?.studentId || 'std'}/control
+
+ความต้องการในโค้ด:
+1. เชื่อมต่อ WiFi พร้อมกลไก Auto-reconnect หากสัญญาณหลุด
+2. ส่ง JSON payload ทุก 5 วินาที เช่น {"device":"esp32_01","temp":28.5,"hum":65.2}
+3. เขียน callback รอรับคำสั่งเปิด-ปิด Relay จาก Subscribe topic
+4. มีคอมเมนต์อธิบายขั้นตอนเป็นภาษาไทยเข้าใจง่าย`}
+                    </pre>
+                  </div>
+
+                  {/* PROMPT 3: PYTHON WORKER */}
+                  <div id="sec-ai-python" className="border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-zinc-900 p-4 sm:p-5 shadow-xs space-y-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono text-[10px] font-semibold text-zinc-500 uppercase tracking-wider bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded">Prompt 3</span>
+                          <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">Python: ทำ Data Pipeline & แจ้งเตือนบน Linux Container</span>
+                        </div>
+                        <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+                          ขอโค้ด Python รันเป็น Service ใน Container เพื่อรับ MQTT แล้วเซฟลง InfluxDB
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => copyPromptText(`เขียนสคริปต์ Python สำหรับรันเป็น Worker Service บน Linux Container ของฉัน:
+
+ข้อมูลเชื่อมต่อของกลุ่ม:
+- MQTT Host: mqtt.pichyy.qzz.io (Port 1883)
+- Username: ${session?.studentId || 'std'}
+- Password: ${session?.token || 'รหัสผ่านของคุณ'}
+- Subscribe Topic: project/${session?.studentId || 'std'}/#
+- InfluxDB Host: https://influx.pichyy.qzz.io
+- InfluxDB Org: lbtech
+- InfluxDB Bucket: ${session?.influxBucket || `bucket_${session?.studentId || 'std'}`}
+- InfluxDB Token: ${session?.influxToken || `lbtech_${session?.studentId || 'token'}`}
+
+สิ่งที่ต้องการ:
+1. ใช้ paho-mqtt เชื่อมต่อและดึงข้อมูลเซนเซอร์จาก ESP32
+2. แปลงค่าแล้วบันทึกเข้า InfluxDB v2 ผ่าน influxdb-client-python
+3. ตรวจจับค่าความผิดปกติและส่งแจ้งเตือนผ่าน Discord Webhook หรือ Line Notify
+4. รองรับรันผ่าน systemd หรือ Docker Container อย่างเสถียร`, 'prompt_py')}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-750 text-xs font-medium text-zinc-700 dark:text-zinc-200 transition-colors shrink-0 cursor-pointer"
+                      >
+                        {copiedPromptKey === 'prompt_py' ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
+                        <span>{copiedPromptKey === 'prompt_py' ? 'คัดลอกแล้ว!' : 'คัดลอก Prompt'}</span>
+                      </button>
+                    </div>
+
+                    <pre className="p-3 rounded-lg bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 text-[11px] font-mono text-zinc-800 dark:text-zinc-300 overflow-x-auto whitespace-pre-wrap leading-relaxed">
+{`เขียนสคริปต์ Python สำหรับรันเป็น Worker Service บน Linux Container ของฉัน:
+
+ข้อมูลเชื่อมต่อของกลุ่ม:
+- MQTT Host: mqtt.pichyy.qzz.io (Port 1883)
+- Username: ${session?.studentId || 'std'}
+- Password: ${session?.token || 'รหัสผ่านของคุณ'}
+- Subscribe Topic: project/${session?.studentId || 'std'}/#
+- InfluxDB Host: https://influx.pichyy.qzz.io
+- InfluxDB Org: lbtech
+- InfluxDB Bucket: ${session?.influxBucket || `bucket_${session?.studentId || 'std'}`}
+- InfluxDB Token: ${session?.influxToken || `lbtech_${session?.studentId || 'token'}`}
+
+สิ่งที่ต้องการ:
+1. ใช้ paho-mqtt เชื่อมต่อและดึงข้อมูลเซนเซอร์จาก ESP32
+2. แปลงค่าแล้วบันทึกเข้า InfluxDB v2 ผ่าน influxdb-client-python
+3. ตรวจจับค่าความผิดปกติและส่งแจ้งเตือนผ่าน Discord Webhook หรือ Line Notify
+4. รองรับรันผ่าน systemd หรือ Docker Container อย่างเสถียร`}
+                    </pre>
+                  </div>
+
+                  {/* PROMPT 4: WEB DASHBOARD */}
+                  <div id="sec-ai-dashboard" className="border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-zinc-900 p-4 sm:p-5 shadow-xs space-y-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono text-[10px] font-semibold text-zinc-500 uppercase tracking-wider bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded">Prompt 4</span>
+                          <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">Web Dashboard: หน้าเว็บแดชบอร์ด Real-Time HTML + Tailwind</span>
+                        </div>
+                        <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+                          ขอโค้ดหน้าเว็บ Single-Page ต่อ MQTT WebSocket ตรง พร้อมกราฟและปุ่มสวิตช์
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => copyPromptText(`ช่วยสร้างหน้าเว็บ Dashboard หน้าเดียว (Single Page HTML) สำหรับแสดงผลข้อมูลเซนเซอร์แบบ Real-Time จาก LBTech MQTT Broker:
+
+ข้อมูลการเชื่อมต่อ:
+- MQTT WebSocket (WSS): wss://mqtt.pichyy.qzz.io/mqtt
+- Username: ${session?.studentId || 'std'}
+- Password: ${session?.token || 'รหัสผ่านของคุณ'}
+- Subscribe Topic: project/${session?.studentId || 'std'}/sensor
+- Control Topic: project/${session?.studentId || 'std'}/control
+
+ดีไซน์และฟีเจอร์:
+1. ใช้ Tailwind CSS CDN ดีไซน์แบบ Minimal Clean Zinc Dark Mode (#09090b)
+2. มี Badge แสดงสถานะการเชื่อมต่อ MQTT (Connected / Disconnected)
+3. มีการ์ดแสดงผลค่า Real-Time: อุณหภูมิ (°C), ความชื้น (%), เวลาอัปเดตล่าสุด
+4. มีกราฟเส้น Chart.js แสดงแนวโน้มข้อมูลย้อนหลัง 20 จุดล่าสุด
+5. มีปุ่มกด Switch ควบคุม Relay ส่งคำสั่ง MQTT Publish ไปที่ project/${session?.studentId || 'std'}/control`, 'prompt_web')}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-750 text-xs font-medium text-zinc-700 dark:text-zinc-200 transition-colors shrink-0 cursor-pointer"
+                      >
+                        {copiedPromptKey === 'prompt_web' ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
+                        <span>{copiedPromptKey === 'prompt_web' ? 'คัดลอกแล้ว!' : 'คัดลอก Prompt'}</span>
+                      </button>
+                    </div>
+
+                    <pre className="p-3 rounded-lg bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 text-[11px] font-mono text-zinc-800 dark:text-zinc-300 overflow-x-auto whitespace-pre-wrap leading-relaxed">
+{`ช่วยสร้างหน้าเว็บ Dashboard หน้าเดียว (Single Page HTML) สำหรับแสดงผลข้อมูลเซนเซอร์แบบ Real-Time จาก LBTech MQTT Broker:
+
+ข้อมูลการเชื่อมต่อ:
+- MQTT WebSocket (WSS): wss://mqtt.pichyy.qzz.io/mqtt
+- Username: ${session?.studentId || 'std'}
+- Password: ${session?.token || 'รหัสผ่านของคุณ'}
+- Subscribe Topic: project/${session?.studentId || 'std'}/sensor
+- Control Topic: project/${session?.studentId || 'std'}/control
+
+ดีไซน์และฟีเจอร์:
+1. ใช้ Tailwind CSS CDN ดีไซน์แบบ Minimal Clean Zinc Dark Mode (#09090b)
+2. มี Badge แสดงสถานะการเชื่อมต่อ MQTT (Connected / Disconnected)
+3. มีการ์ดแสดงผลค่า Real-Time: อุณหภูมิ (°C), ความชื้น (%), เวลาอัปเดตล่าสุด
+4. มีกราฟเส้น Chart.js แสดงแนวโน้มข้อมูลย้อนหลัง 20 จุดล่าสุด
+5. มีปุ่มกด Switch ควบคุม Relay ส่งคำสั่ง MQTT Publish ไปที่ project/${session?.studentId || 'std'}/control`}
+                    </pre>
+                  </div>
+
+                  {/* PROMPT 5: TROUBLESHOOTING & DEBUG */}
+                  <div id="sec-ai-debug" className="border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-zinc-900 p-4 sm:p-5 shadow-xs space-y-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono text-[10px] font-semibold text-zinc-500 uppercase tracking-wider bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded">Prompt 5</span>
+                          <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">Debug & Troubleshooting: แก้ไขปัญหา Network, MQTT, และ InfluxDB</span>
+                        </div>
+                        <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+                          ส่งให้ AI วิเคราะห์หาสาเหตุเมื่อต่อไม่ติด หรือเจอปัญหา Error ต่างๆ
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => copyPromptText(`ช่วยวิเคราะห์และหาสาเหตุที่อุปกรณ์ของฉันไม่สามารถเชื่อมต่อไปยัง LBTech IoT Cloud ได้:
+
+ข้อมูลการตั้งค่าปัจจุบัน:
+- Student ID: ${session?.studentId || 'std'}
+- โครงงาน: ${session?.projectTitle || 'โครงงาน IoT'}
+- MQTT Host: mqtt.pichyy.qzz.io (WSS 443 / TCP 1883)
+- InfluxDB Host: https://influx.pichyy.qzz.io (Org: lbtech, Bucket: ${session?.influxBucket || `bucket_${session?.studentId || 'std'}`})
+
+อาการที่พบ:
+[ระบุอาการ เช่น ESP32 เชื่อมต่อ WiFi สำเร็จแต่ MQTT connect() คืนค่า -2 หรือ HTTP POST InfluxDB ตอบกลับ 401 Unauthorized]
+
+ช่วยให้คำแนะนำและเช็คลิสต์ตรวจหาสาเหตุทีละขั้นตอน (Checklist) และแนวทางแก้ไขที่ตรงจุด`, 'prompt_debug')}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-750 text-xs font-medium text-zinc-700 dark:text-zinc-200 transition-colors shrink-0 cursor-pointer"
+                      >
+                        {copiedPromptKey === 'prompt_debug' ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
+                        <span>{copiedPromptKey === 'prompt_debug' ? 'คัดลอกแล้ว!' : 'คัดลอก Prompt'}</span>
+                      </button>
+                    </div>
+
+                    <pre className="p-3 rounded-lg bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 text-[11px] font-mono text-zinc-800 dark:text-zinc-300 overflow-x-auto whitespace-pre-wrap leading-relaxed">
+{`ช่วยวิเคราะห์และหาสาเหตุที่อุปกรณ์ของฉันไม่สามารถเชื่อมต่อไปยัง LBTech IoT Cloud ได้:
+
+ข้อมูลการตั้งค่าปัจจุบัน:
+- Student ID: ${session?.studentId || 'std'}
+- โครงงาน: ${session?.projectTitle || 'โครงงาน IoT'}
+- MQTT Host: mqtt.pichyy.qzz.io (WSS 443 / TCP 1883)
+- InfluxDB Host: https://influx.pichyy.qzz.io (Org: lbtech, Bucket: ${session?.influxBucket || `bucket_${session?.studentId || 'std'}`})
+
+อาการที่พบ:
+[ระบุอาการ เช่น ESP32 เชื่อมต่อ WiFi สำเร็จแต่ MQTT connect() คืนค่า -2 หรือ HTTP POST InfluxDB ตอบกลับ 401 Unauthorized]
+
+ช่วยให้คำแนะนำและเช็คลิสต์ตรวจหาสาเหตุทีละขั้นตอน (Checklist) และแนวทางแก้ไขที่ตรงจุด`}
+                    </pre>
+                  </div>
+                </div>
+              )}
+
+              {/* TAB 10: MCP SERVER */}
+              {activeTab === 'mcp-server' && (
+                <div className="space-y-6">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <div className="h-7 w-7 rounded-lg bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 flex items-center justify-center">
+                        <Bot className="h-4 w-4" />
+                      </div>
+                      <h1 className="text-lg sm:text-xl font-bold tracking-tight text-zinc-900 dark:text-white">
+                        Model Context Protocol (MCP) Server
+                      </h1>
+                    </div>
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1.5 leading-relaxed">
+                      เชื่อมต่อระบบ LBTech IoT Cloud เข้ากับ AI Assistants เช่น Claude Desktop, Cursor, หรือ Antigravity เพื่อให้ AI ตรวจสอบสถานะ ควบคุมเซิร์ฟเวอร์ และจัดการข้อมูลแทนคุณได้อัตโนมัติ
+                    </p>
+                  </div>
+
+                  {/* MCP Status Banner */}
+                  <div id="sec-mcp-about" className="border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-zinc-900 p-4 sm:p-5 shadow-xs space-y-3">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                          <span className="font-semibold text-xs text-zinc-900 dark:text-zinc-100">MCP Server พร้อมให้บริการ (JSON-RPC 2.0)</span>
+                        </div>
+                        <div className="text-xs text-zinc-500 dark:text-zinc-400 mt-1 font-mono">
+                          Endpoint: <code className="text-zinc-800 dark:text-zinc-200 font-semibold select-all">https://iot.pichyy.qzz.io/api/mcp</code>
+                        </div>
+                      </div>
+                      <a
+                        href="/api/mcp"
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 hover:bg-zinc-100 text-xs font-medium text-zinc-700 dark:text-zinc-200 transition-colors shrink-0"
+                      >
+                        <ExternalLink className="h-3.5 w-3.5" />
+                        <span>ตรวจสอบ Manifest JSON</span>
+                      </a>
+                    </div>
+                  </div>
+
+                  {/* MCP Config 1: Claude Desktop */}
+                  <div id="sec-mcp-claude" className="border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-zinc-900 p-4 sm:p-5 shadow-xs space-y-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <h3 className="font-semibold text-sm text-zinc-900 dark:text-zinc-100">
+                          1. การเชื่อมต่อ Claude Desktop (claude_desktop_config.json)
+                        </h3>
+                        <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+                          นำคอนฟิกนี้ไปใส่ในไฟล์ตั้งค่าของ Claude Desktop (Settings &gt; Developer &gt; Edit Config)
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => copyPromptText(`{
+  "mcpServers": {
+    "lbtech-iot": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-fetch",
+        "https://iot.pichyy.qzz.io/api/mcp"
+      ]
+    }
+  }
+}`, 'mcp_claude')}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 hover:bg-zinc-100 text-xs font-medium text-zinc-700 dark:text-zinc-200 transition-colors shrink-0 cursor-pointer"
+                      >
+                        {copiedPromptKey === 'mcp_claude' ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
+                        <span>{copiedPromptKey === 'mcp_claude' ? 'คัดลอกแล้ว!' : 'คัดลอก Config'}</span>
+                      </button>
+                    </div>
+
+                    <pre className="p-3 rounded-lg bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 text-[11px] font-mono text-zinc-800 dark:text-zinc-300 overflow-x-auto whitespace-pre-wrap leading-relaxed">
+{`{
+  "mcpServers": {
+    "lbtech-iot": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-fetch",
+        "https://iot.pichyy.qzz.io/api/mcp"
+      ]
+    }
+  }
+}`}
+                    </pre>
+                  </div>
+
+                  {/* MCP Config 2: Cursor */}
+                  <div id="sec-mcp-cursor" className="border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-zinc-900 p-4 sm:p-5 shadow-xs space-y-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <h3 className="font-semibold text-sm text-zinc-900 dark:text-zinc-100">
+                          2. การเชื่อมต่อ Cursor IDE (~/.cursor/mcp.json)
+                        </h3>
+                        <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+                          ใน Cursor: ไปที่ Features &gt; MCP &gt; Add New MCP Server ใส่ URL ของระบบ
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => copyPromptText(`{
+  "mcpServers": {
+    "lbtech-iot": {
+      "url": "https://iot.pichyy.qzz.io/api/mcp"
+    }
+  }
+}`, 'mcp_cursor')}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 hover:bg-zinc-100 text-xs font-medium text-zinc-700 dark:text-zinc-200 transition-colors shrink-0 cursor-pointer"
+                      >
+                        {copiedPromptKey === 'mcp_cursor' ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
+                        <span>{copiedPromptKey === 'mcp_cursor' ? 'คัดลอกแล้ว!' : 'คัดลอก Config'}</span>
+                      </button>
+                    </div>
+
+                    <pre className="p-3 rounded-lg bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 text-[11px] font-mono text-zinc-800 dark:text-zinc-300 overflow-x-auto whitespace-pre-wrap leading-relaxed">
+{`{
+  "mcpServers": {
+    "lbtech-iot": {
+      "url": "https://iot.pichyy.qzz.io/api/mcp"
+    }
+  }
+}`}
+                    </pre>
+                  </div>
+
+                  {/* MCP Tools Catalog */}
+                  <div id="sec-mcp-tools" className="border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-zinc-900 overflow-hidden shadow-xs">
+                    <div className="px-4 py-3 bg-zinc-50 dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+                      รายการเครื่องมือ AI (Available MCP Tools)
+                    </div>
+                    <div className="divide-y divide-zinc-100 dark:divide-zinc-800 text-xs">
+                      <div className="p-3 sm:p-4 space-y-1">
+                        <div className="font-mono font-semibold text-zinc-900 dark:text-zinc-100 text-[12px]">
+                          lbtech_get_student_credentials(studentId)
+                        </div>
+                        <div className="text-zinc-500 dark:text-zinc-400">
+                          ให้ AI ดึงข้อมูลเชื่อมต่อ MQTT, InfluxDB Org/Bucket/Token และพอร์ต SSH ของกลุ่มคุณมาเขียนโค้ดได้ตรงจุด
+                        </div>
+                      </div>
+                      <div className="p-3 sm:p-4 space-y-1">
+                        <div className="font-mono font-semibold text-zinc-900 dark:text-zinc-100 text-[12px]">
+                          lbtech_get_server_status(studentId)
+                        </div>
+                        <div className="text-zinc-500 dark:text-zinc-400">
+                          ตรวจสอบสถานะความพร้อมทำงานของ Linux Container, สเปก vCPU, RAM, SSD, และ IP Address
+                        </div>
+                      </div>
+                      <div className="p-3 sm:p-4 space-y-1">
+                        <div className="font-mono font-semibold text-zinc-900 dark:text-zinc-100 text-[12px]">
+                          lbtech_power_server(vmid, action: "start" | "stop" | "reboot")
+                        </div>
+                        <div className="text-zinc-500 dark:text-zinc-400">
+                          ให้ AI เป็นผู้สั่งการ เปิด ปิด หรือรีสตาร์ตเครื่องคอนเทนเนอร์ของคุณได้โดยอัตโนมัติ
+                        </div>
+                      </div>
+                      <div className="p-3 sm:p-4 space-y-1">
+                        <div className="font-mono font-semibold text-zinc-900 dark:text-zinc-100 text-[12px]">
+                          lbtech_submit_ticket(studentId, subject, category, description)
+                        </div>
+                        <div className="text-zinc-500 dark:text-zinc-400">
+                          ให้ AI สรุปปัญหาและส่งตั๋วแจ้งช่วยเหลือไปยังอาจารย์ผู้ดูแลระบบเมื่อพบปัญหาการรัน
+                        </div>
+                      </div>
+                      <div className="p-3 sm:p-4 space-y-1">
+                        <div className="font-mono font-semibold text-zinc-900 dark:text-zinc-100 text-[12px]">
+                          lbtech_read_documentation(section)
+                        </div>
+                        <div className="text-zinc-500 dark:text-zinc-400">
+                          ให้ AI อ่านเอกสารคู่มือของระบบฉบับเต็มเพื่อทำความเข้าใจและแนะนำแนวทางที่ถูกต้อง
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* TAB 11: SUPPORT TICKETS */}
+              {activeTab === 'tickets' && (
+                <div className="space-y-6">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <div className="h-7 w-7 rounded-lg bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 flex items-center justify-center">
+                        <HelpCircle className="h-4 w-4" />
+                      </div>
+                      <h1 className="text-lg sm:text-xl font-bold tracking-tight text-zinc-900 dark:text-white">
+                        ติดต่อผู้ดูแลระบบ (Support Tickets)
+                      </h1>
+                    </div>
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1.5 leading-relaxed">
+                      แจ้งปัญหาการใช้งาน ขอขยายขนาด RAM / vCPU / พื้นที่ SSD หรือส่งข้อสงสัยให้อาจารย์ผู้ดูแลระบบตรวจสอบ
+                    </p>
+                  </div>
+
+                  {ticketSubmitSuccess && (
+                    <div className="p-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-xs text-emerald-700 dark:text-emerald-300 flex items-center gap-2 animate-in fade-in">
+                      <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" />
+                      <span>{ticketSubmitSuccess}</span>
+                    </div>
+                  )}
+
+                  {/* SUBMISSION FORM */}
+                  <div id="sec-ticket-form" className="border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-zinc-900 p-4 sm:p-5 shadow-xs space-y-4">
+                    <div className="border-b border-zinc-100 dark:border-zinc-800 pb-3">
+                      <h3 className="font-semibold text-sm text-zinc-900 dark:text-zinc-100">
+                        สร้างคำร้องใหม่ (New Ticket)
+                      </h3>
+                      <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+                        คำร้องจะถูกส่งตรงไปยังแผงควบคุมของอาจารย์ผู้ดูแลระบบ
+                      </p>
+                    </div>
+
+                    <form onSubmit={handleCreateTicket} className="space-y-3.5 text-xs">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div className="space-y-1">
+                          <label className="font-medium text-zinc-700 dark:text-zinc-300">หมวดหมู่คำร้อง</label>
+                          <select
+                            value={ticketCategory}
+                            onChange={(e) => setTicketCategory(e.target.value)}
+                            className="w-full h-9 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3 text-xs text-zinc-900 dark:text-zinc-100"
+                          >
+                            <option value="quota">ขอเพิ่มทรัพยากร (RAM / vCPU / Storage)</option>
+                            <option value="network">ปัญหาเครือข่าย / Port / Bastion SSH</option>
+                            <option value="credentials">ขอรีเซ็ตรหัสผ่าน / InfluxDB Token</option>
+                            <option value="general">สอบถามการใช้งานทั่วไป</option>
+                          </select>
+                        </div>
+                        <div className="space-y-1">
+                          <label className="font-medium text-zinc-700 dark:text-zinc-300">หัวข้อคำร้อง (Subject)</label>
+                          <Input
+                            placeholder="เช่น ขอเพิ่ม RAM เป็น 1024 MB สำหรับรัน Docker Compose"
+                            value={ticketSubject}
+                            onChange={(e) => setTicketSubject(e.target.value)}
+                            required
+                            className="h-9 text-xs"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="font-medium text-zinc-700 dark:text-zinc-300">รายละเอียดเพิ่มเติม (Description)</label>
+                        <textarea
+                          rows={4}
+                          placeholder="อธิบายปัญหาที่พบ หรือระบุเหตุผลความจำเป็นในการขอทรัพยากรเพิ่ม..."
+                          value={ticketDescription}
+                          onChange={(e) => setTicketDescription(e.target.value)}
+                          required
+                          className="w-full rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-3 text-xs text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-zinc-400 leading-relaxed"
+                        />
+                      </div>
+
+                      <div className="flex justify-end pt-1">
+                        <Button
+                          type="submit"
+                          disabled={isTicketSubmitting}
+                          className="h-9 text-xs px-4 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 hover:bg-zinc-800 font-semibold cursor-pointer shadow-2xs"
+                        >
+                          {isTicketSubmitting ? 'กำลังส่งคำร้อง...' : 'ส่งคำร้องช่วยเหลือ'}
+                        </Button>
+                      </div>
+                    </form>
+                  </div>
+
+                  {/* TICKET LIST */}
+                  <div id="sec-ticket-list" className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-semibold text-xs text-zinc-700 dark:text-zinc-300 uppercase tracking-wider">
+                        ประวัติคำร้องของคุณ ({studentTickets.length})
+                      </h3>
+                      <button
+                        type="button"
+                        onClick={fetchStudentTickets}
+                        className="text-xs text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 cursor-pointer"
+                      >
+                        รีเฟรชสถานะ
+                      </button>
+                    </div>
+
+                    {studentTickets.length === 0 ? (
+                      <div className="border border-dashed border-zinc-200 dark:border-zinc-800 rounded-xl p-8 text-center text-xs text-zinc-500 dark:text-zinc-400">
+                        คุณยังไม่มีคำร้องช่วยเหลือในระบบ
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {studentTickets.map(t => (
+                          <div
+                            key={t.id}
+                            className="border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-zinc-900 p-4 space-y-3 shadow-xs"
+                          >
+                            <div className="flex items-start justify-between gap-2">
+                              <div>
+                                <div className="flex items-center gap-2">
+                                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${
+                                    t.status === 'pending'
+                                      ? 'bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800'
+                                      : t.status === 'in_progress'
+                                      ? 'bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800'
+                                      : 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800'
+                                  }`}>
+                                    {t.status === 'pending' ? 'รอตรวจสอบ' : t.status === 'in_progress' ? 'กำลังดำเนินการ' : 'แก้ไขเสร็จสิ้น'}
+                                  </span>
+                                  <span className="font-mono text-[10px] text-zinc-400">{t.id}</span>
+                                  <span className="text-[11px] text-zinc-400">• {new Date(t.createdAt).toLocaleString('th-TH')}</span>
+                                </div>
+                                <h4 className="font-semibold text-sm text-zinc-900 dark:text-zinc-100 mt-1">
+                                  {t.subject}
+                                </h4>
+                              </div>
+                            </div>
+
+                            <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed bg-zinc-50 dark:bg-zinc-950 p-2.5 rounded-lg border border-zinc-100 dark:border-zinc-800/60">
+                              {t.description}
+                            </p>
+
+                            {/* Admin Reply */}
+                            {t.adminReply && (
+                              <div className="p-3 rounded-lg bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/40 text-xs space-y-1">
+                                <div className="font-semibold text-emerald-800 dark:text-emerald-300 flex items-center gap-1.5">
+                                  <Check className="h-3.5 w-3.5" />
+                                  <span>ข้อความตอบกลับจากอาจารย์ผู้ดูแลระบบ:</span>
+                                </div>
+                                <p className="text-emerald-900 dark:text-emerald-200 leading-relaxed">
+                                  {t.adminReply}
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
               )}

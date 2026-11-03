@@ -10,6 +10,8 @@ import authRoutes from './routes/auth.js'
 import ctRoutes from './routes/ct.js'
 import adminRoutes from './routes/admin.js'
 import telemetryRoutes from './routes/telemetry.js'
+import ticketsRoutes from './routes/tickets.js'
+import mcpRoutes from './routes/mcp.js'
 import { db } from './database.js'
 import { createTerminalSession } from './services/docker_provisioner.js'
 import { startSshBastion } from './services/ssh_bastion.js'
@@ -36,6 +38,8 @@ app.use((req, res, next) => {
 app.use('/api/auth', authRoutes)
 app.use('/api/ct', ctRoutes)
 app.use('/api/admin', adminRoutes)
+app.use('/api/tickets', ticketsRoutes)
+app.use('/api/mcp', mcpRoutes)
 app.use('/api/v1', telemetryRoutes)
 app.use('/api', telemetryRoutes)
 

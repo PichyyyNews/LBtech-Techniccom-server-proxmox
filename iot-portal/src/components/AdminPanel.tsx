@@ -26,7 +26,11 @@ import {
   Database,
   Radio,
   FileDown,
-  ExternalLink
+  ExternalLink,
+  MessageSquare,
+  HelpCircle,
+  Send,
+  Sparkles
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -71,6 +75,19 @@ export interface AdminPanelProps {
   ctServers: any[]
 }
 
+export interface SupportTicket {
+  id: string
+  studentId: string
+  studentName?: string
+  category: string
+  subject: string
+  description: string
+  status: 'pending' | 'in_progress' | 'resolved'
+  adminReply?: string
+  createdAt: string
+  updatedAt: string
+}
+
 export function AdminPanel({
   adminPin,
   onLock,
@@ -83,13 +100,19 @@ export function AdminPanel({
   ctRequests,
   ctServers
 }: AdminPanelProps) {
-  const [activeSubTab, setActiveSubTab] = useState<'passwords' | 'queue' | 'servers'>('passwords')
+  const [activeSubTab, setActiveSubTab] = useState<'passwords' | 'queue' | 'servers' | 'tickets'>('passwords')
   const [students, setStudents] = useState<EnrichedStudent[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [revealedPasswords, setRevealedPasswords] = useState<{ [id: string]: boolean }>({})
   const [copiedKey, setCopiedKey] = useState<string | null>(null)
   const [isApprovingId, setIsApprovingId] = useState<string | null>(null)
+
+  // Support Tickets State
+  const [tickets, setTickets] = useState<SupportTicket[]>([])
+  const [ticketFilter, setTicketFilter] = useState<'all' | 'pending' | 'in_progress' | 'resolved'>('all')
+  const [replyDrafts, setReplyDrafts] = useState<{ [id: string]: string }>({})
+  const [updatingTicketId, setUpdatingTicketId] = useState<string | null>(null)
 
   // Fetch students from backend admin API
   const fetchStudents = async () => {
@@ -111,9 +134,46 @@ export function AdminPanel({
     }
   }
 
+  const fetchTickets = async () => {
+    try {
+      const res = await fetch('/api/tickets')
+      if (res.ok) {
+        const data = await res.json()
+        if (data.tickets) {
+          setTickets(data.tickets)
+        }
+      }
+    } catch (err) {
+      console.warn('[AdminPanel] Could not fetch tickets:', err)
+    }
+  }
+
   useEffect(() => {
     fetchStudents()
+    fetchTickets()
   }, [adminPin])
+
+  const handleUpdateTicket = async (id: string, newStatus: string) => {
+    setUpdatingTicketId(id)
+    try {
+      const reply = replyDrafts[id] !== undefined ? replyDrafts[id] : (tickets.find(t => t.id === id)?.adminReply || '')
+      const res = await fetch(`/api/tickets/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus, adminReply: reply })
+      })
+      if (res.ok) {
+        const data = await res.json()
+        if (data.ticket) {
+          setTickets(prev => prev.map(t => t.id === id ? data.ticket : t))
+        }
+      }
+    } catch (err) {
+      console.error('Error updating ticket:', err)
+    } finally {
+      setUpdatingTicketId(null)
+    }
+  }
 
   // Copy to clipboard helper
   const handleCopy = (text: string, key: string) => {
@@ -350,6 +410,24 @@ export function AdminPanel({
           <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 font-mono">
             {ctServers.length}
           </span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveSubTab('tickets')}
+          className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold cursor-pointer transition-all ${
+            activeSubTab === 'tickets'
+              ? 'bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 shadow-sm'
+              : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'
+          }`}
+        >
+          <HelpCircle className="h-3.5 w-3.5" />
+          <span>คำร้อง & ช่วยเหลือ</span>
+          {tickets.filter(t => t.status === 'pending').length > 0 && (
+            <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-amber-500 text-white font-mono animate-pulse">
+              {tickets.filter(t => t.status === 'pending').length}
+            </span>
+          )}
         </button>
       </div>
 
@@ -734,6 +812,145 @@ export function AdminPanel({
                   </div>
                 </div>
               ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ==================================================================== */}
+      {/* SUB-TAB 4: SUPPORT TICKETS & STUDENT ASSISTANCE                       */}
+      {/* ==================================================================== */}
+      {activeSubTab === 'tickets' && (
+        <div className="space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-zinc-50 dark:bg-zinc-900/60 p-3.5 rounded-xl border border-zinc-200 dark:border-zinc-800">
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-zinc-500 font-medium">กรองสถานะ:</span>
+              {(['all', 'pending', 'in_progress', 'resolved'] as const).map(f => (
+                <button
+                  key={f}
+                  type="button"
+                  onClick={() => setTicketFilter(f)}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-medium cursor-pointer transition-colors ${
+                    ticketFilter === f
+                      ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 font-semibold'
+                      : 'bg-white dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100'
+                  }`}
+                >
+                  {f === 'all' && `ทั้งหมด (${tickets.length})`}
+                  {f === 'pending' && `รอตรวจสอบ (${tickets.filter(t => t.status === 'pending').length})`}
+                  {f === 'in_progress' && `กำลังทำ (${tickets.filter(t => t.status === 'in_progress').length})`}
+                  {f === 'resolved' && `เสร็จสิ้น (${tickets.filter(t => t.status === 'resolved').length})`}
+                </button>
+              ))}
+            </div>
+            <button
+              type="button"
+              onClick={fetchTickets}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-700 text-xs text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer self-start sm:self-auto"
+            >
+              <RefreshCw className="h-3.5 w-3.5" />
+              <span>รีเฟรชคำร้อง</span>
+            </button>
+          </div>
+
+          {tickets.filter(t => ticketFilter === 'all' || t.status === ticketFilter).length === 0 ? (
+            <div className="text-center py-12 border border-dashed border-zinc-200 dark:border-zinc-800 rounded-xl">
+              <HelpCircle className="h-8 w-8 text-zinc-300 dark:text-zinc-700 mx-auto mb-2" />
+              <p className="text-xs text-zinc-500">ไม่มีคำร้องหรือการแจ้งปัญหาในหมวดหมู่นี้</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {tickets
+                .filter(t => ticketFilter === 'all' || t.status === ticketFilter)
+                .map(t => (
+                  <div
+                    key={t.id}
+                    className="border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-zinc-900 p-4 space-y-3 shadow-xs"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider ${
+                            t.status === 'pending'
+                              ? 'bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800'
+                              : t.status === 'in_progress'
+                              ? 'bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800'
+                              : 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800'
+                          }`}>
+                            {t.status === 'pending' ? 'รอตรวจสอบ' : t.status === 'in_progress' ? 'กำลังดำเนินการ' : 'แก้ไขเสร็จสิ้น'}
+                          </span>
+                          <span className="text-[11px] font-mono text-zinc-400">{t.id}</span>
+                          <span className="text-[11px] text-zinc-400">• {new Date(t.createdAt).toLocaleString('th-TH')}</span>
+                        </div>
+                        <h4 className="font-semibold text-sm text-zinc-900 dark:text-zinc-100 mt-1">
+                          {t.subject}
+                        </h4>
+                        <div className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+                          นักศึกษา: <span className="font-mono font-medium text-zinc-700 dark:text-zinc-300">{t.studentId}</span>
+                          {t.studentName && <span className="ml-1.5">({t.studentName})</span>}
+                          <span className="ml-2 px-1.5 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-[10px] font-mono">{t.category}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="p-3 rounded-lg bg-zinc-50 dark:bg-zinc-950 text-xs text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap leading-relaxed border border-zinc-100 dark:border-zinc-800">
+                      {t.description}
+                    </div>
+
+                    {/* Admin Reply & Action */}
+                    <div className="pt-2 border-t border-zinc-100 dark:border-zinc-800/80 space-y-2">
+                      <div className="flex items-center gap-2">
+                        <Input
+                          placeholder="พิมพ์ข้อความตอบกลับหรือคำแนะนำให้นักศึกษา..."
+                          value={replyDrafts[t.id] !== undefined ? replyDrafts[t.id] : (t.adminReply || '')}
+                          onChange={(e) => setReplyDrafts(prev => ({ ...prev, [t.id]: e.target.value }))}
+                          className="text-xs h-8"
+                        />
+                        <Button
+                          size="sm"
+                          disabled={updatingTicketId === t.id}
+                          onClick={() => handleUpdateTicket(t.id, t.status)}
+                          className="h-8 text-xs shrink-0 cursor-pointer"
+                        >
+                          บันทึกคำตอบ
+                        </Button>
+                      </div>
+
+                      <div className="flex items-center justify-between text-xs pt-1">
+                        <span className="text-[11px] text-zinc-400">เปลี่ยนสถานะ:</span>
+                        <div className="flex items-center gap-1.5">
+                          {t.status !== 'in_progress' && (
+                            <button
+                              type="button"
+                              onClick={() => handleUpdateTicket(t.id, 'in_progress')}
+                              className="px-2.5 py-1 rounded-md text-[11px] font-medium bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 hover:bg-blue-100 border border-blue-200 dark:border-blue-900 cursor-pointer"
+                            >
+                              ตั้งเป็นกำลังทำ
+                            </button>
+                          )}
+                          {t.status !== 'resolved' && (
+                            <button
+                              type="button"
+                              onClick={() => handleUpdateTicket(t.id, 'resolved')}
+                              className="px-2.5 py-1 rounded-md text-[11px] font-medium bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 border border-emerald-200 dark:border-emerald-900 cursor-pointer"
+                            >
+                              เสร็จสิ้น (Resolved)
+                            </button>
+                          )}
+                          {t.status === 'resolved' && (
+                            <button
+                              type="button"
+                              onClick={() => handleUpdateTicket(t.id, 'pending')}
+                              className="px-2.5 py-1 rounded-md text-[11px] font-medium bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 cursor-pointer"
+                            >
+                              เปิดใหม่ (Reopen)
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
             </div>
           )}
         </div>

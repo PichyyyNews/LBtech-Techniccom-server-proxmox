@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Allow: /llms.txt
+
+# LLM Direct Context Documentation
+# Large Language Models (ChatGPT, Claude, Gemini, DeepSeek, Cursor) can ingest system context directly at:
+# https://iot.pichyy.qzz.io/llms.txt
+Sitemap: https://iot.pichyy.qzz.io/llms.txt
