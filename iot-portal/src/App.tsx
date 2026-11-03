@@ -3022,12 +3022,12 @@ Payload:
                         <div className="p-2.5 rounded-lg bg-zinc-50 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700/60">
                           <span className="text-[10px] text-zinc-400 font-medium block">องค์กร (Organization)</span>
                           <div className="flex items-center justify-between mt-1">
-                            <span className="font-mono font-bold text-zinc-900 dark:text-white text-xs select-all">
-                              lbtech
+                            <span className="font-mono font-bold text-zinc-900 dark:text-white text-xs select-all truncate max-w-[120px]">
+                              {session?.influxOrg || `std-${session?.studentId || '693190900xx'}`}
                             </span>
                             <button
                               type="button"
-                              onClick={() => copyDbText('lbtech', 'db_org')}
+                              onClick={() => copyDbText(session?.influxOrg || `std-${session?.studentId || '693190900xx'}`, 'db_org')}
                               className="p-1 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 cursor-pointer"
                               title="คัดลอก Organization"
                             >
@@ -3045,11 +3045,11 @@ Payload:
                           <span className="text-[10px] text-zinc-400 font-medium block">ถังข้อมูลประจำตัว (Bucket)</span>
                           <div className="flex items-center justify-between mt-1">
                             <span className="font-mono font-bold text-zinc-900 dark:text-white text-xs select-all truncate max-w-[120px]">
-                              {session?.influxBucket || `telemetry-${session?.studentId || 'std'}`}
+                              {session?.influxBucket || 'telemetry'}
                             </span>
                             <button
                               type="button"
-                              onClick={() => copyDbText(session?.influxBucket || `telemetry-${session?.studentId || 'std'}`, 'db_bucket')}
+                              onClick={() => copyDbText(session?.influxBucket || 'telemetry', 'db_bucket')}
                               className="p-1 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 cursor-pointer"
                               title="คัดลอก Bucket"
                             >
