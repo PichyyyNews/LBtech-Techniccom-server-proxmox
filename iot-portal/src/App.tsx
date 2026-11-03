@@ -112,6 +112,7 @@ interface CTServer {
   rootPassword?: string
   cpuUsage: number
   ramUsage: number
+  containerId?: string
 }
 
 export default function App() {
@@ -1483,6 +1484,33 @@ Payload:
       </button>
     </div>
   )
+
+  // Standalone Popout Window Route: /terminal/:vmid
+  const terminalMatch = typeof window !== 'undefined' ? window.location.pathname.match(/^\/terminal\/([^/]+)/i) : null
+  const standaloneTargetId = terminalMatch ? terminalMatch[1] : null
+
+  if (standaloneTargetId) {
+    const popoutServer = ctServers.find(s => String(s.vmid) === standaloneTargetId || s.containerId === standaloneTargetId || s.name === standaloneTargetId) ||
+      studentActiveServers.find(s => String(s.vmid) === standaloneTargetId || s.containerId === standaloneTargetId || s.name === standaloneTargetId) || {
+        vmid: standaloneTargetId,
+        name: `CT ${standaloneTargetId}`,
+        os: 'Linux Container',
+        ip: '127.0.0.1',
+        status: 'running'
+      }
+
+    return (
+      <div className="fixed inset-0 z-50 bg-[#0d1117] flex flex-col h-screen w-screen overflow-hidden">
+        <EmbeddedTerminal
+          server={popoutServer}
+          mode="fullscreen"
+          onModeChange={() => {}}
+          onClose={() => window.close()}
+          className="h-full w-full flex-1"
+        />
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-[#fafafa] dark:bg-[#09090b] text-zinc-900 dark:text-zinc-100 flex flex-col font-sans antialiased transition-colors">

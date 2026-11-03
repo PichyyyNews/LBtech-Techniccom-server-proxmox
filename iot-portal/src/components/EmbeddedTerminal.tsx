@@ -48,6 +48,8 @@ export function EmbeddedTerminal({
 
   const [connStatus, setConnStatus] = useState<'connecting' | 'connected' | 'disconnected' | 'error'>('connecting')
 
+  const isStandaloneWindow = typeof window !== 'undefined' && window.location.pathname.toLowerCase().startsWith('/terminal/')
+
   // Open Popout Window
   const handleOpenNewWindow = () => {
     const popUrl = `/terminal/${server.vmid}`
@@ -335,41 +337,47 @@ export function EmbeddedTerminal({
           </button>
 
           {/* New Tab / Window Popout */}
-          <button
-            type="button"
-            onClick={handleOpenNewWindow}
-            className="p-1.5 rounded-md text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/80 transition-colors cursor-pointer hidden sm:inline-flex"
-            title="เปิดในหน้าต่างใหม่ (New Window Popout)"
-          >
-            <ExternalLink className="h-3.5 w-3.5" />
-          </button>
+          {!isStandaloneWindow && (
+            <button
+              type="button"
+              onClick={handleOpenNewWindow}
+              className="p-1.5 rounded-md text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/80 transition-colors cursor-pointer hidden sm:inline-flex"
+              title="เปิดในหน้าต่างใหม่ (New Window Popout)"
+            >
+              <ExternalLink className="h-3.5 w-3.5" />
+            </button>
+          )}
 
           {/* Minimize */}
-          <button
-            type="button"
-            onClick={() => onModeChange('minimized')}
-            className="p-1.5 rounded-md text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/80 transition-colors cursor-pointer hidden sm:inline-flex"
-            title="ย่อขนาดเก็บไว้ที่แถบล่าง (Minimize)"
-          >
-            <Minimize2 className="h-3.5 w-3.5" />
-          </button>
+          {!isStandaloneWindow && (
+            <button
+              type="button"
+              onClick={() => onModeChange('minimized')}
+              className="p-1.5 rounded-md text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/80 transition-colors cursor-pointer hidden sm:inline-flex"
+              title="ย่อขนาดเก็บไว้ที่แถบล่าง (Minimize)"
+            >
+              <Minimize2 className="h-3.5 w-3.5" />
+            </button>
+          )}
 
           {/* Full Screen Toggle */}
-          <button
-            type="button"
-            onClick={() => onModeChange(mode === 'fullscreen' ? 'embedded' : 'fullscreen')}
-            className="p-1 sm:p-1.5 rounded-md text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/80 transition-colors cursor-pointer"
-            title={mode === 'fullscreen' ? 'คืนค่าขนาดเดิม' : 'ขยายเต็มหน้าจอ (Full Screen)'}
-          >
-            <Maximize2 className="h-3.5 w-3.5" />
-          </button>
+          {!isStandaloneWindow && (
+            <button
+              type="button"
+              onClick={() => onModeChange(mode === 'fullscreen' ? 'embedded' : 'fullscreen')}
+              className="p-1 sm:p-1.5 rounded-md text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/80 transition-colors cursor-pointer"
+              title={mode === 'fullscreen' ? 'คืนค่าขนาดเดิม' : 'ขยายเต็มหน้าจอ (Full Screen)'}
+            >
+              <Maximize2 className="h-3.5 w-3.5" />
+            </button>
+          )}
 
           {/* Close */}
           <button
             type="button"
-            onClick={onClose}
+            onClick={isStandaloneWindow ? () => window.close() : onClose}
             className="p-1 sm:p-1.5 rounded-md text-zinc-400 hover:text-red-400 hover:bg-zinc-800/80 transition-colors cursor-pointer ml-0.5 sm:ml-1"
-            title="ปิดคอนโซล"
+            title={isStandaloneWindow ? "ปิดหน้าต่างนี้" : "ปิดคอนโซล"}
           >
             <X className="h-3.5 w-3.5" />
           </button>
