@@ -315,6 +315,67 @@ export default function App() {
   const [showDbGuide, setShowDbGuide] = useState(false)
   const [showApiGuide, setShowApiGuide] = useState(false)
 
+  // Live Streaming Stats State
+  const [liveStats, setLiveStats] = useState<{
+    running: boolean
+    cpuPercent: number
+    memPercent: number
+    memUsageMB: number
+    memLimitMB: number
+    pids: number
+  } | null>(null)
+
+  // Live Streaming Resource Stats for Selected Server (SSE + Polling Fallback)
+  useEffect(() => {
+    if (!selectedServerVmid) {
+      setLiveStats(null)
+      return
+    }
+
+    let es: EventSource | null = null
+    let pollInterval: any = null
+
+    try {
+      es = new EventSource(`/api/ct/servers/${selectedServerVmid}/stats/stream`)
+      es.onmessage = (event) => {
+        try {
+          const parsed = JSON.parse(event.data)
+          setLiveStats(parsed)
+        } catch {}
+      }
+      es.onerror = () => {
+        if (es) {
+          es.close()
+          es = null
+        }
+        if (!pollInterval) {
+          pollInterval = setInterval(async () => {
+            try {
+              const res = await fetch(`/api/ct/servers/${selectedServerVmid}/stats`)
+              if (res.ok) {
+                const data = await res.json()
+                if (data.stats) setLiveStats(data.stats)
+              }
+            } catch {}
+          }, 2500)
+        }
+      }
+    } catch {
+      // Fallback
+    }
+
+    return () => {
+      if (es) {
+        es.close()
+        es = null
+      }
+      if (pollInterval) {
+        clearInterval(pollInterval)
+        pollInterval = null
+      }
+    }
+  }, [selectedServerVmid])
+
   // Admin PIN Protection & Mode
   const [isAdminUnlocked, setIsAdminUnlocked] = useState(false)
   const [isAdminPinModalOpen, setIsAdminPinModalOpen] = useState(false)
@@ -2482,6 +2543,16 @@ Payload:
                                       />
                                       {isRunning ? 'Online' : 'Stopped'}
                                     </span>
+                                    {isRunning && liveStats?.running && (
+                                      <>
+                                        <span className="hidden sm:inline-flex items-center gap-1 font-mono text-[10px] text-zinc-600 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded border border-zinc-200 dark:border-zinc-700">
+                                          CPU: {liveStats.cpuPercent}%
+                                        </span>
+                                        <span className="hidden sm:inline-flex items-center gap-1 font-mono text-[10px] text-zinc-600 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded border border-zinc-200 dark:border-zinc-700">
+                                          RAM: {liveStats.memPercent}%
+                                        </span>
+                                      </>
+                                    )}
                                   </div>
                                   <div className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5 flex items-center gap-2">
                                     <span>{selectedServer.os}</span>
@@ -2559,9 +2630,9 @@ Payload:
                           </div>
 
                           {/* 2-COLUMN DEDICATED WORKSPACE: Left = Large Console, Right = Controls & Specs */}
-                          <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+                          <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:items-stretch">
                             {/* LEFT COLUMN: Large Dedicated Web Console (8 cols / ~67% width) */}
-                            <div className="lg:col-span-8 space-y-3">
+                            <div className="lg:col-span-8 flex flex-col min-h-0">
                               {!isRunning ? (
                                 <div className="p-12 text-center border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-zinc-900 space-y-4">
                                   <div className="h-12 w-12 rounded-xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-zinc-500 mx-auto">
@@ -2596,12 +2667,13 @@ Payload:
                                       setSelectedServerVmid(null)
                                     }
                                   }}
+                                  className="h-full flex-1 min-h-[580px]"
                                 />
                               )}
                             </div>
 
                             {/* RIGHT COLUMN: Credentials, SSH Bastion & Specs (4 cols / ~33% width) */}
-                            <div className="lg:col-span-4 space-y-4">
+                            <div className="lg:col-span-4 flex flex-col justify-between gap-4">
                               {/* 1. Root Credentials Card */}
                               <div className="p-4 bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 space-y-3 shadow-xs text-xs">
                                 <div className="flex items-center justify-between pb-2 border-b border-zinc-100 dark:border-zinc-800">
@@ -2730,33 +2802,96 @@ Payload:
                                 </div>
                               </div>
 
-                              {/* 3. Specs Details Card */}
+                              {/* 3. Specs Details Card with Live Streaming Resource Stats */}
                               <div className="p-4 bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 space-y-3 shadow-xs text-xs">
                                 <div className="flex items-center justify-between pb-2 border-b border-zinc-100 dark:border-zinc-800">
                                   <div className="flex items-center gap-2 font-semibold text-zinc-900 dark:text-white">
                                     <Cpu className="h-4 w-4 text-zinc-600 dark:text-zinc-300" />
-                                    <span>ข้อมูลทรัพยากร (Specs)</span>
+                                    <span>ข้อมูลทรัพยากร (Specs & Live Stats)</span>
                                   </div>
-                                  <span className="font-mono text-[10px] text-zinc-400">CT {selectedServer.vmid}</span>
+                                  <div className="flex items-center gap-1.5 text-[10px]">
+                                    {isRunning && liveStats?.running ? (
+                                      <span className="inline-flex items-center gap-1 text-[10px] text-emerald-600 dark:text-emerald-400 font-mono">
+                                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                                        Live Stream
+                                      </span>
+                                    ) : (
+                                      <span className="font-mono text-zinc-400">CT {selectedServer.vmid}</span>
+                                    )}
+                                  </div>
                                 </div>
 
                                 <div className="divide-y divide-zinc-100 dark:divide-zinc-800/80 text-xs">
-                                  <div className="py-2 flex items-center justify-between">
-                                    <span className="text-zinc-500 dark:text-zinc-400">หน่วยประมวลผล (vCPU)</span>
-                                    <span className="font-mono font-semibold text-zinc-900 dark:text-white">{selectedServer.vcpu} Cores</span>
+                                  {/* vCPU & Live CPU % */}
+                                  <div className="py-2.5 space-y-1.5">
+                                    <div className="flex items-center justify-between">
+                                      <span className="text-zinc-500 dark:text-zinc-400">หน่วยประมวลผล (vCPU)</span>
+                                      <span className="font-mono text-zinc-900 dark:text-white">
+                                        {selectedServer.vcpu} Cores
+                                        {isRunning && liveStats?.running && (
+                                          <span className="font-semibold ml-1 text-zinc-900 dark:text-zinc-100">
+                                            ({liveStats.cpuPercent}%)
+                                          </span>
+                                        )}
+                                      </span>
+                                    </div>
+                                    {isRunning && (
+                                      <div className="h-1.5 w-full bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+                                        <div
+                                          className="h-full bg-zinc-800 dark:bg-zinc-200 rounded-full transition-all duration-500"
+                                          style={{ width: `${Math.min(100, Math.max(1, liveStats?.running ? liveStats.cpuPercent : 0))}%` }}
+                                        />
+                                      </div>
+                                    )}
                                   </div>
-                                  <div className="py-2 flex items-center justify-between">
-                                    <span className="text-zinc-500 dark:text-zinc-400">หน่วยความจำ (RAM)</span>
-                                    <span className="font-mono font-semibold text-zinc-900 dark:text-white">{selectedServer.ram} MB</span>
+
+                                  {/* RAM & Live RAM % */}
+                                  <div className="py-2.5 space-y-1.5">
+                                    <div className="flex items-center justify-between">
+                                      <span className="text-zinc-500 dark:text-zinc-400">หน่วยความจำ (RAM)</span>
+                                      <span className="font-mono text-zinc-900 dark:text-white">
+                                        {isRunning && liveStats?.running ? (
+                                          <span className="font-semibold text-zinc-900 dark:text-zinc-100">
+                                            {liveStats.memUsageMB} MB / {selectedServer.ram} MB ({liveStats.memPercent}%)
+                                          </span>
+                                        ) : (
+                                          <span>{selectedServer.ram} MB</span>
+                                        )}
+                                      </span>
+                                    </div>
+                                    {isRunning && (
+                                      <div className="h-1.5 w-full bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+                                        <div
+                                          className="h-full bg-zinc-800 dark:bg-zinc-200 rounded-full transition-all duration-500"
+                                          style={{ width: `${Math.min(100, Math.max(1, liveStats?.running ? liveStats.memPercent : 0))}%` }}
+                                        />
+                                      </div>
+                                    )}
                                   </div>
+
+                                  {/* Disk */}
                                   <div className="py-2 flex items-center justify-between">
                                     <span className="text-zinc-500 dark:text-zinc-400">พื้นที่จัดเก็บ (NVMe SSD)</span>
                                     <span className="font-mono font-semibold text-zinc-900 dark:text-white">{selectedServer.disk} GB</span>
                                   </div>
+
+                                  {/* Active Processes */}
+                                  {isRunning && (
+                                    <div className="py-2 flex items-center justify-between">
+                                      <span className="text-zinc-500 dark:text-zinc-400">โปรเซสที่กำลังทำงาน (PIDs)</span>
+                                      <span className="font-mono font-semibold text-zinc-900 dark:text-white">
+                                        {liveStats?.running ? `${liveStats.pids} processes` : '-'}
+                                      </span>
+                                    </div>
+                                  )}
+
+                                  {/* IP */}
                                   <div className="py-2 flex items-center justify-between">
                                     <span className="text-zinc-500 dark:text-zinc-400">IP ภายในวิทยาลัย</span>
                                     <code className="font-mono text-zinc-900 dark:text-white font-semibold">{selectedServer.ip}</code>
                                   </div>
+
+                                  {/* Uptime */}
                                   <div className="py-2 flex items-center justify-between">
                                     <span className="text-zinc-500 dark:text-zinc-400">เวลาทำงาน (Uptime)</span>
                                     <span className="font-mono text-zinc-900 dark:text-white">{isRunning ? selectedServer.uptime || 'กำลังทำงาน' : 'ปิดอยู่'}</span>
@@ -2976,6 +3111,16 @@ Payload:
                                       />
                                       {isRunning ? 'Online' : 'Stopped'}
                                     </span>
+                                    {isRunning && liveStats?.running && (
+                                      <>
+                                        <span className="hidden sm:inline-flex items-center gap-1 font-mono text-[10px] text-zinc-600 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded border border-zinc-200 dark:border-zinc-700">
+                                          CPU: {liveStats.cpuPercent}%
+                                        </span>
+                                        <span className="hidden sm:inline-flex items-center gap-1 font-mono text-[10px] text-zinc-600 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded border border-zinc-200 dark:border-zinc-700">
+                                          RAM: {liveStats.memPercent}%
+                                        </span>
+                                      </>
+                                    )}
                                   </div>
 
                                   {/* Specs Chips */}

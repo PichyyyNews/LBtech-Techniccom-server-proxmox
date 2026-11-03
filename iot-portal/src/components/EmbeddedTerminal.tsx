@@ -30,13 +30,15 @@ export interface EmbeddedTerminalProps {
   mode: 'embedded' | 'minimized' | 'fullscreen'
   onModeChange: (mode: 'embedded' | 'minimized' | 'fullscreen') => void
   onClose: () => void
+  className?: string
 }
 
 export function EmbeddedTerminal({
   server,
   mode,
   onModeChange,
-  onClose
+  onClose,
+  className
 }: EmbeddedTerminalProps) {
   const terminalRef = useRef<HTMLDivElement>(null)
   const xtermInstance = useRef<XTerm | null>(null)
@@ -206,9 +208,20 @@ export function EmbeddedTerminal({
 
     const timer = setTimeout(handleResize, 150)
     window.addEventListener('resize', handleResize)
+
+    // Also observe container DOM element resize
+    let ro: ResizeObserver | null = null
+    if (typeof ResizeObserver !== 'undefined' && terminalRef.current) {
+      ro = new ResizeObserver(() => {
+        handleResize()
+      })
+      ro.observe(terminalRef.current)
+    }
+
     return () => {
       clearTimeout(timer)
       window.removeEventListener('resize', handleResize)
+      if (ro) ro.disconnect()
     }
   }, [mode])
 
@@ -279,11 +292,11 @@ export function EmbeddedTerminal({
   // FULLSCREEN OR EMBEDDED CONTAINER STYLES
   const containerClasses = mode === 'fullscreen'
     ? 'fixed inset-0 z-50 bg-[#0d1117] flex flex-col'
-    : 'border border-zinc-800 rounded-xl overflow-hidden bg-[#0d1117] shadow-sm flex flex-col w-full'
+    : `border border-zinc-800 rounded-xl overflow-hidden bg-[#0d1117] shadow-xs flex flex-col w-full ${className || 'h-full min-h-[580px]'}`
 
   const terminalHeight = mode === 'fullscreen'
     ? 'flex-1 h-full'
-    : 'h-[520px] sm:h-[580px] lg:h-[620px]'
+    : 'flex-1 w-full min-h-[460px]'
 
   return (
     <div className={containerClasses}>

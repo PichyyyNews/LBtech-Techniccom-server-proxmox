@@ -5,7 +5,8 @@ import {
   startStudentContainer,
   stopStudentContainer,
   restartStudentContainer,
-  destroyStudentContainer
+  destroyStudentContainer,
+  getContainerLiveStats
 } from '../services/docker_provisioner.js'
 
 const router = express.Router()
@@ -292,6 +293,56 @@ router.delete('/servers/:vmid', async (req, res) => {
     console.error('[CT] Delete error:', err)
     res.status(500).json({ error: err.message })
   }
+})
+
+// Container Live Resource Stats (Single Snapshot)
+router.get('/servers/:vmid/stats', async (req, res) => {
+  try {
+    const { vmid } = req.params
+    const server = db.getServerByVmid(vmid) || db.getServers().find(s => s.containerId === vmid || String(s.vmid) === String(vmid))
+    if (!server) {
+      return res.status(404).json({ error: 'ไม่พบเซิร์ฟเวอร์' })
+    }
+    const containerId = server.containerId || server.name
+    const stats = await getContainerLiveStats(containerId)
+    res.json({ success: true, stats })
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// Container Live Resource Stream (SSE)
+router.get('/servers/:vmid/stats/stream', async (req, res) => {
+  const { vmid } = req.params
+  const server = db.getServerByVmid(vmid) || db.getServers().find(s => s.containerId === vmid || String(s.vmid) === String(vmid))
+  if (!server) {
+    return res.status(404).json({ error: 'ไม่พบเซิร์ฟเวอร์' })
+  }
+
+  res.setHeader('Content-Type', 'text/event-stream')
+  res.setHeader('Cache-Control', 'no-cache')
+  res.setHeader('Connection', 'keep-alive')
+  if (typeof res.flushHeaders === 'function') {
+    res.flushHeaders()
+  }
+
+  const containerId = server.containerId || server.name
+  let active = true
+
+  const sendStats = async () => {
+    if (!active) return
+    const stats = await getContainerLiveStats(containerId)
+    if (!active) return
+    res.write(`data: ${JSON.stringify(stats)}\n\n`)
+  }
+
+  sendStats()
+  const interval = setInterval(sendStats, 2000)
+
+  req.on('close', () => {
+    active = false
+    clearInterval(interval)
+  })
 })
 
 export default router

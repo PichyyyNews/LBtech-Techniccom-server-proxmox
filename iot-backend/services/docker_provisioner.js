@@ -234,4 +234,53 @@ export async function createTerminalSession(containerId, { cols = 80, rows = 24 
   }
 }
 
+/**
+ * Fetch live container resource statistics (CPU %, Memory %, Network, PIDs)
+ */
+export async function getContainerLiveStats(containerId) {
+  try {
+    const container = docker.getContainer(containerId)
+    const stats = await container.stats({ stream: false })
+
+    // CPU % calculation
+    let cpuPercent = 0.0
+    if (stats.cpu_stats && stats.precpu_stats) {
+      const cpuDelta = stats.cpu_stats.cpu_usage.total_usage - stats.precpu_stats.cpu_usage.total_usage
+      const systemDelta = (stats.cpu_stats.system_cpu_usage || 0) - (stats.precpu_stats.system_cpu_usage || 0)
+      const numCpus = stats.cpu_stats.online_cpus || (stats.cpu_stats.cpu_usage.percpu_usage ? stats.cpu_stats.cpu_usage.percpu_usage.length : 1)
+      if (systemDelta > 0 && cpuDelta > 0) {
+        cpuPercent = (cpuDelta / systemDelta) * numCpus * 100.0
+      }
+    }
+
+    // Memory calculation
+    let memUsage = stats.memory_stats?.usage || 0
+    const statsObj = stats.memory_stats?.stats || {}
+    const cache = statsObj.inactive_file || statsObj.cache || 0
+    if (memUsage > cache) {
+      memUsage -= cache
+    }
+    const memLimit = stats.memory_stats?.limit || (1024 * 1024 * 1024)
+    const memPercent = memLimit > 0 ? (memUsage / memLimit) * 100.0 : 0.0
+
+    return {
+      running: true,
+      cpuPercent: Math.min(100, Math.max(0, Number(cpuPercent.toFixed(1)))),
+      memPercent: Math.min(100, Math.max(0, Number(memPercent.toFixed(1)))),
+      memUsageMB: Number((memUsage / (1024 * 1024)).toFixed(1)),
+      memLimitMB: Number((memLimit / (1024 * 1024)).toFixed(0)),
+      pids: stats.pids_stats?.current || 0
+    }
+  } catch (err) {
+    return {
+      running: false,
+      cpuPercent: 0,
+      memPercent: 0,
+      memUsageMB: 0,
+      memLimitMB: 0,
+      pids: 0
+    }
+  }
+}
+
 
