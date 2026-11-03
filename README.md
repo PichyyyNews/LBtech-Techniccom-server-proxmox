@@ -15,6 +15,7 @@
 | 🔐 [**ข้อมูลบัญชีและรหัสผ่าน (credentials.md)**](credentials.md) | ทะเบียนบัญชีผู้ใช้งาน, รหัสผ่าน, พอร์ตบริการ, คำสั่ง SSH และ Static IP *(เอกสารภายใน)* |
 | ❄️ [**ระบบมอนิเตอร์ฮาร์ดแวร์และพัดลม (scripts/hardware_monitor)**](scripts/hardware_monitor/README.md) | เว็บแดชบอร์ดสตรีมเซนเซอร์เรียลไทม์ (SSE) และควบคุมรอบพัดลม DL20 Gen9 ผ่านโดเมน [https://hardware.pichyy.qzz.io](https://hardware.pichyy.qzz.io) |
 | 📄 [**เอกสารคู่มือฉบับทางการ (PDF Handbooks)**](output/pdf/) | ไฟล์คู่มือรูปแบบ PDF พร้อมพิมพ์/ส่งมอบ: <br/>• `คู่มือส่งมอบและดูแลระบบเซิร์ฟเวอร์.pdf`<br/>• `คู่มือการใช้งานและดูแลระบบเซิร์ฟเวอร์.pdf` |
+| ⚡ [**คู่มือระบบ IoT Cloud & AI Platform (PROJECT_HANDOFF.md)**](PROJECT_HANDOFF.md) | ระบบศูนย์กลาง IoT, EMQX Broker, InfluxDB v2, PostgreSQL 16, Model Context Protocol (MCP) Server, LLM Prompts Hub, Support Tickets และ CT Provisioning ([iot.pichyy.qzz.io](https://iot.pichyy.qzz.io)) |
 
 ---
 
@@ -49,12 +50,14 @@ flowchart TB
         CT104["CT 104: techniccom-nc\n(Debian 12 LXC)\n• Nextcloud Storage (600GB)\n• IP: 10.10.10.104\n• Domain: cloud.pichyy.qzz.io"]
         VM103["VM 103: techniccom-cp\n(Debian 12 Full VM)\n• CloudPanel / Nginx / MySQL 8.4\n• IP: 10.10.10.103\n• Domain: techniccom-cp.pichyy.qzz.io"]
         VM101["VM 101: win10-light\n(Tiny10 x64 VM)\n• Utility Windows OS\n• Access: Console / RDP"]
+        CT108["CT 108: techniccom-iot\n(Debian 12 LXC / Docker Stack)\n• IoT Portal & Backend\n• PostgreSQL 16 & InfluxDB v2\n• EMQX v5 & MCP Server\n• IP: 10.10.10.108\n• Domain: iot.pichyy.qzz.io"]
     end
 
     CFT -- "HTTP -> 10.10.10.100" --> CT100
     CFT -- "HTTP -> 10.10.10.104" --> CT104
     CFT -- "HTTPS:8443 -> 10.10.10.103" --> VM103
     CFT -- "HTTPS:8006 -> 10.10.10.1" --> PVE
+    CFT -- "HTTP:3000 -> 10.10.10.108" --> CT108
 
     Storage <-->|"Bind Mount"| CT100
     Storage <-->|"Bind Mount"| CT102

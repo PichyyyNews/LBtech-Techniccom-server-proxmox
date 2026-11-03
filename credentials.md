@@ -86,7 +86,7 @@
 ---
 
 ### CT 108 — IoT & MQTT Hub Server (`techniccom-iot`)
-คอนเทนเนอร์ระบบ IoT Hub สำหรับนักศึกษาทำโครงงานวิชาชีพทั้งแผนก (EMQX + InfluxDB + Student Portal)
+คอนเทนเนอร์ระบบ IoT Hub สำหรับนักศึกษาทำโครงงานวิชาชีพทั้งแผนก (EMQX + InfluxDB + PostgreSQL 16 + MCP Server + Student Portal)
 
 | รายการ | ข้อมูลการเข้าใช้งาน |
 | :--- | :--- |
@@ -95,7 +95,12 @@
 | **พื้นที่ดิสก์ (Rootfs)** | `40 GB` *(บนไดรฟ์ pve-extra)* |
 | **Student Portal (Local)** | [http://192.168.1.52:3000](http://192.168.1.52:3000) |
 | **Student Portal URL (ภายนอก)** | [https://iot.pichyy.qzz.io](https://iot.pichyy.qzz.io) |
+| **LLM Machine Context URL** | [https://iot.pichyy.qzz.io/llms.txt](https://iot.pichyy.qzz.io/llms.txt) |
+| **Robots Signal** | [https://iot.pichyy.qzz.io/robots.txt](https://iot.pichyy.qzz.io/robots.txt) |
+| **Model Context Protocol (MCP)** | `https://iot.pichyy.qzz.io/api/mcp` *(JSON-RPC 2.0)* |
+| **Support Tickets API** | `https://iot.pichyy.qzz.io/api/tickets` |
 | **MQTT Broker (WSS ภายนอก)** | `wss://mqtt.pichyy.qzz.io/mqtt` (พอร์ต 443) |
+| **MQTT Broker (Native TCP)** | `mqtt.pichyy.qzz.io:1883` |
 | **EMQX Admin Console (Local)** | [http://192.168.1.52:18083](http://192.168.1.52:18083) |
 | **EMQX Admin Console (ภายนอก)** | [https://emqx.pichyy.qzz.io](https://emqx.pichyy.qzz.io) |
 | **EMQX Admin Username** | `tc-iotadmin` |
@@ -104,9 +109,16 @@
 | **InfluxDB Admin URL (ภายนอก)** | [https://influx.pichyy.qzz.io](https://influx.pichyy.qzz.io) |
 | **InfluxDB Username** | `iotadmin` |
 | **InfluxDB Password** | `Techniccom.Influx2026` |
+| **PostgreSQL 16 Container** | `iot-postgres` *(พอร์ตภายใน 5432)* |
+| **PostgreSQL User** | `iotuser` |
+| **PostgreSQL Password** | `Techniccom.Postgres2026!` |
+| **PostgreSQL Database** | `lbtech_iot` |
+| **SSH Bastion Jump Host** | `ssh <studentId>@techniccom.tail59415d.ts.net -p 10000` |
 | **SSH User** | `root` |
 | **SSH Password** | `07072569` |
 | **SSH Command** | `ssh root@10.10.10.108` *(หรือ pct enter 108 บน Host)* |
+| **Automated HDD Backup Path** | `/mnt/pve-extra/backups/lbtech-iot/` *(บน Proxmox Host)* |
+| **Backup Script & Schedule** | `/usr/local/bin/backup-lbtech-iot.sh` (ทุกวันเวลา 02:30 AM) |
 
 ---
 คอนเทนเนอร์ศูนย์กลางการบริหารจัดการและ Homepage Dashboard (Docker + Homepage + Portainer Ready)
