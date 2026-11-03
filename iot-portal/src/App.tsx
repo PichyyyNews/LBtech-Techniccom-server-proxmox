@@ -1550,39 +1550,39 @@ Payload:
     {
       category: 'ระบบและการตั้งค่า',
       items: [
-        { id: 'overview' as TabType, label: 'ภาพรวม (Credentials)', icon: Sliders },
-        { id: 'ct-servers' as TabType, label: 'ขอเครื่องเซิร์ฟเวอร์ (Cloud CT)', icon: Server },
-        { id: 'domains' as TabType, label: 'โดเมนและเว็บไซต์ (Web & Domains)', icon: Globe },
-        { id: 'mqtt' as TabType, label: 'MQTT Broker (EMQX)', icon: Radio },
-        { id: 'database' as TabType, label: 'Database (InfluxDB v2)', icon: Database },
-        { id: 'rest-api' as TabType, label: 'REST API & Webhooks', icon: Layers },
+        { id: 'overview' as TabType, label: 'ภาพรวมระบบ', icon: Sliders },
+        { id: 'ct-servers' as TabType, label: 'คลาวด์เซิร์ฟเวอร์', icon: Server },
+        { id: 'domains' as TabType, label: 'เว็บไซต์และโดเมน', icon: Globe },
+        { id: 'mqtt' as TabType, label: 'MQTT Broker', icon: Radio },
+        { id: 'database' as TabType, label: 'ฐานข้อมูล InfluxDB', icon: Database },
+        { id: 'rest-api' as TabType, label: 'REST API', icon: Layers },
       ],
     },
     {
-      category: 'ช่วยเหลือ (Support & AI)',
+      category: 'ช่วยเหลือและ AI',
       items: [
-        { id: 'ai-prompts' as TabType, label: 'LLM Prompts (คัดลอกถาม AI)', icon: Sparkles },
-        { id: 'mcp-server' as TabType, label: 'MCP Server (เชื่อมต่อ AI)', icon: Bot },
-        { id: 'tickets' as TabType, label: 'ติดต่อผู้ดูแล (Support Tickets)', icon: HelpCircle },
+        { id: 'ai-prompts' as TabType, label: 'คำสั่งพร้อมท์ AI', icon: Sparkles },
+        { id: 'mcp-server' as TabType, label: 'MCP Server', icon: Bot },
+        { id: 'tickets' as TabType, label: 'ติดต่อผู้ดูแล', icon: HelpCircle },
       ],
     },
     ...(isAdminUnlocked
       ? [
           {
-            category: 'ผู้ดูแลระบบ (Administration)',
+            category: 'ผู้ดูแลระบบ',
             items: [
-              { id: 'admin' as TabType, label: 'แผงควบคุมอาจารย์ & ดูรหัสผ่าน', icon: ShieldCheck },
+              { id: 'admin' as TabType, label: 'แผงควบคุมอาจารย์', icon: ShieldCheck },
             ],
           },
         ]
       : []),
     {
-      category: 'ตัวอย่างโค้ด (Starter Codes)',
+      category: 'ตัวอย่างโค้ด',
       items: [
-        { id: 'esp32' as TabType, label: 'ESP32 (Arduino C++)', icon: FileCode },
+        { id: 'esp32' as TabType, label: 'ESP32 (Arduino)', icon: FileCode },
         { id: 'esp8266' as TabType, label: 'ESP8266 (NodeMCU)', icon: FolderGit2 },
-        { id: 'web-js' as TabType, label: 'Web Dashboard (HTML/JS)', icon: Code2 },
-        { id: 'python' as TabType, label: 'Python / Raspberry Pi', icon: Layers },
+        { id: 'web-js' as TabType, label: 'Web Dashboard', icon: Code2 },
+        { id: 'python' as TabType, label: 'Python Script', icon: Layers },
       ],
     },
   ]
@@ -1690,13 +1690,18 @@ Payload:
           </div>
 
           <div className="w-full max-w-[360px]">
-            <div className="flex items-center justify-center gap-2 mb-6">
-              <div className="h-8 w-8 rounded-lg bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 flex items-center justify-center shadow-xs">
-                <Wifi className="h-4 w-4" />
+            <div className="flex flex-col items-center justify-center mb-6 text-center">
+              <div className="flex items-center gap-2 mb-1">
+                <div className="h-8 w-8 rounded-lg bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 flex items-center justify-center shadow-xs">
+                  <Wifi className="h-4 w-4" />
+                </div>
+                <span className="font-bold font-mono text-lg tracking-tight text-zinc-900 dark:text-zinc-100">
+                  infra-techcom
+                </span>
               </div>
-              <span className="font-semibold text-base tracking-tight text-zinc-900 dark:text-zinc-100">
-                LBtech IoT
-              </span>
+              <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
+                Infrastructure for Technicomputer • วิทยาลัยเทคนิคลพบุรี
+              </p>
             </div>
 
             <div className="grid grid-cols-2 p-1 bg-zinc-200/70 dark:bg-zinc-800 rounded-lg mb-4 text-xs font-medium">
@@ -1843,9 +1848,9 @@ Payload:
               </div>
 
               <div className="flex items-center gap-1.5 sm:gap-2">
-                <span className="font-semibold text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 leading-tight">LBtech IoT Docs</span>
+                <span className="font-bold font-mono text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 leading-tight">infra-techcom</span>
                 <span className="text-zinc-300 dark:text-zinc-700 hidden sm:inline">/</span>
-                <span className="text-xs text-zinc-500 dark:text-zinc-400 font-medium hidden sm:inline">System Setup</span>
+                <span className="text-xs text-zinc-500 dark:text-zinc-400 font-medium hidden sm:inline">Infrastructure for Technicomputer</span>
               </div>
             </div>
 
@@ -1953,7 +1958,7 @@ Payload:
                       <div className="h-7 w-7 rounded-md bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 flex items-center justify-center">
                         <Wifi className="h-4 w-4" />
                       </div>
-                      <span className="font-semibold text-xs text-zinc-900 dark:text-zinc-100">LBtech IoT Docs</span>
+                      <span className="font-bold font-mono text-xs text-zinc-900 dark:text-zinc-100">infra-techcom</span>
                     </div>
                     <button
                       type="button"
@@ -3018,14 +3023,16 @@ Payload:
                                   </Button>
                                 </div>
 
-                                <div className="hidden sm:block p-2.5 bg-zinc-50 dark:bg-zinc-900/50 rounded-lg border border-zinc-200/80 dark:border-zinc-800 text-[11px] text-zinc-500 dark:text-zinc-400 space-y-1">
-                                  <div className="font-medium text-zinc-800 dark:text-zinc-200">VS Code Remote - SSH config:</div>
-                                  <pre className="p-2 rounded bg-zinc-100 dark:bg-zinc-950 font-mono text-[10px] text-zinc-800 dark:text-zinc-300 overflow-x-auto leading-relaxed">
-{`Host lbtech-${selectedServer.name}
+                                <div className="hidden sm:block space-y-1 pt-1">
+                                  <CodeViewer
+                                    code={`Host infra-${selectedServer.name}
   HostName techniccom.tail59415d.ts.net
   Port 10000
   User ${selectedServer.studentId}`}
-                                  </pre>
+                                    language="ini"
+                                    title="~/.ssh/config (VS Code Remote SSH)"
+                                    theme={resolvedTheme}
+                                  />
                                 </div>
                               </div>
 
@@ -3721,28 +3728,22 @@ service nginx restart`
                                 </div>
                               </div>
 
-                              <div className="relative">
-                                <pre className="p-3.5 rounded-lg bg-zinc-950 font-mono text-[11px] text-zinc-200 overflow-x-auto max-h-48 leading-relaxed select-all">
-{activeCode}
-                                </pre>
+                              <div className="space-y-2">
+                                <CodeViewer
+                                  code={activeCode}
+                                  language="shell"
+                                  title={`คำสั่งรันเว็บ (${starterWebLang === 'python' ? 'Python 3' : starterWebLang === 'node' ? 'Node.js' : 'Nginx'})`}
+                                  theme={resolvedTheme}
+                                />
 
-                                <div className="flex items-center justify-end gap-2 pt-2.5">
-                                  <button
-                                    type="button"
-                                    onClick={() => copyNetText(activeCode, `starter_${server.vmid}`)}
-                                    className="px-3 py-1.5 rounded-md bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 text-xs font-medium cursor-pointer inline-flex items-center gap-1.5 hover:bg-zinc-800 dark:hover:bg-zinc-200"
-                                  >
-                                    {copiedNetKey === `starter_${server.vmid}` ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5" />}
-                                    <span>{copiedNetKey === `starter_${server.vmid}` ? 'คัดลอกแล้ว' : 'คัดลอกคำสั่ง'}</span>
-                                  </button>
-
+                                <div className="flex items-center justify-end gap-2 pt-1">
                                   <button
                                     type="button"
                                     onClick={() => window.open(`/terminal/${server.vmid}`, `terminal_${server.vmid}`, 'width=960,height=600')}
                                     className="px-3 py-1.5 rounded-md border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-xs font-medium cursor-pointer inline-flex items-center gap-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-700"
                                   >
                                     <Terminal className="h-3.5 w-3.5" />
-                                    <span>เปิด Terminal</span>
+                                    <span>เปิด Web Terminal รันคำสั่ง</span>
                                   </button>
                                 </div>
                               </div>
@@ -4163,18 +4164,24 @@ service nginx restart`
                         </div>
                         <div className="space-y-1.5">
                           <div className="font-semibold text-zinc-800 dark:text-zinc-200">2. ตัวอย่างรูปแบบ Line Protocol:</div>
-                          <pre className="p-2.5 rounded-lg bg-zinc-100 dark:bg-zinc-950 font-mono text-[11px] text-zinc-800 dark:text-zinc-300 overflow-x-auto">
-sensor,device=esp32_01 temperature=26.4,humidity=62.1
-                          </pre>
+                          <CodeViewer
+                            code="sensor,device=esp32_01 temperature=26.4,humidity=62.1"
+                            language="shell"
+                            title="InfluxDB Line Protocol"
+                            theme={resolvedTheme}
+                          />
                         </div>
                         <div className="space-y-1.5">
                           <div className="font-semibold text-zinc-800 dark:text-zinc-200">3. ตัวอย่างคำสั่ง Flux Query ดึงข้อมูลย้อนหลัง 1 ชั่วโมง:</div>
-                          <pre className="p-2.5 rounded-lg bg-zinc-100 dark:bg-zinc-950 font-mono text-[11px] text-zinc-800 dark:text-zinc-300 overflow-x-auto">
-{`from(bucket: "bucket_${session.studentId}")
+                          <CodeViewer
+                            code={`from(bucket: "bucket_${session.studentId}")
   |> range(start: -1h)
   |> filter(fn: (r) => r._measurement == "sensor")
   |> yield(name: "mean")`}
-                          </pre>
+                            language="shell"
+                            title="Flux Query Example"
+                            theme={resolvedTheme}
+                          />
                         </div>
                       </div>
                     )}
@@ -4424,19 +4431,21 @@ sensor,device=esp32_01 temperature=26.4,humidity=62.1
                         </div>
                         <div className="space-y-1.5">
                           <div className="font-semibold text-zinc-800 dark:text-zinc-200">2. HTTP Headers ที่จำเป็น:</div>
-                          <pre className="p-2.5 rounded-lg bg-zinc-100 dark:bg-zinc-950 font-mono text-[11px] text-zinc-800 dark:text-zinc-300 overflow-x-auto">
-{`Content-Type: application/json
-Authorization: Bearer ${session.token}`}
-                          </pre>
+                          <CodeViewer
+                            code={`Content-Type: application/json\nAuthorization: Bearer ${session.token}`}
+                            language="ini"
+                            title="Required HTTP Headers"
+                            theme={resolvedTheme}
+                          />
                         </div>
                         <div className="space-y-1.5">
                           <div className="font-semibold text-zinc-800 dark:text-zinc-200">3. ตัวอย่างคำสั่ง cURL:</div>
-                          <pre className="p-2.5 rounded-lg bg-zinc-100 dark:bg-zinc-950 font-mono text-[11px] text-zinc-800 dark:text-zinc-300 overflow-x-auto">
-{`curl -X POST https://iot.pichyy.qzz.io/api/telemetry \\
-  -H "Content-Type: application/json" \\
-  -H "Authorization: Bearer ${session.token}" \\
-  -d '{"deviceId": "esp32_01", "data": {"temp": 28.5, "humidity": 65}}'`}
-                          </pre>
+                          <CodeViewer
+                            code={`curl -X POST https://iot.pichyy.qzz.io/api/telemetry \\\n  -H "Content-Type: application/json" \\\n  -H "Authorization: Bearer ${session.token}" \\\n  -d '{"deviceId": "esp32_01", "data": {"temp": 28.5, "humidity": 65}}'`}
+                            language="shell"
+                            title="cURL Telemetry Example"
+                            theme={resolvedTheme}
+                          />
                         </div>
                       </div>
                     )}
@@ -4915,40 +4924,19 @@ Authorization: Bearer ${session.token}`}
 
                   {/* MCP Config 1: Claude Desktop */}
                   <div id="sec-mcp-claude" className="border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-zinc-900 p-4 sm:p-5 shadow-xs space-y-3">
-                    <div className="flex items-start justify-between gap-2">
-                      <div>
-                        <h3 className="font-semibold text-sm text-zinc-900 dark:text-zinc-100">
-                          1. การเชื่อมต่อ Claude Desktop (claude_desktop_config.json)
-                        </h3>
-                        <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
-                          นำคอนฟิกนี้ไปใส่ในไฟล์ตั้งค่าของ Claude Desktop (Settings &gt; Developer &gt; Edit Config)
-                        </p>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => copyPromptText(`{
-  "mcpServers": {
-    "lbtech-iot": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "@modelcontextprotocol/server-fetch",
-        "https://iot.pichyy.qzz.io/api/mcp"
-      ]
-    }
-  }
-}`, 'mcp_claude')}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 hover:bg-zinc-100 text-xs font-medium text-zinc-700 dark:text-zinc-200 transition-colors shrink-0 cursor-pointer"
-                      >
-                        {copiedPromptKey === 'mcp_claude' ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
-                        <span>{copiedPromptKey === 'mcp_claude' ? 'คัดลอกแล้ว!' : 'คัดลอก Config'}</span>
-                      </button>
+                    <div>
+                      <h3 className="font-semibold text-sm text-zinc-900 dark:text-zinc-100">
+                        1. การเชื่อมต่อ Claude Desktop (claude_desktop_config.json)
+                      </h3>
+                      <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+                        นำคอนฟิกนี้ไปใส่ในไฟล์ตั้งค่าของ Claude Desktop (Settings &gt; Developer &gt; Edit Config)
+                      </p>
                     </div>
 
-                    <pre className="p-3 rounded-lg bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 text-[11px] font-mono text-zinc-800 dark:text-zinc-300 overflow-x-auto whitespace-pre-wrap leading-relaxed">
-{`{
+                    <CodeViewer
+                      code={`{
   "mcpServers": {
-    "lbtech-iot": {
+    "infra-techcom": {
       "command": "npx",
       "args": [
         "-y",
@@ -4958,45 +4946,35 @@ Authorization: Bearer ${session.token}`}
     }
   }
 }`}
-                    </pre>
+                      language="json"
+                      title="claude_desktop_config.json"
+                      theme={resolvedTheme}
+                    />
                   </div>
 
                   {/* MCP Config 2: Cursor */}
                   <div id="sec-mcp-cursor" className="border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-zinc-900 p-4 sm:p-5 shadow-xs space-y-3">
-                    <div className="flex items-start justify-between gap-2">
-                      <div>
-                        <h3 className="font-semibold text-sm text-zinc-900 dark:text-zinc-100">
-                          2. การเชื่อมต่อ Cursor IDE (~/.cursor/mcp.json)
-                        </h3>
-                        <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
-                          ใน Cursor: ไปที่ Features &gt; MCP &gt; Add New MCP Server ใส่ URL ของระบบ
-                        </p>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => copyPromptText(`{
-  "mcpServers": {
-    "lbtech-iot": {
-      "url": "https://iot.pichyy.qzz.io/api/mcp"
-    }
-  }
-}`, 'mcp_cursor')}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 hover:bg-zinc-100 text-xs font-medium text-zinc-700 dark:text-zinc-200 transition-colors shrink-0 cursor-pointer"
-                      >
-                        {copiedPromptKey === 'mcp_cursor' ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
-                        <span>{copiedPromptKey === 'mcp_cursor' ? 'คัดลอกแล้ว!' : 'คัดลอก Config'}</span>
-                      </button>
+                    <div>
+                      <h3 className="font-semibold text-sm text-zinc-900 dark:text-zinc-100">
+                        2. การเชื่อมต่อ Cursor IDE (~/.cursor/mcp.json)
+                      </h3>
+                      <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+                        ใน Cursor: ไปที่ Features &gt; MCP &gt; Add New MCP Server ใส่ URL ของระบบ
+                      </p>
                     </div>
 
-                    <pre className="p-3 rounded-lg bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 text-[11px] font-mono text-zinc-800 dark:text-zinc-300 overflow-x-auto whitespace-pre-wrap leading-relaxed">
-{`{
+                    <CodeViewer
+                      code={`{
   "mcpServers": {
-    "lbtech-iot": {
+    "infra-techcom": {
       "url": "https://iot.pichyy.qzz.io/api/mcp"
     }
   }
 }`}
-                    </pre>
+                      language="json"
+                      title="~/.cursor/mcp.json"
+                      theme={resolvedTheme}
+                    />
                   </div>
 
                   {/* MCP Tools Catalog */}
@@ -5488,7 +5466,7 @@ Authorization: Bearer ${session.token}`}
                     ข้อกำหนดและเงื่อนไขการใช้งานเครื่องคอมพิวเตอร์แม่ข่าย
                   </h2>
                   <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
-                    Server Terms of Service — แผนกเทคโนโลยีคอมพิวเตอร์ วิทยาลัยเทคนิคลำปาง
+                    Server Terms of Service — แผนกเทคโนโลยีคอมพิวเตอร์ วิทยาลัยเทคนิคลพบุรี
                   </p>
                 </div>
               </div>
@@ -5529,7 +5507,7 @@ Authorization: Bearer ${session.token}`}
                   </div>
                   <div className="space-y-2 text-zinc-600 dark:text-zinc-300 text-xs pl-2 sm:pl-3 border-l-2 border-zinc-200 dark:border-zinc-800">
                     <p>
-                      <strong>1.1 วัตถุประสงค์ทางการศึกษา:</strong> ทรัพยากรเครื่องแม่ข่ายเสมือน (LXC Container) เครือข่าย และพื้นที่จัดเก็บข้อมูลนี้ จัดสรรขึ้นเพื่อสนับสนุนการเรียนการสอน การพัฒนาโครงงาน (Project) และการวิจัยสำหรับนักศึกษาแผนกเทคโนโลยีคอมพิวเตอร์ วิทยาลัยเทคนิคลำปาง เท่านั้น
+                      <strong>1.1 วัตถุประสงค์ทางการศึกษา:</strong> ทรัพยากรเครื่องแม่ข่ายเสมือน (LXC Container) เครือข่าย และพื้นที่จัดเก็บข้อมูลนี้ จัดสรรขึ้นเพื่อสนับสนุนการเรียนการสอน การพัฒนาโครงงาน (Project) และการวิจัยสำหรับนักศึกษาแผนกเทคโนโลยีคอมพิวเตอร์ วิทยาลัยเทคนิคลพบุรี เท่านั้น
                     </p>
                     <p>
                       <strong>1.2 ข้อห้ามเชิงพาณิชย์:</strong> ห้ามนำทรัพยากรของแผนกไปใช้แสวงหาผลประโยชน์เชิงพาณิชย์ รับจ้างพัฒนาระบบให้บุคคลภายนอก เปิดให้บริการเช่าพื้นที่ต่อ (Sub-hosting) หรือรันบริการสาธารณะที่ไม่เกี่ยวข้องกับขอบเขตโครงงานที่ได้รับอนุมัติโดยเด็ดขาด

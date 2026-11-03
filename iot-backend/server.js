@@ -51,7 +51,7 @@ app.all(['/api/preview/:target', '/api/preview/:target/*'], handlePreviewRequest
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'ok',
-    service: 'LBTech IoT & Cloud CT Provisioning API',
+    service: 'infra-techcom Provisioning API',
     version: '1.1.0',
     time: new Date().toISOString(),
     stats: {
@@ -125,7 +125,7 @@ wss.on('connection', async (ws, req, url) => {
     const session = await createTerminalSession(containerIdentifier, { cols: 80, rows: 24 })
 
     // Welcome banner
-    const welcome = `\r\n\x1b[32m=== LBTech Cloud Container Terminal ===\x1b[0m\r\n` +
+    const welcome = `\r\n\x1b[32m=== infra-techcom Container Terminal ===\x1b[0m\r\n` +
       `\x1b[90mConnected to: ${serverObj?.name || targetId} (${serverObj?.os || 'Linux'})\x1b[0m\r\n` +
       `\x1b[90mWorkspace: /workspace (Persistent Storage)\x1b[0m\r\n\r\n`
     ws.send(welcome)

@@ -11,7 +11,7 @@ export function getFallbackHtml({ studentId, serverName, vmid, port = 80, errorR
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LBTech IoT Web Dashboard - ${studentId || 'Project'}</title>
+  <title>infra-techcom Node - ${studentId || 'Project'}</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-zinc-950 text-zinc-100 min-h-screen flex flex-col font-sans">
@@ -20,8 +20,8 @@ export function getFallbackHtml({ studentId, serverName, vmid, port = 80, errorR
     <div class="flex items-center gap-3">
       <div class="h-8 w-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-xs tracking-wider">IoT</div>
       <div>
-        <h1 class="font-semibold text-sm sm:text-base">LBTech IoT Project Node</h1>
-        <p class="text-xs text-zinc-400">ID: ${studentId || '69123456789'} • Container Web Server</p>
+        <h1 class="font-semibold text-sm sm:text-base">infra-techcom Node</h1>
+        <p class="text-xs text-zinc-400">ID: ${studentId || '69123456789'} • วิทยาลัยเทคนิคลพบุรี</p>
       </div>
     </div>
     <div class="flex items-center gap-2">
@@ -77,7 +77,7 @@ echo -e "\n\\e[32m[OK] เว็บไซต์เริ่มต้นทำง
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>เว็บเซิร์ฟเวอร์ยังไม่เปิดทำงาน | LBTech IoT Preview</title>
+  <title>เว็บเซิร์ฟเวอร์ยังไม่เปิดทำงาน | infra-techcom</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
