@@ -3069,14 +3069,9 @@ Payload:
                   <div id="sec-mqtt-title" className="flex items-center gap-3.5">
                     <EMQXLogo className="h-9 w-9 shrink-0" />
                     <div>
-                      <div className="flex items-center gap-2">
-                        <h1 className="text-lg sm:text-xl font-bold tracking-tight text-zinc-900 dark:text-white">
-                          MQTT Broker (EMQX v5)
-                        </h1>
-                        <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700 font-mono">
-                          v5.8
-                        </span>
-                      </div>
+                      <h1 className="text-lg sm:text-xl font-bold tracking-tight text-zinc-900 dark:text-white">
+                        MQTT Broker (EMQX v5)
+                      </h1>
                       <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
                         ระบบส่งข้อความ Real-time รองรับทั้ง WebSockets (WSS) และ Pub/Sub ความเร็วสูง
                       </p>
@@ -3167,9 +3162,6 @@ Payload:
                           ข้อมูลบัญชีสำหรับเชื่อมต่อ MQTT Client (บอร์ด IoT / โค้ดโปรเจกต์)
                         </span>
                       </div>
-                      <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700">
-                        พร้อมใช้งาน
-                      </span>
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2.5 text-xs">
@@ -3389,14 +3381,9 @@ Payload:
                   <div id="sec-db-title" className="flex items-center gap-3.5">
                     <InfluxDBLogo className="h-8 w-8 shrink-0" />
                     <div>
-                      <div className="flex items-center gap-2">
-                        <h1 className="text-lg sm:text-xl font-bold tracking-tight text-zinc-900 dark:text-white">
-                          Database Server (InfluxDB v2 Time-Series)
-                        </h1>
-                        <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-750 font-mono">
-                          v2.7
-                        </span>
-                      </div>
+                      <h1 className="text-lg sm:text-xl font-bold tracking-tight text-zinc-900 dark:text-white">
+                        Database Server (InfluxDB v2 Time-Series)
+                      </h1>
                       <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
                         ฐานข้อมูลที่ถูกปรับแต่งสำหรับจัดเก็บข้อมูลเซนเซอร์ที่มี Timestamp ย้อนหลังโดยเฉพาะ
                       </p>
@@ -3511,14 +3498,9 @@ sensor,device=esp32_01 temperature=26.4,humidity=62.1
                       <div className="flex items-start sm:items-center gap-3">
                         <InfluxDBLogo className="h-8 w-8 shrink-0" />
                         <div>
-                          <div className="flex items-center gap-2">
-                            <h3 className="text-sm font-bold text-zinc-900 dark:text-white">
-                              InfluxDB v2 Management UI & Data Explorer
-                            </h3>
-                            <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700 font-mono">
-                              Web UI Ready
-                            </span>
-                          </div>
+                          <h3 className="text-sm font-bold text-zinc-900 dark:text-white">
+                            InfluxDB v2 Management UI & Data Explorer
+                          </h3>
                           <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
                             หน้าเว็บค้นหาข้อมูล Time-Series สร้างแดชบอร์ดกราฟเส้น และใช้เครื่องมือ Query Flux Builder
                           </p>
