@@ -245,13 +245,13 @@ export default function App() {
         ])
         if (reqRes.ok) {
           const reqData = await reqRes.json()
-          if (reqData.requests && reqData.requests.length > 0) {
+          if (Array.isArray(reqData.requests)) {
             setCtRequests(reqData.requests)
           }
         }
         if (srvRes.ok) {
           const srvData = await srvRes.json()
-          if (srvData.servers && srvData.servers.length > 0) {
+          if (Array.isArray(srvData.servers)) {
             setCtServers(srvData.servers)
           }
         }
@@ -768,13 +768,22 @@ export default function App() {
 
   // Destroy Container
   const handleDestroyServer = async (vmid: number) => {
-    if (confirm(`ยืนยันการลบเครื่องเซิร์ฟเวอร์ CT ${vmid}? ข้อมูลภายในเครื่องจะถูกลบถาวร`)) {
+    if (confirm(`ยืนยันการลบเครื่องเซิร์ฟเวอร์ CT ${vmid}? ข้อมูลและการตั้งค่าทั้งหมดจะถูกลบถาวร`)) {
       try {
-        await fetch(`/api/ct/servers/${vmid}`, { method: 'DELETE' })
-      } catch {
-        // ignore
+        const res = await fetch(`/api/ct/servers/${vmid}`, { method: 'DELETE' })
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}))
+          alert(`ไม่สามารถลบเครื่องได้: ${data.error || res.statusText}`)
+          return
+        }
+      } catch (err: any) {
+        alert(`เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์: ${err.message}`)
+        return
       }
       setCtServers((prev) => prev.filter((s) => s.vmid !== vmid))
+      if (selectedServerVmid === vmid) {
+        setSelectedServerVmid(null)
+      }
     }
   }
 
@@ -2532,6 +2541,19 @@ Payload:
                                   <Terminal className="h-3 w-3 mr-1" />
                                   <span>{terminalMode === 'fullscreen' ? 'ย่อจอ' : 'เต็มจอ'}</span>
                                 </Button>
+
+                                {isAdminUnlocked && (
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => handleDestroyServer(selectedServer.vmid)}
+                                    className="h-8 text-xs cursor-pointer text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/30 border-red-200 dark:border-red-900/50"
+                                    title="ลบเครื่องเซิร์ฟเวอร์ (Admin Only)"
+                                  >
+                                    <Trash2 className="h-3 w-3 mr-1" />
+                                    <span>ลบเครื่อง</span>
+                                  </Button>
+                                )}
                               </div>
                             </div>
                           </div>
@@ -3013,6 +3035,18 @@ Payload:
                                     >
                                       <RotateCw className="h-3 w-3" />
                                     </Button>
+
+                                    {isAdminUnlocked && (
+                                      <Button
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={() => handleDestroyServer(server.vmid)}
+                                        className="h-7 text-xs px-2 cursor-pointer text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/30 border-red-200 dark:border-red-900/50"
+                                        title="ลบเครื่องเซิร์ฟเวอร์ (Admin Only)"
+                                      >
+                                        <Trash2 className="h-3 w-3" />
+                                      </Button>
+                                    )}
                                   </div>
 
                                   {/* PRIMARY BUTTON: ENTER DEDICATED WORKSPACE */}

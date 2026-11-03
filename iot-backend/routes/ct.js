@@ -266,17 +266,30 @@ router.post('/servers/:vmid/reboot', async (req, res) => {
 router.delete('/servers/:vmid', async (req, res) => {
   try {
     const { vmid } = req.params
-    const server = db.getServerByVmid(vmid) || db.getServers().find(s => s.containerId === vmid)
+    const server = db.getServerByVmid(vmid) || db.getServers().find(s => s.containerId === vmid || String(s.vmid) === String(vmid))
 
-    if (server && server.containerId) {
-      await destroyStudentContainer(server.containerId).catch(() => {})
+    if (server) {
+      if (server.containerId || server.name) {
+        await destroyStudentContainer(server.containerId || server.name).catch((err) => {
+          console.warn('[CT] Container destroy warning:', err?.message)
+        })
+      }
+
+      // Mark matching request as destroyed if present
+      const requests = db.getRequests()
+      const reqMatch = requests.find(r => r.vmid === server.vmid || r.containerId === server.containerId)
+      if (reqMatch) {
+        reqMatch.status = 'destroyed'
+        db.saveRequest(reqMatch)
+      }
     }
 
-    db.deleteServer(vmid)
-    db.addLog('CT_DESTROYED', { vmid })
+    db.removeServer(vmid)
+    db.addLog('CT_DESTROYED', { vmid, serverName: server?.name })
 
     res.json({ success: true, message: `เครื่อง CT ${vmid} ถูกลบเรียบร้อยแล้ว` })
   } catch (err) {
+    console.error('[CT] Delete error:', err)
     res.status(500).json({ error: err.message })
   }
 })

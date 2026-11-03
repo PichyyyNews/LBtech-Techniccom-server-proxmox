@@ -114,9 +114,19 @@ class Database {
     return normalized
   }
 
+  deleteServer(vmid) {
+    return this.removeServer(vmid)
+  }
+
   removeServer(vmid) {
     const num = Number(vmid)
-    this.data.ct_servers = this.data.ct_servers.filter(s => s.vmid !== num)
+    this.data.ct_servers = this.data.ct_servers.filter(s => {
+      if (!isNaN(num) && s.vmid === num) return false
+      if (String(s.vmid) === String(vmid)) return false
+      if (s.containerId === vmid) return false
+      if (s.name === vmid) return false
+      return true
+    })
     this.save()
     return true
   }
