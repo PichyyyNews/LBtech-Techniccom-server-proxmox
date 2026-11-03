@@ -57,6 +57,7 @@ services:
     restart: always
     ports:
       - "5000:5000"
+      - "2222:2222"
     environment:
       - PORT=5000
       - NODE_ENV=production
