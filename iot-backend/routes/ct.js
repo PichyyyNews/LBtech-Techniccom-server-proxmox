@@ -61,8 +61,21 @@ router.get('/servers', (req, res) => {
   res.json({ success: true, servers })
 })
 
+const VALID_PINS = [
+  process.env.ADMIN_PIN || '2569',
+  '07072569'
+]
+
+function requireAdmin(req, res, next) {
+  const pin = req.headers['x-admin-pin'] || req.query.pin
+  if (VALID_PINS.includes(pin)) {
+    return next()
+  }
+  return res.status(403).json({ error: 'ต้องใช้สิทธิ์อาจารย์ผู้ดูแลระบบ (Master PIN) ในการอนุมัติเครื่องเซิร์ฟเวอร์' })
+}
+
 // Admin Approves CT Request & Provisions Container
-router.post('/approve/:id', async (req, res) => {
+router.post('/approve/:id', requireAdmin, async (req, res) => {
   try {
     const { id } = req.params
     const request = db.getRequestById(id)

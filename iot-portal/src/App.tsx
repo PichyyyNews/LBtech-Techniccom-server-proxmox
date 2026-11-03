@@ -636,14 +636,19 @@ export default function App() {
     setIsCreatingServer(false)
   }
 
-  // Admin Approves Request
+  // Admin Approves Request (Teacher Only)
   const handleApproveRequest = async (req: CTRequest) => {
+    if (!isAdminUnlocked && !adminPinInput) {
+      alert('เฉพาะอาจารย์ผู้ดูแลระบบเท่านั้นที่มีสิทธิ์อนุมัติคำขอ')
+      return
+    }
+
     try {
       const res = await fetch(`/api/ct/approve/${req.id}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-admin-pin': adminPinInput || '2569'
+          'x-admin-pin': adminPinInput || ''
         }
       })
       if (res.ok) {
@@ -657,48 +662,16 @@ export default function App() {
           )
           return
         }
+      } else {
+        const errData = await res.json()
+        alert(errData.error || 'ไม่สามารถอนุมัติได้ ต้องใช้สิทธิ์อาจารย์')
+        return
       }
     } catch (err) {
-      console.warn('[Approve] API fallback:', err)
+      console.warn('[Approve] API error:', err)
+      alert('เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์')
+      return
     }
-
-    // Local fallback if API fails
-    const usedVmids = ctServers.map((s) => s.vmid)
-    let nextVmid = 109
-    while (usedVmids.includes(nextVmid)) {
-      nextVmid++
-    }
-
-    const osLabels: Record<string, string> = {
-      'debian-12': 'Debian 12 (Bookworm)',
-      'ubuntu-24': 'Ubuntu 24.04 LTS',
-      'alpine-3': 'Alpine Linux 3.22',
-    }
-
-    const newServer: CTServer = {
-      vmid: nextVmid,
-      name: req.serverName,
-      studentId: req.studentId,
-      os: osLabels[req.os] || req.os,
-      osKey: req.os,
-      vcpu: req.vcpu,
-      ram: req.ram,
-      disk: req.disk,
-      ip: `10.10.10.${nextVmid}`,
-      status: 'running',
-      uptime: 'เพิ่งเริ่มทำงาน',
-      sshPort: 2222,
-      cpuUsage: 4,
-      ramUsage: Math.floor(req.ram * 0.15),
-    }
-
-    setCtRequests((prev) =>
-      prev.map((r) =>
-        r.id === req.id ? { ...r, status: 'approved', vmid: nextVmid, ip: newServer.ip } : r
-      )
-    )
-
-    setCtServers((prev) => [newServer, ...prev])
   }
 
   // Admin Rejects Request
@@ -2486,18 +2459,9 @@ Payload:
                                 variant="outline"
                                 onClick={() => handleRejectRequest(studentPendingRequest.id)}
                                 className="h-7 text-xs text-zinc-600 dark:text-zinc-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 border-zinc-200 dark:border-zinc-700 cursor-pointer"
-                                title="ยกเลิกคำขอนี้"
+                                title="ยกเลิกคำขอนี้หากต้องการแก้ไขข้อมูลใหม่"
                               >
                                 ยกเลิกคำขอ
-                              </Button>
-                              <Button
-                                size="sm"
-                                onClick={() => handleApproveRequest(studentPendingRequest)}
-                                className="h-7 text-xs bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer font-medium"
-                                title="อนุมัติและสร้างเครื่องทันที"
-                              >
-                                <CheckCircle2 className="h-3 w-3 mr-1" />
-                                อนุมัติ
                               </Button>
                             </div>
                           </div>
