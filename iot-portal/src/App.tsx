@@ -3067,9 +3067,7 @@ Payload:
               {activeTab === 'mqtt' && (
                 <div className="space-y-6">
                   <div id="sec-mqtt-title" className="flex items-center gap-3.5">
-                    <div className="h-11 w-11 rounded-xl bg-zinc-100 dark:bg-zinc-850 border border-zinc-200 dark:border-zinc-800 flex items-center justify-center shrink-0 shadow-2xs">
-                      <EMQXLogo className="h-7 w-7" />
-                    </div>
+                    <EMQXLogo className="h-9 w-9 shrink-0" />
                     <div>
                       <div className="flex items-center gap-2">
                         <h1 className="text-lg sm:text-xl font-bold tracking-tight text-zinc-900 dark:text-white">
@@ -3389,15 +3387,13 @@ Payload:
               {activeTab === 'database' && (
                 <div className="space-y-6">
                   <div id="sec-db-title" className="flex items-center gap-3.5">
-                    <div className="h-11 w-11 rounded-xl bg-zinc-100 dark:bg-zinc-850 border border-zinc-200 dark:border-zinc-800 flex items-center justify-center shrink-0 shadow-2xs">
-                      <InfluxDBLogo className="h-7 w-7" />
-                    </div>
+                    <InfluxDBLogo className="h-8 w-8 shrink-0" />
                     <div>
                       <div className="flex items-center gap-2">
                         <h1 className="text-lg sm:text-xl font-bold tracking-tight text-zinc-900 dark:text-white">
                           Database Server (InfluxDB v2 Time-Series)
                         </h1>
-                        <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-sky-950/40 text-sky-400 border border-sky-800/60 font-mono">
+                        <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-750 font-mono">
                           v2.7
                         </span>
                       </div>
@@ -3513,9 +3509,7 @@ sensor,device=esp32_01 temperature=26.4,humidity=62.1
                   <div className="border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-[#121214] p-4 sm:p-5 shadow-xs space-y-4">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                       <div className="flex items-start sm:items-center gap-3">
-                        <div className="h-10 w-10 rounded-xl bg-zinc-100 dark:bg-zinc-850 border border-zinc-200 dark:border-zinc-800 flex items-center justify-center shrink-0 shadow-2xs">
-                          <InfluxDBLogo className="h-6 w-6" />
-                        </div>
+                        <InfluxDBLogo className="h-8 w-8 shrink-0" />
                         <div>
                           <div className="flex items-center gap-2">
                             <h3 className="text-sm font-bold text-zinc-900 dark:text-white">
