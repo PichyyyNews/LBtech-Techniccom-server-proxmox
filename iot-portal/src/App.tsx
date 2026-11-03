@@ -51,7 +51,7 @@ import {
   HelpCircle,
   ExternalLink,
 } from 'lucide-react'
-import { DebianLogo, UbuntuLogo, AlpineLogo, renderOSLogo } from '@/components/OSLogos'
+import { DebianLogo, UbuntuLogo, AlpineLogo, InfluxDBLogo, EMQXLogo, renderOSLogo } from '@/components/OSLogos'
 import { AdminPanel } from '@/components/AdminPanel'
 import { EmbeddedTerminal } from '@/components/EmbeddedTerminal'
 import { Button } from '@/components/ui/button'
@@ -1873,31 +1873,31 @@ Payload:
                     <div className="divide-y divide-zinc-100 dark:divide-zinc-800/80 text-xs">
                       <div className="flex flex-col sm:grid sm:grid-cols-3 p-3 sm:p-3.5 gap-1 sm:gap-2 items-start sm:items-center">
                         <span className="text-zinc-500 dark:text-zinc-400 font-medium">MQTT Host (WSS)</span>
-                        <code className="font-mono text-zinc-900 dark:text-zinc-100 sm:col-span-2 select-all break-all bg-zinc-50 dark:bg-zinc-800 px-1.5 py-0.5 sm:p-0 rounded">mqtt.pichyy.qzz.io</code>
+                        <code className="font-mono text-zinc-900 dark:text-zinc-100 sm:col-span-2 select-all break-all">mqtt.pichyy.qzz.io</code>
                       </div>
                       <div className="flex flex-col sm:grid sm:grid-cols-3 p-3 sm:p-3.5 gap-1 sm:gap-2 items-start sm:items-center">
                         <span className="text-zinc-500 dark:text-zinc-400 font-medium">Port / Path</span>
-                        <code className="font-mono text-zinc-900 dark:text-zinc-100 sm:col-span-2 bg-zinc-50 dark:bg-zinc-800 px-1.5 py-0.5 sm:p-0 rounded">443 / /mqtt (WSS over Cloudflare)</code>
+                        <code className="font-mono text-zinc-900 dark:text-zinc-100 sm:col-span-2">443 / /mqtt (WSS over Cloudflare)</code>
                       </div>
                       <div className="flex flex-col sm:grid sm:grid-cols-3 p-3 sm:p-3.5 gap-1 sm:gap-2 items-start sm:items-center">
                         <span className="text-zinc-500 dark:text-zinc-400 font-medium">Username</span>
-                        <code className="font-mono text-zinc-900 dark:text-zinc-100 sm:col-span-2 select-all bg-zinc-50 dark:bg-zinc-800 px-1.5 py-0.5 sm:p-0 rounded">{session.studentId}</code>
+                        <code className="font-mono text-zinc-900 dark:text-zinc-100 sm:col-span-2 select-all">{session.studentId}</code>
                       </div>
                       <div className="flex flex-col sm:grid sm:grid-cols-3 p-3 sm:p-3.5 gap-1 sm:gap-2 items-start sm:items-center">
                         <span className="text-zinc-500 dark:text-zinc-400 font-medium">Password</span>
-                        <code className="font-mono text-zinc-900 dark:text-zinc-100 sm:col-span-2 bg-zinc-50 dark:bg-zinc-800 px-1.5 py-0.5 sm:p-0 rounded">{session.token}</code>
+                        <code className="font-mono text-zinc-900 dark:text-zinc-100 sm:col-span-2">{session.token}</code>
                       </div>
                       <div className="flex flex-col sm:grid sm:grid-cols-3 p-3 sm:p-3.5 gap-1 sm:gap-2 items-start sm:items-center">
                         <span className="text-zinc-500 dark:text-zinc-400 font-medium">Topic Namespace</span>
-                        <code className="font-mono text-zinc-900 dark:text-zinc-100 sm:col-span-2 select-all break-all bg-zinc-50 dark:bg-zinc-800 px-1.5 py-0.5 sm:p-0 rounded">project/{session.studentId}/#</code>
+                        <code className="font-mono text-zinc-900 dark:text-zinc-100 sm:col-span-2 select-all break-all">project/{session.studentId}/#</code>
                       </div>
                       <div className="flex flex-col sm:grid sm:grid-cols-3 p-3 sm:p-3.5 gap-1 sm:gap-2 items-start sm:items-center">
                         <span className="text-zinc-500 dark:text-zinc-400 font-medium">Publish Topic (เซนเซอร์)</span>
-                        <code className="font-mono text-zinc-900 dark:text-zinc-100 sm:col-span-2 select-all break-all bg-zinc-50 dark:bg-zinc-800 px-1.5 py-0.5 sm:p-0 rounded">project/{session.studentId}/sensor</code>
+                        <code className="font-mono text-zinc-900 dark:text-zinc-100 sm:col-span-2 select-all break-all">project/{session.studentId}/sensor</code>
                       </div>
                       <div className="flex flex-col sm:grid sm:grid-cols-3 p-3 sm:p-3.5 gap-1 sm:gap-2 items-start sm:items-center">
                         <span className="text-zinc-500 dark:text-zinc-400 font-medium">Subscribe Topic (สั่งงาน)</span>
-                        <code className="font-mono text-zinc-900 dark:text-zinc-100 sm:col-span-2 select-all break-all bg-zinc-50 dark:bg-zinc-800 px-1.5 py-0.5 sm:p-0 rounded">project/{session.studentId}/control</code>
+                        <code className="font-mono text-zinc-900 dark:text-zinc-100 sm:col-span-2 select-all break-all">project/{session.studentId}/control</code>
                       </div>
                     </div>
                   </div>
@@ -3184,13 +3184,23 @@ Payload:
               {/* TAB 2: MQTT BROKER & LIVE CONSOLE */}
               {activeTab === 'mqtt' && (
                 <div className="space-y-6">
-                  <div id="sec-mqtt-title">
-                    <h1 className="text-lg sm:text-xl font-bold tracking-tight text-zinc-900 dark:text-white">
-                      MQTT Broker (EMQX v5)
-                    </h1>
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
-                      ระบบส่งข้อความ Real-time รองรับทั้ง WebSockets (WSS) และ Pub/Sub ความเร็วสูง
-                    </p>
+                  <div id="sec-mqtt-title" className="flex items-center gap-3.5">
+                    <div className="h-11 w-11 rounded-xl bg-zinc-100 dark:bg-zinc-850 border border-zinc-200 dark:border-zinc-800 flex items-center justify-center shrink-0 shadow-2xs">
+                      <EMQXLogo className="h-7 w-7" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h1 className="text-lg sm:text-xl font-bold tracking-tight text-zinc-900 dark:text-white">
+                          MQTT Broker (EMQX v5)
+                        </h1>
+                        <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-950/40 text-emerald-400 border border-emerald-800/60 font-mono">
+                          v5.8
+                        </span>
+                      </div>
+                      <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+                        ระบบส่งข้อความ Real-time รองรับทั้ง WebSockets (WSS) และ Pub/Sub ความเร็วสูง
+                      </p>
+                    </div>
                   </div>
 
                   {/* NOTE CALLOUT */}
@@ -3199,7 +3209,7 @@ Payload:
                     <div className="space-y-1">
                       <div className="font-semibold text-zinc-900 dark:text-zinc-100">ข้อควรทราบเกี่ยวกับระบบ MQTT</div>
                       <p className="text-zinc-600 dark:text-zinc-400 leading-relaxed">
-                        ระบบแยกสิทธิ์ตามรหัสนักศึกษา อนุญาตให้ Publish และ Subscribe เฉพาะ Topic ภายใต้ <code className="font-mono bg-zinc-200 dark:bg-zinc-800 px-1 py-0.5 rounded text-zinc-800 dark:text-zinc-200">project/{session.studentId}/#</code> เท่านั้น เพื่อป้องกันไม่ให้ข้อมูลหรือคำสั่งควบคุมชนกับกลุ่มอื่น
+                        ระบบแยกสิทธิ์ตามรหัสนักศึกษา อนุญาตให้ Publish และ Subscribe เฉพาะ Topic ภายใต้ <code className="font-mono text-zinc-800 dark:text-zinc-200">project/{session.studentId}/#</code> เท่านั้น เพื่อป้องกันไม่ให้ข้อมูลหรือคำสั่งควบคุมชนกับกลุ่มอื่น
                       </p>
                     </div>
                   </div>
@@ -3226,21 +3236,21 @@ Payload:
                         <div className="space-y-1.5">
                           <div className="font-semibold text-zinc-800 dark:text-zinc-200">1. การเชื่อมต่อจากบอร์ดไมโครคอนโทรลเลอร์ (ESP32 / ESP8266):</div>
                           <p className="text-zinc-600 dark:text-zinc-400 leading-relaxed">
-                            ตั้งค่า Host เป็น <code className="font-mono bg-zinc-100 dark:bg-zinc-800 px-1 py-0.5 rounded">mqtt.pichyy.qzz.io</code> พอร์ต 1883 (TCP ปกติ) หรือ 8084 (TLS) โดยใส่ Username เป็นรหัสนักศึกษา และ Password ตามที่ได้รับในระบบ
+                            ตั้งค่า Host เป็น <code className="font-mono text-zinc-800 dark:text-zinc-200">mqtt.pichyy.qzz.io</code> พอร์ต 1883 (TCP ปกติ) หรือ 8084 (TLS) โดยใส่ Username เป็นรหัสนักศึกษา และ Password ตามที่ได้รับในระบบ
                           </p>
                         </div>
                         <div className="space-y-1.5">
                           <div className="font-semibold text-zinc-800 dark:text-zinc-200">2. การเชื่อมต่อจากเว็บแอปพลิเคชัน (React / Vue / HTML):</div>
                           <p className="text-zinc-600 dark:text-zinc-400 leading-relaxed">
-                            เชื่อมต่อไปยัง Secure WebSocket: <code className="font-mono bg-zinc-100 dark:bg-zinc-800 px-1 py-0.5 rounded">wss://mqtt.pichyy.qzz.io/mqtt</code> ด้วยไลบรารี <code>mqtt.js</code> หรือ <code>paho-mqtt</code>
+                            เชื่อมต่อไปยัง Secure WebSocket: <code className="font-mono text-zinc-800 dark:text-zinc-200">wss://mqtt.pichyy.qzz.io/mqtt</code> ด้วยไลบรารี <code>mqtt.js</code> หรือ <code>paho-mqtt</code>
                           </p>
                         </div>
                         <div className="space-y-1.5">
                           <div className="font-semibold text-zinc-800 dark:text-zinc-200">3. โครงสร้าง Topic ที่แนะนำ:</div>
                           <ul className="list-disc pl-5 space-y-1 text-zinc-600 dark:text-zinc-400">
-                            <li>ส่งค่าเซนเซอร์: <code className="font-mono bg-zinc-100 dark:bg-zinc-800 px-1 py-0.5 rounded">project/{session.studentId}/sensor</code></li>
-                            <li>ส่งคำสั่งควบคุมบอร์ด: <code className="font-mono bg-zinc-100 dark:bg-zinc-800 px-1 py-0.5 rounded">project/{session.studentId}/control</code></li>
-                            <li>สถานะการทำงานบอร์ด: <code className="font-mono bg-zinc-100 dark:bg-zinc-800 px-1 py-0.5 rounded">project/{session.studentId}/status</code></li>
+                            <li>ส่งค่าเซนเซอร์: <code className="font-mono text-zinc-800 dark:text-zinc-200">project/{session.studentId}/sensor</code></li>
+                            <li>ส่งคำสั่งควบคุมบอร์ด: <code className="font-mono text-zinc-800 dark:text-zinc-200">project/{session.studentId}/control</code></li>
+                            <li>สถานะการทำงานบอร์ด: <code className="font-mono text-zinc-800 dark:text-zinc-200">project/{session.studentId}/status</code></li>
                           </ul>
                         </div>
                       </div>
@@ -3259,35 +3269,35 @@ Payload:
                       </div>
                       <div className="flex flex-col sm:grid sm:grid-cols-3 p-3 sm:p-3.5 gap-1 sm:gap-2 items-start sm:items-center">
                         <span className="text-zinc-500 dark:text-zinc-400 font-medium">Endpoint</span>
-                        <code className="font-mono text-zinc-900 dark:text-zinc-100 sm:col-span-2 select-all break-all bg-zinc-50 dark:bg-zinc-800 px-1.5 py-0.5 sm:p-0 rounded">wss://mqtt.pichyy.qzz.io/mqtt</code>
+                        <code className="font-mono text-zinc-900 dark:text-zinc-100 sm:col-span-2 select-all break-all">wss://mqtt.pichyy.qzz.io/mqtt</code>
                       </div>
                       <div className="flex flex-col sm:grid sm:grid-cols-3 p-3 sm:p-3.5 gap-1 sm:gap-2 items-start sm:items-center">
                         <span className="text-zinc-500 dark:text-zinc-400 font-medium">Allowed Scope</span>
-                        <code className="font-mono text-zinc-900 dark:text-zinc-100 sm:col-span-2 break-all bg-zinc-50 dark:bg-zinc-800 px-1.5 py-0.5 sm:p-0 rounded">project/{session.studentId}/#</code>
+                        <code className="font-mono text-zinc-900 dark:text-zinc-100 sm:col-span-2 select-all break-all">project/{session.studentId}/#</code>
                       </div>
                     </div>
                   </div>
 
                   {/* MQTT Connection Credentials Card (Student Access) */}
-                  <div className="bg-white dark:bg-zinc-900 rounded-xl border border-emerald-200/80 dark:border-emerald-900/40 p-3.5 space-y-2.5">
+                  <div className="bg-white dark:bg-[#121214] rounded-xl border border-zinc-200 dark:border-zinc-800 p-4 space-y-3 shadow-xs">
                     <div className="flex items-center justify-between pb-2 border-b border-zinc-100 dark:border-zinc-800">
-                      <div className="flex items-center gap-1.5">
-                        <Key className="h-3.5 w-3.5 text-emerald-500" />
-                        <span className="text-[11px] font-semibold text-emerald-900 dark:text-emerald-300">
+                      <div className="flex items-center gap-2">
+                        <Key className="h-4 w-4 text-zinc-400" />
+                        <span className="text-xs font-semibold text-zinc-900 dark:text-white">
                           ข้อมูลบัญชีสำหรับเชื่อมต่อ MQTT Client (บอร์ด IoT / โค้ดโปรเจกต์)
                         </span>
                       </div>
-                      <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-800/60">
+                      <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700">
                         พร้อมใช้งาน
                       </span>
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2.5 text-xs">
                       {/* Host */}
-                      <div className="p-2.5 rounded-lg bg-zinc-50 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700/60">
+                      <div className="p-3 rounded-lg bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800">
                         <span className="text-[10px] text-zinc-400 font-medium block">MQTT Host (Broker)</span>
                         <div className="flex items-center justify-between mt-1">
-                          <span className="font-mono font-bold text-zinc-900 dark:text-white text-xs select-all">
+                          <span className="font-mono font-semibold text-zinc-900 dark:text-white text-xs select-all">
                             mqtt.pichyy.qzz.io
                           </span>
                           <button
@@ -3302,11 +3312,11 @@ Payload:
                       </div>
 
                       {/* Ports */}
-                      <div className="p-2.5 rounded-lg bg-zinc-50 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700/60">
+                      <div className="p-3 rounded-lg bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800">
                         <span className="text-[10px] text-zinc-400 font-medium block">พอร์ตเชื่อมต่อ (WSS / TCP)</span>
                         <div className="flex items-center justify-between mt-1">
-                          <span className="font-mono text-zinc-900 dark:text-zinc-100 text-xs">
-                            <strong className="text-emerald-600 dark:text-emerald-400">443</strong> (WSS) / <strong>1883</strong> (TCP)
+                          <span className="font-mono text-zinc-900 dark:text-white text-xs">
+                            <strong className="font-semibold text-zinc-900 dark:text-white">443</strong> (WSS) / <strong>1883</strong> (TCP)
                           </span>
                           <button
                             type="button"
@@ -3320,10 +3330,10 @@ Payload:
                       </div>
 
                       {/* Username */}
-                      <div className="p-2.5 rounded-lg bg-zinc-50 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700/60">
+                      <div className="p-3 rounded-lg bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800">
                         <span className="text-[10px] text-zinc-400 font-medium block">ชื่อผู้ใช้ (Username)</span>
                         <div className="flex items-center justify-between mt-1">
-                          <span className="font-mono font-bold text-zinc-900 dark:text-white text-xs select-all">
+                          <span className="font-mono font-semibold text-zinc-900 dark:text-white text-xs select-all">
                             {session?.studentId || '693190900xx'}
                           </span>
                           <button
@@ -3338,10 +3348,10 @@ Payload:
                       </div>
 
                       {/* Password */}
-                      <div className="p-2.5 rounded-lg bg-zinc-50 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700/60">
+                      <div className="p-3 rounded-lg bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800">
                         <span className="text-[10px] text-zinc-400 font-medium block">รหัสผ่าน (Password)</span>
                         <div className="flex items-center justify-between mt-1">
-                          <span className={`font-mono text-xs select-all ${showMqttPassword ? 'font-bold text-emerald-600 dark:text-emerald-400' : 'text-zinc-400 tracking-widest'}`}>
+                          <span className={`font-mono text-xs select-all ${showMqttPassword ? 'font-semibold text-zinc-900 dark:text-white' : 'text-zinc-400 tracking-widest'}`}>
                             {showMqttPassword ? (session?.token || '••••••••') : '••••••••'}
                           </span>
                           <div className="flex items-center">
@@ -3367,10 +3377,10 @@ Payload:
                     </div>
 
                     {/* Topic bar */}
-                    <div className="p-2.5 rounded-lg bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200/80 dark:border-zinc-700/60 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+                    <div className="p-3 rounded-lg bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
                       <div className="flex items-center gap-2">
                         <span className="text-[10px] text-zinc-400 font-medium whitespace-nowrap">หัวข้อประจำตัว (Topic):</span>
-                        <code className="font-mono text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 select-all break-all">
+                        <code className="font-mono text-xs font-semibold text-zinc-900 dark:text-white select-all break-all">
                           lbtech/{session?.studentId || '693190900xx'}/telemetry
                         </code>
                       </div>
@@ -3496,13 +3506,23 @@ Payload:
               {/* TAB 3: DATABASE SERVER (INFLUXDB) */}
               {activeTab === 'database' && (
                 <div className="space-y-6">
-                  <div id="sec-db-title">
-                    <h1 className="text-lg sm:text-xl font-bold tracking-tight text-zinc-900 dark:text-white">
-                      Database Server (InfluxDB v2 Time-Series)
-                    </h1>
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
-                      ฐานข้อมูลที่ถูกปรับแต่งสำหรับจัดเก็บข้อมูลเซนเซอร์ที่มี Timestamp ย้อนหลังโดยเฉพาะ
-                    </p>
+                  <div id="sec-db-title" className="flex items-center gap-3.5">
+                    <div className="h-11 w-11 rounded-xl bg-zinc-100 dark:bg-zinc-850 border border-zinc-200 dark:border-zinc-800 flex items-center justify-center shrink-0 shadow-2xs">
+                      <InfluxDBLogo className="h-7 w-7" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h1 className="text-lg sm:text-xl font-bold tracking-tight text-zinc-900 dark:text-white">
+                          Database Server (InfluxDB v2 Time-Series)
+                        </h1>
+                        <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-sky-950/40 text-sky-400 border border-sky-800/60 font-mono">
+                          v2.7
+                        </span>
+                      </div>
+                      <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+                        ฐานข้อมูลที่ถูกปรับแต่งสำหรับจัดเก็บข้อมูลเซนเซอร์ที่มี Timestamp ย้อนหลังโดยเฉพาะ
+                      </p>
+                    </div>
                   </div>
 
                   {/* NOTE CALLOUT */}
@@ -3511,7 +3531,7 @@ Payload:
                     <div className="space-y-1">
                       <div className="font-semibold text-zinc-900 dark:text-zinc-100">ข้อควรทราบเกี่ยวกับระบบ InfluxDB</div>
                       <p className="text-zinc-600 dark:text-zinc-400 leading-relaxed">
-                        ข้อมูลเซนเซอร์จะถูกแยกเก็บใน Bucket เฉพาะของกลุ่มคุณ โดยมี Organization คือ <code className="font-mono bg-zinc-200 dark:bg-zinc-800 px-1 py-0.5 rounded text-zinc-800 dark:text-zinc-200">lbtech</code> และ Bucket คือ <code className="font-mono bg-zinc-200 dark:bg-zinc-800 px-1 py-0.5 rounded text-zinc-800 dark:text-zinc-200">bucket_{session.studentId}</code> ต้องแนบ Influx API Token ใน Header ทุกครั้งที่เขียนหรืออ่านข้อมูล
+                        ข้อมูลเซนเซอร์จะถูกแยกเก็บใน Bucket เฉพาะของกลุ่มคุณ โดยมี Organization คือ <code className="font-mono text-zinc-800 dark:text-zinc-200">lbtech</code> และ Bucket คือ <code className="font-mono text-zinc-800 dark:text-zinc-200">bucket_{session.studentId}</code> ต้องแนบ Influx API Token ใน Header ทุกครั้งที่เขียนหรืออ่านข้อมูล
                       </p>
                     </div>
                   </div>
@@ -3538,7 +3558,7 @@ Payload:
                         <div className="space-y-1.5">
                           <div className="font-semibold text-zinc-800 dark:text-zinc-200">1. การบันทึกข้อมูล (Write Data):</div>
                           <p className="text-zinc-600 dark:text-zinc-400 leading-relaxed">
-                            สามารถบันทึกผ่าน HTTP POST ไปที่ <code className="font-mono bg-zinc-100 dark:bg-zinc-800 px-1 py-0.5 rounded">https://influx.pichyy.qzz.io/api/v2/write?org=lbtech&bucket=bucket_{session.studentId}</code> โดยส่งข้อมูลในรูปแบบ Line Protocol
+                            สามารถบันทึกผ่าน HTTP POST ไปที่ <code className="font-mono text-zinc-800 dark:text-zinc-200">https://influx.pichyy.qzz.io/api/v2/write?org=lbtech&bucket=bucket_{session.studentId}</code> โดยส่งข้อมูลในรูปแบบ Line Protocol
                           </p>
                         </div>
                         <div className="space-y-1.5">
@@ -3568,15 +3588,15 @@ sensor,device=esp32_01 temperature=26.4,humidity=62.1
                     <div className="divide-y divide-zinc-100 dark:divide-zinc-800/80 text-xs">
                       <div className="flex flex-col sm:grid sm:grid-cols-3 p-3 sm:p-3.5 gap-1 sm:gap-2 items-start sm:items-center">
                         <span className="text-zinc-500 dark:text-zinc-400 font-medium">Database Host</span>
-                        <code className="font-mono text-zinc-900 dark:text-zinc-100 sm:col-span-2 select-all break-all bg-zinc-50 dark:bg-zinc-800 px-1.5 py-0.5 sm:p-0 rounded">https://influx.pichyy.qzz.io</code>
+                        <code className="font-mono text-zinc-900 dark:text-zinc-100 sm:col-span-2 select-all break-all">https://influx.pichyy.qzz.io</code>
                       </div>
                       <div className="flex flex-col sm:grid sm:grid-cols-3 p-3 sm:p-3.5 gap-1 sm:gap-2 items-start sm:items-center">
                         <span className="text-zinc-500 dark:text-zinc-400 font-medium">Organization (Org)</span>
-                        <code className="font-mono text-zinc-900 dark:text-zinc-100 sm:col-span-2 select-all bg-zinc-50 dark:bg-zinc-800 px-1.5 py-0.5 sm:p-0 rounded">lbtech</code>
+                        <code className="font-mono text-zinc-900 dark:text-zinc-100 sm:col-span-2 select-all">lbtech</code>
                       </div>
                       <div className="flex flex-col sm:grid sm:grid-cols-3 p-3 sm:p-3.5 gap-1 sm:gap-2 items-start sm:items-center">
                         <span className="text-zinc-500 dark:text-zinc-400 font-medium">Student Bucket</span>
-                        <code className="font-mono text-zinc-900 dark:text-zinc-100 sm:col-span-2 select-all bg-zinc-50 dark:bg-zinc-800 px-1.5 py-0.5 sm:p-0 rounded font-semibold text-purple-600 dark:text-purple-400">
+                        <code className="font-mono text-zinc-900 dark:text-zinc-100 sm:col-span-2 select-all font-semibold">
                           {session?.influxBucket || `telemetry-${session?.studentId || 'std'}`}
                         </code>
                       </div>
@@ -3587,7 +3607,7 @@ sensor,device=esp32_01 temperature=26.4,humidity=62.1
                       <div className="flex flex-col sm:grid sm:grid-cols-3 p-3 sm:p-3.5 gap-1 sm:gap-2 items-start sm:items-center">
                         <span className="text-zinc-500 dark:text-zinc-400 font-medium">API Token (Line Protocol)</span>
                         <div className="sm:col-span-2 flex items-center gap-2">
-                          <code className="font-mono text-zinc-900 dark:text-zinc-100 select-all break-all bg-zinc-50 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-[11px]">
+                          <code className="font-mono text-zinc-900 dark:text-zinc-100 select-all break-all text-[11px]">
                             {session?.influxToken || `lbtech_${session?.studentId || 'token'}`}
                           </code>
                           <button
@@ -3608,22 +3628,22 @@ sensor,device=esp32_01 temperature=26.4,humidity=62.1
                   </div>
 
                   {/* InfluxDB Admin UI Callout with Student Login Credentials */}
-                  <div className="border border-purple-200 dark:border-purple-900/60 rounded-xl bg-purple-50/40 dark:bg-purple-950/20 p-4 sm:p-5 shadow-xs space-y-4">
+                  <div className="border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-[#121214] p-4 sm:p-5 shadow-xs space-y-4">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                       <div className="flex items-start sm:items-center gap-3">
-                        <div className="h-10 w-10 rounded-xl bg-purple-600 text-white flex items-center justify-center shrink-0 shadow-xs">
-                          <Database className="h-5 w-5" />
+                        <div className="h-10 w-10 rounded-xl bg-zinc-100 dark:bg-zinc-850 border border-zinc-200 dark:border-zinc-800 flex items-center justify-center shrink-0 shadow-2xs">
+                          <InfluxDBLogo className="h-6 w-6" />
                         </div>
                         <div>
                           <div className="flex items-center gap-2">
-                            <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+                            <h3 className="text-sm font-bold text-zinc-900 dark:text-white">
                               InfluxDB v2 Management UI & Data Explorer
                             </h3>
-                            <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-purple-100 dark:bg-purple-900/60 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
+                            <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-sky-950/40 text-sky-400 border border-sky-800/60 font-mono">
                               Web UI Ready
                             </span>
                           </div>
-                          <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-0.5">
+                          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
                             หน้าเว็บค้นหาข้อมูล Time-Series สร้างแดชบอร์ดกราฟเส้น และใช้เครื่องมือ Query Flux Builder
                           </p>
                         </div>
@@ -3632,7 +3652,7 @@ sensor,device=esp32_01 temperature=26.4,humidity=62.1
                         href="https://influx.pichyy.qzz.io"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold shadow-xs transition-all shrink-0 cursor-pointer"
+                        className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg bg-zinc-900 dark:bg-zinc-100 hover:bg-zinc-800 dark:hover:bg-zinc-200 text-white dark:text-zinc-900 text-xs font-semibold shadow-2xs transition-all shrink-0 cursor-pointer"
                       >
                         <span>เปิดเว็บ InfluxDB</span>
                         <ChevronRight className="h-4 w-4" />
@@ -3640,18 +3660,18 @@ sensor,device=esp32_01 temperature=26.4,humidity=62.1
                     </div>
 
                     {/* Student Web UI Login Credentials Card */}
-                    <div className="bg-white dark:bg-zinc-900 rounded-xl border border-purple-200/80 dark:border-purple-900/40 p-3.5 space-y-2.5">
-                      <div className="text-[11px] font-semibold text-purple-900 dark:text-purple-300 flex items-center gap-1.5 pb-2 border-b border-zinc-100 dark:border-zinc-800">
-                        <Key className="h-3.5 w-3.5 text-purple-500" />
+                    <div className="bg-zinc-50/50 dark:bg-zinc-900/60 rounded-xl border border-zinc-200 dark:border-zinc-800 p-4 space-y-3">
+                      <div className="text-xs font-semibold text-zinc-900 dark:text-white flex items-center gap-2 pb-2 border-b border-zinc-100 dark:border-zinc-800">
+                        <Key className="h-4 w-4 text-zinc-400" />
                         <span>ข้อมูลบัญชีสำหรับเข้าสู่ระบบหน้าเว็บ InfluxDB (User Login Credentials)</span>
                       </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2.5 text-xs">
                         {/* Username */}
-                        <div className="p-2.5 rounded-lg bg-zinc-50 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700/60">
+                        <div className="p-3 rounded-lg bg-white dark:bg-zinc-850 border border-zinc-200 dark:border-zinc-750">
                           <span className="text-[10px] text-zinc-400 font-medium block">ชื่อผู้ใช้ (Username)</span>
                           <div className="flex items-center justify-between mt-1">
-                            <span className="font-mono font-bold text-zinc-900 dark:text-white text-xs select-all">
+                            <span className="font-mono font-semibold text-zinc-900 dark:text-white text-xs select-all">
                               {session?.studentId || '693190900xx'}
                             </span>
                             <button
@@ -3670,10 +3690,10 @@ sensor,device=esp32_01 temperature=26.4,humidity=62.1
                         </div>
 
                         {/* Password */}
-                        <div className="p-2.5 rounded-lg bg-zinc-50 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700/60">
+                        <div className="p-3 rounded-lg bg-white dark:bg-zinc-850 border border-zinc-200 dark:border-zinc-750">
                           <span className="text-[10px] text-zinc-400 font-medium block">รหัสผ่าน (Password)</span>
                           <div className="flex items-center justify-between mt-1">
-                            <span className={`font-mono text-xs select-all ${showDbPassword ? 'font-bold text-purple-600 dark:text-purple-400' : 'text-zinc-400 tracking-widest'}`}>
+                            <span className={`font-mono text-xs select-all ${showDbPassword ? 'font-semibold text-zinc-900 dark:text-white' : 'text-zinc-400 tracking-widest'}`}>
                               {showDbPassword ? (session?.token || '••••••••') : '••••••••'}
                             </span>
                             <div className="flex items-center">
@@ -3702,15 +3722,15 @@ sensor,device=esp32_01 temperature=26.4,humidity=62.1
                         </div>
 
                         {/* Organization */}
-                        <div className="p-2.5 rounded-lg bg-zinc-50 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700/60">
+                        <div className="p-3 rounded-lg bg-white dark:bg-zinc-850 border border-zinc-200 dark:border-zinc-750">
                           <span className="text-[10px] text-zinc-400 font-medium block">องค์กร (Organization)</span>
                           <div className="flex items-center justify-between mt-1">
-                            <span className="font-mono font-bold text-zinc-900 dark:text-white text-xs select-all truncate max-w-[120px]">
-                              {session?.influxOrg || `std-${session?.studentId || '693190900xx'}`}
+                            <span className="font-mono font-semibold text-zinc-900 dark:text-white text-xs select-all truncate max-w-[120px]">
+                              {session?.influxOrg || 'lbtech'}
                             </span>
                             <button
                               type="button"
-                              onClick={() => copyDbText(session?.influxOrg || `std-${session?.studentId || '693190900xx'}`, 'db_org')}
+                              onClick={() => copyDbText(session?.influxOrg || 'lbtech', 'db_org')}
                               className="p-1 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 cursor-pointer"
                               title="คัดลอก Organization"
                             >
@@ -3724,10 +3744,10 @@ sensor,device=esp32_01 temperature=26.4,humidity=62.1
                         </div>
 
                         {/* Bucket */}
-                        <div className="p-2.5 rounded-lg bg-zinc-50 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700/60">
+                        <div className="p-3 rounded-lg bg-white dark:bg-zinc-850 border border-zinc-200 dark:border-zinc-750">
                           <span className="text-[10px] text-zinc-400 font-medium block">ถังข้อมูลประจำตัว (Bucket)</span>
                           <div className="flex items-center justify-between mt-1">
-                            <span className="font-mono font-bold text-zinc-900 dark:text-white text-xs select-all truncate max-w-[120px]">
+                            <span className="font-mono font-semibold text-zinc-900 dark:text-white text-xs select-all truncate max-w-[120px]">
                               {session?.influxBucket || 'telemetry'}
                             </span>
                             <button
