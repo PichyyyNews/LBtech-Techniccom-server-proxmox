@@ -2288,7 +2288,7 @@ Payload:
                                   className={`h-8 px-3.5 rounded-lg border text-xs font-mono font-medium transition-colors cursor-pointer ${
                                     reqVcpu === core
                                       ? 'bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 border-zinc-900 dark:border-zinc-100 shadow-2xs'
-                                      : 'bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-750'
+                                      : 'bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-700'
                                   }`}
                                 >
                                   {core} Core{core > 1 ? 's' : ''}
@@ -2318,7 +2318,7 @@ Payload:
                                 className={`h-8 px-3.5 rounded-lg border text-xs font-mono font-medium transition-colors cursor-pointer ${
                                   reqRam === ramOpt
                                     ? 'bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 border-zinc-900 dark:border-zinc-100 shadow-2xs'
-                                    : 'bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-750'
+                                    : 'bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-700'
                                 }`}
                               >
                                 {ramOpt >= 1024 ? `${ramOpt / 1024} GB` : `${ramOpt} MB`}
@@ -2347,7 +2347,7 @@ Payload:
                                 className={`h-8 px-3.5 rounded-lg border text-xs font-mono font-medium transition-colors cursor-pointer ${
                                   reqDisk === diskOpt
                                     ? 'bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 border-zinc-900 dark:border-zinc-100 shadow-2xs'
-                                    : 'bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-750'
+                                    : 'bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-700'
                                 }`}
                               >
                                 {diskOpt} GB
@@ -3695,7 +3695,7 @@ sensor,device=esp32_01 temperature=26.4,humidity=62.1
                         href="https://influx.pichyy.qzz.io"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg bg-zinc-900 dark:bg-zinc-100 hover:bg-zinc-800 dark:hover:bg-zinc-200 text-white dark:text-zinc-900 text-xs font-semibold shadow-2xs transition-all shrink-0 cursor-pointer"
+                        className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-white dark:bg-zinc-800 dark:hover:bg-zinc-700 dark:text-zinc-100 dark:border dark:border-zinc-700 text-xs font-semibold shadow-2xs transition-all shrink-0 cursor-pointer"
                       >
                         <span>เปิดเว็บ InfluxDB</span>
                         <ChevronRight className="h-4 w-4" />
@@ -3711,10 +3711,10 @@ sensor,device=esp32_01 temperature=26.4,humidity=62.1
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2.5 text-xs">
                         {/* Username */}
-                        <div className="p-3 rounded-lg bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-800">
-                          <span className="text-[10px] text-zinc-400 font-medium block">ชื่อผู้ใช้ (Username)</span>
+                        <div className="p-3 rounded-lg bg-zinc-100 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700/80">
+                          <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium block">ชื่อผู้ใช้ (Username)</span>
                           <div className="flex items-center justify-between mt-1">
-                            <span className="font-mono font-semibold text-zinc-900 dark:text-white text-xs select-all">
+                            <span className="font-mono font-semibold text-zinc-900 dark:text-zinc-100 text-xs select-all">
                               {session?.studentId || '693190900xx'}
                             </span>
                             <button
@@ -3733,10 +3733,10 @@ sensor,device=esp32_01 temperature=26.4,humidity=62.1
                         </div>
 
                         {/* Password */}
-                        <div className="p-3 rounded-lg bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-800">
-                          <span className="text-[10px] text-zinc-400 font-medium block">รหัสผ่าน (Password)</span>
+                        <div className="p-3 rounded-lg bg-zinc-100 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700/80">
+                          <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium block">รหัสผ่าน (Password)</span>
                           <div className="flex items-center justify-between mt-1">
-                            <span className={`font-mono text-xs select-all ${showDbPassword ? 'font-semibold text-zinc-900 dark:text-white' : 'text-zinc-400 tracking-widest'}`}>
+                            <span className={`font-mono text-xs select-all ${showDbPassword ? 'font-semibold text-zinc-900 dark:text-zinc-100' : 'text-zinc-400 tracking-widest'}`}>
                               {showDbPassword ? (session?.token || '••••••••') : '••••••••'}
                             </span>
                             <div className="flex items-center">
@@ -3765,10 +3765,10 @@ sensor,device=esp32_01 temperature=26.4,humidity=62.1
                         </div>
 
                         {/* Organization */}
-                        <div className="p-3 rounded-lg bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-800">
-                          <span className="text-[10px] text-zinc-400 font-medium block">องค์กร (Organization)</span>
+                        <div className="p-3 rounded-lg bg-zinc-100 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700/80">
+                          <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium block">องค์กร (Organization)</span>
                           <div className="flex items-center justify-between mt-1">
-                            <span className="font-mono font-semibold text-zinc-900 dark:text-white text-xs select-all truncate max-w-[120px]">
+                            <span className="font-mono font-semibold text-zinc-900 dark:text-zinc-100 text-xs select-all truncate max-w-[120px]">
                               {session?.influxOrg || 'lbtech'}
                             </span>
                             <button
@@ -3787,10 +3787,10 @@ sensor,device=esp32_01 temperature=26.4,humidity=62.1
                         </div>
 
                         {/* Bucket */}
-                        <div className="p-3 rounded-lg bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-800">
-                          <span className="text-[10px] text-zinc-400 font-medium block">ถังข้อมูลประจำตัว (Bucket)</span>
+                        <div className="p-3 rounded-lg bg-zinc-100 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700/80">
+                          <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium block">ถังข้อมูลประจำตัว (Bucket)</span>
                           <div className="flex items-center justify-between mt-1">
-                            <span className="font-mono font-semibold text-zinc-900 dark:text-white text-xs select-all truncate max-w-[120px]">
+                            <span className="font-mono font-semibold text-zinc-900 dark:text-zinc-100 text-xs select-all truncate max-w-[120px]">
                               {session?.influxBucket || 'telemetry'}
                             </span>
                             <button
