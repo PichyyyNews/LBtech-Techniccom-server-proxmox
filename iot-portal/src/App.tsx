@@ -1594,8 +1594,6 @@ Payload:
             <div className="flex items-center gap-2">
               <ThemeToggle />
 
-              <ThemeToggle />
-
               <button
                 type="button"
                 onClick={() => setIsSearchOpen(true)}
