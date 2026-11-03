@@ -1,0 +1,166 @@
+{
+  "students": {
+    "69319090021": {
+      "studentId": "69319090021",
+      "fullName": "นางสาวกาญจน์เกล้า แซ่ลิ้ม",
+      "projectTitle": "ระบบบริหารสต็อกสินค้าและจุดขาย POS",
+      "department": "เทคโนโลยีคอมพิวเตอร์",
+      "password": "Std@69319090021",
+      "token": "Std@69319090021",
+      "influxBucket": "telemetry-69319090021",
+      "influxToken": "lbtech_69319090021_token_live",
+      "influxOrg": "lbtech",
+      "mqttUsername": "69319090021",
+      "mqttTopicPrefix": "lbtech/69319090021/",
+      "createdAt": "2026-11-03T10:17:08.084Z",
+      "updatedAt": "2026-11-03T10:17:08.085Z"
+    },
+    "69319090022": {
+      "studentId": "69319090022",
+      "fullName": "นางสาวฐิติพร เจริญสลุง",
+      "projectTitle": "ระบบแคตตาล็อกหน้าร้านค้าออนไลน์",
+      "department": "เทคโนโลยีคอมพิวเตอร์",
+      "password": "Std@69319090022",
+      "token": "Std@69319090022",
+      "influxBucket": "telemetry-69319090022",
+      "influxToken": "lbtech_69319090022_token_live",
+      "influxOrg": "lbtech",
+      "mqttUsername": "69319090022",
+      "mqttTopicPrefix": "lbtech/69319090022/",
+      "createdAt": "2026-11-03T10:17:08.086Z",
+      "updatedAt": "2026-11-03T10:17:08.086Z"
+    },
+    "69319090024": {
+      "studentId": "69319090024",
+      "fullName": "นายทินภัทร มะนาวหวาน",
+      "projectTitle": "ระบบจองห้องพักและห้องประชุมอัจฉริยะ",
+      "department": "เทคโนโลยีคอมพิวเตอร์",
+      "password": "Std@69319090024",
+      "token": "Std@69319090024",
+      "influxBucket": "telemetry-69319090024",
+      "influxToken": "lbtech_69319090024_token_live",
+      "influxOrg": "lbtech",
+      "mqttUsername": "69319090024",
+      "mqttTopicPrefix": "lbtech/69319090024/",
+      "createdAt": "2026-11-03T10:17:08.086Z",
+      "updatedAt": "2026-11-03T10:17:08.086Z"
+    },
+    "69319090026": {
+      "studentId": "69319090026",
+      "fullName": "นายธีรพันธ์ เต็งน้อย",
+      "projectTitle": "แพลตฟอร์มจำหน่ายไอเทมเกมออนไลน์",
+      "department": "เทคโนโลยีคอมพิวเตอร์",
+      "password": "Std@69319090026",
+      "token": "Std@69319090026",
+      "influxBucket": "telemetry-69319090026",
+      "influxToken": "lbtech_69319090026_token_live",
+      "influxOrg": "lbtech",
+      "mqttUsername": "69319090026",
+      "mqttTopicPrefix": "lbtech/69319090026/",
+      "createdAt": "2026-11-03T10:17:08.087Z",
+      "updatedAt": "2026-11-03T10:17:08.087Z"
+    },
+    "69319090027": {
+      "studentId": "69319090027",
+      "fullName": "นายนครินทร์ แก้วโสตย",
+      "projectTitle": "FitZone ศูนย์บริหารสมาชิกฟิตเนส",
+      "department": "เทคโนโลยีคอมพิวเตอร์",
+      "password": "Std@69319090027",
+      "token": "Std@69319090027",
+      "influxBucket": "telemetry-69319090027",
+      "influxToken": "lbtech_69319090027_token_live",
+      "influxOrg": "lbtech",
+      "mqttUsername": "69319090027",
+      "mqttTopicPrefix": "lbtech/69319090027/",
+      "createdAt": "2026-11-03T10:17:08.088Z",
+      "updatedAt": "2026-11-03T10:17:08.088Z"
+    },
+    "69319090028": {
+      "studentId": "69319090028",
+      "fullName": "นายปัญญพัฒน์ บุญเกตุ",
+      "projectTitle": "ระบบตรวจสอบลิขสิทธิ์ซอฟต์แวร์ Gaming Store",
+      "department": "เทคโนโลยีคอมพิวเตอร์",
+      "password": "Std@69319090028",
+      "token": "Std@69319090028",
+      "influxBucket": "telemetry-69319090028",
+      "influxToken": "lbtech_69319090028_token_live",
+      "influxOrg": "lbtech",
+      "mqttUsername": "69319090028",
+      "mqttTopicPrefix": "lbtech/69319090028/",
+      "createdAt": "2026-11-03T10:17:08.089Z",
+      "updatedAt": "2026-11-03T10:17:08.089Z"
+    },
+    "69319090031": {
+      "studentId": "69319090031",
+      "fullName": "นายพีรพัฒน์ พาหุรัตน์",
+      "projectTitle": "PULSE TICKET ระบบจำหน่ายบัตรคอนเสิร์ต",
+      "department": "เทคโนโลยีคอมพิวเตอร์",
+      "password": "Std@69319090031",
+      "token": "Std@69319090031",
+      "influxBucket": "telemetry-69319090031",
+      "influxToken": "lbtech_69319090031_token_live",
+      "influxOrg": "lbtech",
+      "mqttUsername": "69319090031",
+      "mqttTopicPrefix": "lbtech/69319090031/",
+      "createdAt": "2026-11-03T10:17:08.090Z",
+      "updatedAt": "2026-11-03T10:17:08.090Z"
+    },
+    "69319090032": {
+      "studentId": "69319090032",
+      "fullName": "นายภาณุวัฒน์ ปั่นสันเที่ยะ",
+      "projectTitle": "Dream_OS ระบบจัดการเครื่องแม่ข่ายบนเว็บ",
+      "department": "เทคโนโลยีคอมพิวเตอร์",
+      "password": "Std@69319090032",
+      "token": "Std@69319090032",
+      "influxBucket": "telemetry-69319090032",
+      "influxToken": "lbtech_69319090032_token_live",
+      "influxOrg": "lbtech",
+      "mqttUsername": "69319090032",
+      "mqttTopicPrefix": "lbtech/69319090032/",
+      "createdAt": "2026-11-03T10:17:08.091Z",
+      "updatedAt": "2026-11-03T10:17:08.091Z"
+    },
+    "69319090034": {
+      "studentId": "69319090034",
+      "fullName": "นายรชต เปลี่ยนศรี",
+      "projectTitle": "RACHATA SHOP ร้านรองเท้าบาสเกตบอล",
+      "department": "เทคโนโลยีคอมพิวเตอร์",
+      "password": "Std@69319090034",
+      "token": "Std@69319090034",
+      "influxBucket": "telemetry-69319090034",
+      "influxToken": "lbtech_69319090034_token_live",
+      "influxOrg": "lbtech",
+      "mqttUsername": "69319090034",
+      "mqttTopicPrefix": "lbtech/69319090034/",
+      "createdAt": "2026-11-03T10:17:08.092Z",
+      "updatedAt": "2026-11-03T10:17:08.092Z"
+    }
+  },
+  "ct_requests": [
+    {
+      "id": "req_seed_sample_01",
+      "studentId": "69319090024",
+      "fullName": "นายทินภัทร มะนาวหวาน",
+      "projectTitle": "ระบบจองห้องพักและห้องประชุมอัจฉริยะ",
+      "serverName": "booking-api",
+      "os": "debian-12",
+      "vcpu": 1,
+      "ram": 1024,
+      "disk": 10,
+      "purpose": "รัน Node.js API และเชื่อมต่อ InfluxDB บันทึกสถานะการใช้งานห้องประชุมแบบ Real-time",
+      "status": "pending",
+      "createdAt": "3 พ.ย. 2569 17:17"
+    }
+  ],
+  "ct_servers": [],
+  "audit_logs": [
+    {
+      "id": "log_1793701687955_bi6vt",
+      "action": "ADMIN_VIEW_STUDENT_PASSWORDS",
+      "details": {
+        "count": 9
+      },
+      "timestamp": "2026-11-03T10:28:07.955Z"
+    }
+  ]
+}

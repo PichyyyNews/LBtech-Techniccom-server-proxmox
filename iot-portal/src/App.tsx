@@ -47,6 +47,7 @@ import {
   ArrowLeft,
 } from 'lucide-react'
 import { DebianLogo, UbuntuLogo, AlpineLogo, renderOSLogo } from '@/components/OSLogos'
+import { AdminPanel } from '@/components/AdminPanel'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -59,9 +60,14 @@ interface StudentSession {
   projectTitle: string
   department: string
   token: string
+  influxBucket?: string
+  influxToken?: string
+  influxOrg?: string
+  mqttUsername?: string
+  mqttTopicPrefix?: string
 }
 
-type TabType = 'overview' | 'mqtt' | 'database' | 'rest-api' | 'ct-servers' | 'esp32' | 'esp8266' | 'web-js' | 'python'
+type TabType = 'overview' | 'mqtt' | 'database' | 'rest-api' | 'ct-servers' | 'esp32' | 'esp8266' | 'web-js' | 'python' | 'admin'
 type ThemeMode = 'light' | 'dark' | 'system'
 
 // CT Request Data Model
@@ -222,6 +228,33 @@ export default function App() {
     localStorage.setItem('lbtech_ct_servers', JSON.stringify(ctServers))
   }, [ctServers])
 
+  // Initial Sync from Centralized Backend
+  useEffect(() => {
+    const syncBackend = async () => {
+      try {
+        const [reqRes, srvRes] = await Promise.all([
+          fetch('/api/ct/requests'),
+          fetch('/api/ct/servers')
+        ])
+        if (reqRes.ok) {
+          const reqData = await reqRes.json()
+          if (reqData.requests && reqData.requests.length > 0) {
+            setCtRequests(reqData.requests)
+          }
+        }
+        if (srvRes.ok) {
+          const srvData = await srvRes.json()
+          if (srvData.servers && srvData.servers.length > 0) {
+            setCtServers(srvData.servers)
+          }
+        }
+      } catch {
+        // Fallback to local storage if backend offline
+      }
+    }
+    syncBackend()
+  }, [])
+
   // CT Request Form Fields
   const [reqServerName, setReqServerName] = useState('')
   const [reqOs, setReqOs] = useState<'debian-12' | 'ubuntu-24' | 'alpine-3'>('debian-12')
@@ -293,7 +326,7 @@ export default function App() {
   }, [])
 
   // Handle Register
-  const handleRegister = (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault()
     setAuthError('')
 
@@ -307,11 +340,43 @@ export default function App() {
       return
     }
 
-    const newSession: StudentSession = {
+    const payload = {
       studentId: cleanId,
       fullName: fullName.trim() || 'นักศึกษาโครงงาน',
       projectTitle: projectTitle.trim() || 'โปรเจกต์ IoT ประจำกลุ่ม',
       department: department.trim() || 'เทคโนโลยีคอมพิวเตอร์',
+      password: password,
+    }
+
+    try {
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+      if (res.ok) {
+        const data = await res.json()
+        if (data.session) {
+          saveAccountToStore(data.session)
+          setSession(data.session)
+          return
+        }
+      } else {
+        const errData = await res.json()
+        if (errData.error) {
+          setAuthError(errData.error)
+          return
+        }
+      }
+    } catch {
+      // Offline fallback
+    }
+
+    const newSession: StudentSession = {
+      studentId: cleanId,
+      fullName: payload.fullName,
+      projectTitle: payload.projectTitle,
+      department: payload.department,
       token: password,
     }
 
@@ -320,7 +385,7 @@ export default function App() {
   }
 
   // Handle Login
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setAuthError('')
 
@@ -332,6 +397,30 @@ export default function App() {
     if (!password) {
       setAuthError('กรุณากรอกรหัสผ่าน')
       return
+    }
+
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ studentId: cleanId, password })
+      })
+      if (res.ok) {
+        const data = await res.json()
+        if (data.session) {
+          saveAccountToStore(data.session)
+          setSession(data.session)
+          return
+        }
+      } else {
+        const errData = await res.json()
+        if (errData.error) {
+          setAuthError(errData.error)
+          return
+        }
+      }
+    } catch {
+      // Offline fallback
     }
 
     let storedAcc: StudentSession | null = null
@@ -420,7 +509,7 @@ export default function App() {
   const studentPendingRequest = studentRequests.find((r) => r.status === 'pending')
 
   // Handle CT Submission
-  const handleCreateRequest = (e: React.FormEvent) => {
+  const handleCreateRequest = async (e: React.FormEvent) => {
     e.preventDefault()
     setReqError('')
     setReqSuccess('')
@@ -453,8 +542,7 @@ export default function App() {
       return
     }
 
-    const newReq: CTRequest = {
-      id: `req_${Date.now()}_${Math.random().toString(16).substring(2, 6)}`,
+    const payload = {
       studentId: session.studentId,
       fullName: session.fullName,
       projectTitle: session.projectTitle,
@@ -464,6 +552,33 @@ export default function App() {
       ram: reqRam,
       disk: reqDisk,
       purpose: reqPurpose.trim(),
+    }
+
+    try {
+      const res = await fetch('/api/ct/requests', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+      if (res.ok) {
+        const data = await res.json()
+        if (data.request) {
+          setCtRequests((prev) => [data.request, ...prev])
+          setReqSuccess('ส่งคำขอเรียบร้อยแล้ว! บันทึกข้อมูลเข้าเซิร์ฟเวอร์ส่วนกลาง รออาจารย์อนุมัติ')
+          setReqServerName('')
+          setReqPurpose('')
+          setReqAgreedTerms(false)
+          setIsCreatingServer(false)
+          return
+        }
+      }
+    } catch {
+      // offline fallback
+    }
+
+    const newReq: CTRequest = {
+      id: `req_${Date.now()}_${Math.random().toString(16).substring(2, 6)}`,
+      ...payload,
       status: 'pending',
       createdAt: new Date().toLocaleString('th-TH'),
     }
@@ -477,10 +592,35 @@ export default function App() {
   }
 
   // Admin Approves Request
-  const handleApproveRequest = (req: CTRequest) => {
+  const handleApproveRequest = async (req: CTRequest) => {
+    try {
+      const res = await fetch(`/api/ct/approve/${req.id}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-pin': adminPinInput || '2569'
+        }
+      })
+      if (res.ok) {
+        const data = await res.json()
+        if (data.server) {
+          setCtServers((prev) => [data.server, ...prev.filter(s => s.vmid !== data.server.vmid)])
+          setCtRequests((prev) =>
+            prev.map((r) =>
+              r.id === req.id ? { ...r, status: 'approved', vmid: data.server.vmid, ip: data.server.ip } : r
+            )
+          )
+          return
+        }
+      }
+    } catch (err) {
+      console.warn('[Approve] API fallback:', err)
+    }
+
+    // Local fallback if API fails
     const usedVmids = ctServers.map((s) => s.vmid)
-    let nextVmid = 201
-    while (usedVmids.includes(nextVmid) && nextVmid <= 299) {
+    let nextVmid = 109
+    while (usedVmids.includes(nextVmid)) {
       nextVmid++
     }
 
@@ -517,14 +657,39 @@ export default function App() {
   }
 
   // Admin Rejects Request
-  const handleRejectRequest = (reqId: string) => {
+  const handleRejectRequest = async (reqId: string, reason?: string) => {
+    try {
+      await fetch(`/api/ct/reject/${reqId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-pin': adminPinInput || '2569'
+        },
+        body: JSON.stringify({ reason })
+      })
+    } catch {
+      // ignore
+    }
     setCtRequests((prev) =>
       prev.map((r) => (r.id === reqId ? { ...r, status: 'rejected' } : r))
     )
   }
 
   // Toggle Container Power
-  const handleTogglePower = (vmid: number) => {
+  const handleTogglePower = async (vmid: number) => {
+    try {
+      const res = await fetch(`/api/ct/servers/${vmid}/power`, { method: 'POST' })
+      if (res.ok) {
+        const data = await res.json()
+        if (data.server) {
+          setCtServers((prev) => prev.map((s) => (s.vmid === vmid ? data.server : s)))
+          return
+        }
+      }
+    } catch {
+      // ignore
+    }
+
     setCtServers((prev) =>
       prev.map((s) => {
         if (s.vmid === vmid) {
@@ -543,7 +708,13 @@ export default function App() {
   }
 
   // Reboot Container
-  const handleReboot = (vmid: number) => {
+  const handleReboot = async (vmid: number) => {
+    try {
+      fetch(`/api/ct/servers/${vmid}/reboot`, { method: 'POST' })
+    } catch {
+      // ignore
+    }
+
     setCtServers((prev) =>
       prev.map((s) => (s.vmid === vmid ? { ...s, uptime: 'กำลังรีสตาร์ต...' } : s))
     )
@@ -555,20 +726,43 @@ export default function App() {
   }
 
   // Destroy Container
-  const handleDestroyServer = (vmid: number) => {
+  const handleDestroyServer = async (vmid: number) => {
     if (confirm(`ยืนยันการลบเครื่องเซิร์ฟเวอร์ CT ${vmid}? ข้อมูลภายในเครื่องจะถูกลบถาวร`)) {
+      try {
+        await fetch(`/api/ct/servers/${vmid}`, { method: 'DELETE' })
+      } catch {
+        // ignore
+      }
       setCtServers((prev) => prev.filter((s) => s.vmid !== vmid))
     }
   }
 
   // Unlock Admin Mode with PIN
-  const handleVerifyAdminPin = (e: React.FormEvent) => {
+  const handleVerifyAdminPin = async (e: React.FormEvent) => {
     e.preventDefault()
     setAdminPinError('')
-    if (adminPinInput === '2569' || adminPinInput === '07072569') {
+    const pin = adminPinInput.trim()
+
+    try {
+      const res = await fetch('/api/admin/verify-pin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pin })
+      })
+      if (res.ok) {
+        setIsAdminUnlocked(true)
+        setIsAdminPinModalOpen(false)
+        setActiveTab('admin')
+        return
+      }
+    } catch {
+      // offline fallback
+    }
+
+    if (pin === '2569' || pin === '07072569') {
       setIsAdminUnlocked(true)
       setIsAdminPinModalOpen(false)
-      setAdminPinInput('')
+      setActiveTab('admin')
     } else {
       setAdminPinError('รหัสผ่าน PIN ไม่ถูกต้อง')
     }
@@ -1047,6 +1241,12 @@ Payload:
           { id: 'sec-python-title', label: 'Python / Raspberry Pi' },
           { id: 'sec-python-code', label: 'ซอร์สโค้ด iot_client.py' },
         ]
+      case 'admin':
+        return [
+          { id: 'sec-admin-passwords', label: 'ทะเบียน & รหัสผ่าน' },
+          { id: 'sec-admin-queue', label: 'คิวคำขอเครื่อง' },
+          { id: 'sec-admin-servers', label: 'เครื่องบน Proxmox' },
+        ]
       default:
         return []
     }
@@ -1066,6 +1266,16 @@ Payload:
         { id: 'rest-api' as TabType, label: 'REST API & Webhooks', icon: Globe },
       ],
     },
+    ...(isAdminUnlocked
+      ? [
+          {
+            category: 'ผู้ดูแลระบบ (Administration)',
+            items: [
+              { id: 'admin' as TabType, label: 'แผงควบคุมอาจารย์ & ดูรหัสผ่าน', icon: ShieldCheck },
+            ],
+          },
+        ]
+      : []),
     {
       category: 'ตัวอย่างโค้ด (Starter Codes)',
       items: [
@@ -1317,7 +1527,34 @@ Payload:
 
             {/* Right: Admin Mode Toggle, Theme Toggle & Search Button */}
             <div className="flex items-center gap-2">
-
+              {isAdminUnlocked ? (
+                <button
+                  type="button"
+                  onClick={() => handleTabChange('admin')}
+                  className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-xs font-medium cursor-pointer shadow-2xs transition-all ${
+                    activeTab === 'admin'
+                      ? 'border-emerald-500 bg-emerald-600 text-white'
+                      : 'border-emerald-300 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100'
+                  }`}
+                  title="เปิดแผงควบคุมอาจารย์ & ดูรหัสผ่าน"
+                >
+                  <ShieldCheck className="h-3.5 w-3.5" />
+                  <span className="hidden sm:inline">โหมดอาจารย์</span>
+                  <span className="text-[10px] px-1 rounded bg-emerald-200 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-200">
+                    ปลดล็อกแล้ว
+                  </span>
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setIsAdminPinModalOpen(true)}
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700 text-xs text-zinc-600 dark:text-zinc-300 cursor-pointer shadow-2xs transition-all"
+                  title="เข้าสู่โหมดอาจารย์เพื่อตรวจสอบคำขอและดูรหัสผ่าน"
+                >
+                  <Lock className="h-3.5 w-3.5 text-zinc-400" />
+                  <span className="hidden sm:inline">โหมดอาจารย์</span>
+                </button>
+              )}
 
               <ThemeToggle />
 
@@ -2429,6 +2666,28 @@ Payload:
 
 
                 </div>
+              )}
+
+              {/* TAB: ADMIN MASTER CONSOLE & PASSWORDS */}
+              {activeTab === 'admin' && (
+                <AdminPanel
+                  adminPin={adminPinInput || '2569'}
+                  onLock={() => {
+                    setIsAdminUnlocked(false)
+                    setActiveTab('overview')
+                  }}
+                  onApproveRequest={handleApproveRequest}
+                  onRejectRequest={handleRejectRequest}
+                  onTogglePower={handleTogglePower}
+                  onReboot={handleReboot}
+                  onDestroyServer={handleDestroyServer}
+                  onOpenTerminal={(srv) => {
+                    setActiveTerminalServer(srv)
+                    setIsTerminalOpen(true)
+                  }}
+                  ctRequests={ctRequests}
+                  ctServers={ctServers}
+                />
               )}
 
               {/* TAB 2: MQTT BROKER & LIVE CONSOLE */}

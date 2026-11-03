@@ -34,7 +34,41 @@ services:
     volumes:
       - influxdb-data:/var/lib/influxdb2
 
-  # 3. Student IoT Portal (UI สมัครสมาชิก, แจกสิทธิ์ Topic & โค้ดตัวอย่าง)
+  # 3. Centralized Backend API (Proxmox Provisioning + InfluxDB/EMQX Auto-Provisioning + Database)
+  backend:
+    build:
+      context: ./iot-backend
+      dockerfile: Dockerfile
+    container_name: iot-backend
+    restart: always
+    ports:
+      - "5000:5000"
+    environment:
+      - PORT=5000
+      - NODE_ENV=production
+      - PVE_HOST=10.10.10.1
+      - PVE_PORT=8006
+      - PVE_USER=tc-admin@pam
+      - PVE_PASSWORD=07072569
+      - PVE_NODE=techniccom
+      - PVE_STORAGE=pve-extra
+      - PVE_BRIDGE=vmbr1
+      - INFLUX_URL=http://influxdb:8086
+      - INFLUX_ADMIN_USER=iotadmin
+      - INFLUX_ADMIN_PASS=Techniccom.Influx2026
+      - INFLUX_ORG=lbtech
+      - EMQX_URL=http://emqx:18083
+      - EMQX_USER=tc-iotadmin
+      - EMQX_PASS=Techniccom.IoT2026
+      - DATA_DIR=/app/data
+      - ADMIN_PIN=2569
+    volumes:
+      - backend-data:/app/data
+    depends_on:
+      - emqx
+      - influxdb
+
+  # 4. Student IoT Portal (UI สมัครสมาชิก, ขอเครื่อง CT, แผงควบคุมอาจารย์ & ดูรหัสผ่าน)
   portal:
     build:
       context: ./iot-portal
@@ -44,9 +78,11 @@ services:
     ports:
       - "3000:80"
     depends_on:
+      - backend
       - emqx
 
 volumes:
   emqx-data:
   emqx-log:
   influxdb-data:
+  backend-data:

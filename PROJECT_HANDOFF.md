@@ -68,11 +68,33 @@ Modal บรรจุข้อกำหนดฉบับเต็มของ�
 
 ---
 
+### 2.4 Centralized Backend API & Proxmox Automated Provisioning (ใหม่ล่าสุด)
+- **สถาปัตยกรรม Backend กลาง (`iot-backend`):**
+  - พัฒนาด้วย Node.js 22 + Express ให้บริการ REST API ที่พอร์ต `5000` (Proxy ผ่าน Nginx `/api/`)
+  - ระบบจัดเก็บข้อมูลฐานข้อมูลกลาง (`/app/data/iot_storage.json`) รองรับการบันทึกบัญชีนักศึกษา, คำขอเครื่อง (CT Requests), และเครื่องเสมือนที่จัดสรร (CT Servers) แบบ Real-time ถาวร
+- **Proxmox VE REST API Integration (`services/proxmox.js`):**
+  - เชื่อมต่อกับ Proxmox VE API (`https://10.10.10.1:8006/api2/json`)
+  - ระบบคำนวณและแจกจ่าย VMID อัตโนมัติ (เริ่มตั้งแต่ VMID 109 เป็นต้นไป)
+  - สั่งสร้าง LXC Container จริง (`POST /api2/json/nodes/{node}/lxc`) พร้อมสเปกที่ขอ (OS template, vCPU, RAM, Disk, IP `10.10.10.{vmid}`, Root Password) และสั่งรันเครื่องอัตโนมัติ
+  - ควบคุมสถานะเครื่อง (Power Start / Stop, Reboot, Destroy) ผ่าน API
+- **Database & Telemetry Auto-Provisioning (`services/influx.js` & `services/emqx.js`):**
+  - **InfluxDB v2:** สร้าง Bucket ประจำตัวนักศึกษา `telemetry-{studentId}` (Retention 30 วัน) และสร้าง Token การเข้าถึง Read/Write ให้อัตโนมัติ
+  - **EMQX v5:** ลงทะเบียนผู้ใช้ใน Built-in Database และกำหนด Topic ACL สิทธิ์ Publish/Subscribe ไปยัง `lbtech/{studentId}/#` ให้อัตโนมัติ
+- **แผงควบคุมอาจารย์ & ระบบดูรหัสผ่านนักศึกษา (Teacher Admin Console & Password Viewer):**
+  - เข้าถึงผ่านปุ่ม `[ 🛡️ โหมดอาจารย์ ]` บน Top Navbar และ Sidebar
+  - ปลดล็อกด้วย Master PIN (`2569` หรือ `07072569`)
+  - **ตารางทะเบียนและดูรหัสผ่าน (Password Viewer):** แสดงรหัสนักศึกษา, ชื่อ-นามสกุล, โครงงาน, **รหัสผ่าน (Password)** พร้อมปุ่ม Show/Hide และปุ่ม Copy รหัสผ่าน, สถานะ InfluxDB Token, และปุ่มส่งออกไฟล์ CSV
+  - **คิวคำขอเครื่อง (Approval Queue):** ปุ่มอนุมัติและสั่งสร้าง CT บน Proxmox ทันที พร้อมแสดง Loading State
+  - **จัดการเครื่อง Proxmox ทั้งหมด (Live CT Management):** ดูสถานะ, Power Toggle, Reboot, Web Terminal, และ Delete CT
+
+---
+
 ## 3. ข้อมูลการเชื่อมต่อและพอร์ต (Endpoints & Credentials)
 
 | บริการ | URL / Port | ผู้ใช้ / รหัสผ่าน | หมายเหตุ |
 | :--- | :--- | :--- | :--- |
-| **IoT Web Portal** | `https://iot.pichyy.qzz.io` | เข้าใช้งานได้ทันที | หน้าเว็บหลัก + Docs + Console |
+| **IoT Web Portal** | `https://iot.pichyy.qzz.io` | เข้าใช้งานได้ทันที | หน้าเว็บหลัก + Docs + Console + Admin |
+| **Backend API** | `http://10.10.10.108:5000` / `/api/` | พอร์ตภายใน | Centralized API + Proxmox Provisioner |
 | **EMQX Dashboard** | `https://emqx.pichyy.qzz.io` | `admin` / `07072569` | มอนิเตอร์ Broker ส่วนกลาง |
 | **InfluxDB UI** | `https://influxdb.pichyy.qzz.io` | `lbtech-admin` / `07072569` | ฐานข้อมูล Time-series |
 | **MQTT WebSocket** | `wss://iot.pichyy.qzz.io/mqtt` | ตามรหัสนักศึกษา | พอร์ต 443 ผ่าน Cloudflare |
@@ -82,26 +104,22 @@ Modal บรรจุข้อกำหนดฉบับเต็มของ�
 
 ## 4. ขั้นตอนการ Build และ Deploy
 
-### 4.1 Build Frontend
+### 4.1 Build Frontend & Backend
 ```bash
+# 1. Build Frontend
 cd iot-portal
 npm run build
-```
 
-### 4.2 Push ไปยังเซิร์ฟเวอร์ CT 108
-ใช้สคริปต์อัตโนมัติ `push_portal_update.py`:
-```bash
-python C:\Users\Newsk\.gemini\antigravity\brain\9ca5c64a-e192-46da-a634-f9ef70d2fed6\scratch\push_portal_update.py
+# 2. Start / Deploy Stack with Docker Compose
+cd ..
+docker compose -f docker-compose.iot.yml up -d --build
 ```
-*สคริปต์จะทำการแพ็ก `dist/`, อัปโหลดผ่าน SFTP เข้า Proxmox Host, ส่งไฟล์เข้า CT 108 ด้วย `pct push` และสั่ง `docker compose up -d --build portal` ให้อัตโนมัติ*
 
 ---
 
 ## 5. แผนการพัฒนาต่อไป (Next Steps / Roadmap)
 
-1. **Proxmox API Automated Provisioning:**
-   - เชื่อมต่อ Backend API กับ Proxmox VE REST API (`/api2/json/nodes/pve-host/lxc`) เพื่อสร้าง CT จริงโดยอัตโนมัติเมื่อกดอนุมัติ
-2. **Web Terminal Integration:**
-   - เชื่อมต่อ `WebTerminalModal` เข้ากับ ttyd หรือ xterm.js WebSocket ชี้ตรงไปที่คอนเทนเนอร์ของนักศึกษา
-3. **Database Telemetry Auto-Provisioning:**
-   - สร้าง InfluxDB Bucket และ EMQX User ตามรหัสนักศึกษาโดยอัตโนมัติ
+1. **Web Terminal Integration (ttyd / xterm.js):**
+   - เชื่อมต่อ WebSocket Terminal Gateway ชี้ตรงไปยัง Container ของนักศึกษา
+2. **Alerts & Notification Webhooks:**
+   - ส่งข้อความแจ้งเตือนผ่าน LINE Notify หรือ Telegram เมื่อมีการยื่นคำขอเครื่องใหม่
