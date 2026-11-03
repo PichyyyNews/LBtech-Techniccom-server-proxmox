@@ -1471,7 +1471,7 @@ Payload:
               </button>
             </div>
 
-            <div className="bg-white dark:bg-[#121214] border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 sm:p-6 shadow-xs">
+            <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 sm:p-6 shadow-xs">
               <form onSubmit={authMode === 'register' ? handleRegister : handleLogin} className="space-y-4">
                 {authError && (
                   <div className="p-3 text-xs bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-400 rounded-lg border border-red-200 dark:border-red-800 font-medium">
@@ -1567,7 +1567,7 @@ Payload:
         /* ========================================================================= */
         <div className="flex-1 flex flex-col min-h-screen">
           {/* TOP NAVBAR */}
-          <header className="sticky top-0 z-30 h-14 bg-white dark:bg-[#121214] border-b border-zinc-200 dark:border-zinc-800 px-3 sm:px-6 flex items-center justify-between transition-colors">
+          <header className="sticky top-0 z-30 h-14 bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 px-3 sm:px-6 flex items-center justify-between transition-colors">
             {/* Left: Mobile Drawer Button + Brand */}
             <div className="flex items-center gap-2 sm:gap-3">
               <button
@@ -1610,7 +1610,7 @@ Payload:
           </header>
 
           {/* MOBILE SUB-BAR (ACTIVE TAB & TOC DROPDOWN) */}
-          <div className="xl:hidden sticky top-14 z-20 bg-zinc-50/95 dark:bg-[#121214]/95 backdrop-blur-xs border-b border-zinc-200 dark:border-zinc-800 px-3 py-2 flex items-center justify-between transition-colors">
+          <div className="xl:hidden sticky top-14 z-20 bg-zinc-50/95 dark:bg-zinc-900/95 backdrop-blur-xs border-b border-zinc-200 dark:border-zinc-800 px-3 py-2 flex items-center justify-between transition-colors">
             <span className="text-xs font-semibold text-zinc-800 dark:text-zinc-200 truncate">
               {getActiveTabTitle()}
             </span>
@@ -1626,7 +1626,7 @@ Payload:
               </button>
 
               {isMobileTocOpen && (
-                <div className="absolute right-0 mt-1 w-56 bg-white dark:bg-[#121214] border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-lg p-2 z-30 animate-in fade-in zoom-in-95 duration-100">
+                <div className="absolute right-0 mt-1 w-56 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-lg p-2 z-30 animate-in fade-in zoom-in-95 duration-100">
                   <div className="text-[10px] font-semibold text-zinc-400 uppercase tracking-wider px-2 py-1">
                     กระโดดไปยังหัวข้อ
                   </div>
@@ -1661,7 +1661,7 @@ Payload:
                 onClick={() => setIsMobileMenuOpen(false)}
               />
 
-              <div className="relative w-72 max-w-[85vw] bg-white dark:bg-[#121214] border-r border-zinc-200 dark:border-zinc-800 shadow-2xl flex flex-col justify-between z-10 animate-in slide-in-from-left duration-200">
+              <div className="relative w-72 max-w-[85vw] bg-white dark:bg-zinc-900 border-r border-zinc-200 dark:border-zinc-800 shadow-2xl flex flex-col justify-between z-10 animate-in slide-in-from-left duration-200">
                 <div>
                   <div className="p-4 border-b border-zinc-100 dark:border-zinc-800 flex items-center justify-between">
                     <div className="flex items-center gap-2">
@@ -1751,7 +1751,7 @@ Payload:
           {/* MAIN WORKSPACE: Desktop Sidebar + Content + Desktop On-This-Page */}
           <div className="flex-1 flex w-full">
             {/* DESKTOP LEFT SIDEBAR NAVIGATION */}
-            <aside className="hidden md:flex md:w-64 bg-white dark:bg-[#121214] border-r border-zinc-200 dark:border-zinc-800 shrink-0 flex-col justify-between sticky top-14 h-[calc(100vh-3.5rem)] overflow-y-auto transition-colors">
+            <aside className="hidden md:flex md:w-64 bg-white dark:bg-zinc-900 border-r border-zinc-200 dark:border-zinc-800 shrink-0 flex-col justify-between sticky top-14 h-[calc(100vh-3.5rem)] overflow-y-auto transition-colors">
               <nav className="p-3 space-y-6 text-xs">
                 {navItems.map((group, idx) => (
                   <div key={idx}>
@@ -1866,7 +1866,7 @@ Payload:
                   </div>
 
                   {/* Connection Specs Table */}
-                  <div id="sec-overview-params" className="border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-[#121214] overflow-hidden shadow-xs">
+                  <div id="sec-overview-params" className="border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-zinc-900 overflow-hidden shadow-xs">
                     <div className="px-4 py-3 bg-zinc-50 dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 text-xs font-semibold text-zinc-700 dark:text-zinc-300">
                       Connection Parameters
                     </div>
@@ -1902,7 +1902,7 @@ Payload:
                     </div>
                   </div>
 
-                  <div id="sec-overview-acl" className="border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-[#121214] p-4 shadow-xs space-y-2">
+                  <div id="sec-overview-acl" className="border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-zinc-900 p-4 shadow-xs space-y-2">
                     <h2 className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">กติกาความปลอดภัยระบบ (Multi-Tenant ACL)</h2>
                     <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
                       ระบบกำหนดสิทธิ์การ Publish และ Subscribe ไว้ที่ <code className="font-mono bg-zinc-100 dark:bg-zinc-800 px-1 py-0.5 rounded text-zinc-900 dark:text-zinc-200">project/{session.studentId}/#</code> เท่านั้น 
@@ -2048,7 +2048,7 @@ Payload:
                     /* ========================================================================= */
                     /* 1) REQUEST FORM VIEW                                                      */
                     /* ========================================================================= */
-                    <div id="sec-ct-form" className="border border-zinc-200 dark:border-zinc-800 rounded-2xl bg-white dark:bg-[#121214] p-5 sm:p-6 shadow-xs space-y-6">
+                    <div id="sec-ct-form" className="border border-zinc-200 dark:border-zinc-800 rounded-2xl bg-white dark:bg-zinc-900 p-5 sm:p-6 shadow-xs space-y-6">
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-zinc-100 dark:border-zinc-800">
                         <div>
                           <h2 className="text-sm font-bold text-zinc-900 dark:text-white">
@@ -2304,7 +2304,7 @@ Payload:
                             placeholder="เช่น ติดตั้ง PostgreSQL Database และรัน Node.js API สำหรับบันทึกค่าและสั่งการเซนเซอร์ในโครงงาน Smart Farm"
                             value={reqPurpose}
                             onChange={(e) => setReqPurpose(e.target.value)}
-                            className="w-full text-xs p-3 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-[#121214] text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-900 dark:focus:ring-zinc-100 transition-colors"
+                            className="w-full text-xs p-3 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-900 dark:focus:ring-zinc-100 transition-colors"
                             required
                           />
                         </div>
@@ -2363,8 +2363,8 @@ Payload:
                     /* ========================================================================= */
                     /* 2) EMPTY STATE VIEW (When student has no servers yet)                     */
                     /* ========================================================================= */
-                    <div id="sec-ct-active" className="border border-zinc-200 dark:border-zinc-800 rounded-2xl bg-white dark:bg-[#121214] p-8 sm:p-12 text-center space-y-6 shadow-xs">
-                      <div className="h-16 w-16 mx-auto rounded-2xl bg-zinc-100 dark:bg-zinc-850 flex items-center justify-center text-zinc-700 dark:text-zinc-300 border border-zinc-200/60 dark:border-zinc-750">
+                    <div id="sec-ct-active" className="border border-zinc-200 dark:border-zinc-800 rounded-2xl bg-white dark:bg-zinc-900 p-8 sm:p-12 text-center space-y-6 shadow-xs">
+                      <div className="h-16 w-16 mx-auto rounded-2xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-zinc-700 dark:text-zinc-300 border border-zinc-200/60 dark:border-zinc-800">
                         <Server className="h-8 w-8 stroke-[1.5]" />
                       </div>
                       <div className="max-w-md mx-auto space-y-2">
@@ -2390,15 +2390,15 @@ Payload:
                         </Button>
                       </div>
                       <div className="pt-6 border-t border-zinc-100 dark:border-zinc-800 grid grid-cols-1 sm:grid-cols-3 gap-3 text-left">
-                        <div className="p-3.5 rounded-xl bg-zinc-50 dark:bg-zinc-850/60 border border-zinc-100 dark:border-zinc-800 text-xs">
+                        <div className="p-3.5 rounded-xl bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-100 dark:border-zinc-800 text-xs">
                           <span className="font-semibold text-zinc-900 dark:text-white block mb-0.5">Unprivileged LXC</span>
                           <span className="text-[11px] text-zinc-500 leading-relaxed">ปลอดภัยสูง แยกสภาพแวดล้อมเฉพาะกลุ่มอย่างเด็ดขาด</span>
                         </div>
-                        <div className="p-3.5 rounded-xl bg-zinc-50 dark:bg-zinc-850/60 border border-zinc-100 dark:border-zinc-800 text-xs">
+                        <div className="p-3.5 rounded-xl bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-100 dark:border-zinc-800 text-xs">
                           <span className="font-semibold text-zinc-900 dark:text-white block mb-0.5">Web Terminal ในตัว</span>
                           <span className="text-[11px] text-zinc-500 leading-relaxed">พิมพ์คำสั่ง Linux shell บนเบราว์เซอร์ได้ทันทีโดยไม่ต้องลงโปรแกรม</span>
                         </div>
-                        <div className="p-3.5 rounded-xl bg-zinc-50 dark:bg-zinc-850/60 border border-zinc-100 dark:border-zinc-800 text-xs">
+                        <div className="p-3.5 rounded-xl bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-100 dark:border-zinc-800 text-xs">
                           <span className="font-semibold text-zinc-900 dark:text-white block mb-0.5">External SSH Port 2222</span>
                           <span className="text-[11px] text-zinc-500 leading-relaxed">ยิง SSH จาก VS Code, PuTTY หรือ Terminal นอกเครือข่ายวิทยาลัย</span>
                         </div>
@@ -2415,7 +2415,7 @@ Payload:
 
                       if (!selectedServer) {
                         return (
-                          <div className="p-8 text-center border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-[#121214] space-y-3">
+                          <div className="p-8 text-center border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-zinc-900 space-y-3">
                             <p className="text-xs text-zinc-500 dark:text-zinc-400">
                               ไม่พบข้อมูลเซิร์ฟเวอร์ที่เลือก หรือเซิร์ฟเวอร์ถูกลบแล้ว
                             </p>
@@ -2454,7 +2454,7 @@ Payload:
                           </div>
 
                           {/* Server Workspace Header Banner - Clean Monochrome Bar */}
-                          <div className="border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-[#121214] p-4 sm:p-4.5 shadow-xs">
+                          <div className="border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-zinc-900 p-4 sm:p-4.5 shadow-xs">
                             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                               <div className="flex items-center gap-3">
                                 <div className="shrink-0">
@@ -2563,7 +2563,7 @@ Payload:
                             {/* LEFT COLUMN: Large Dedicated Web Console (8 cols / ~67% width) */}
                             <div className="lg:col-span-8 space-y-3">
                               {!isRunning ? (
-                                <div className="p-12 text-center border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-[#121214] space-y-4">
+                                <div className="p-12 text-center border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-zinc-900 space-y-4">
                                   <div className="h-12 w-12 rounded-xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-zinc-500 mx-auto">
                                     <Square className="h-5 w-5 text-zinc-400" />
                                   </div>
@@ -2603,7 +2603,7 @@ Payload:
                             {/* RIGHT COLUMN: Credentials, SSH Bastion & Specs (4 cols / ~33% width) */}
                             <div className="lg:col-span-4 space-y-4">
                               {/* 1. Root Credentials Card */}
-                              <div className="p-4 bg-white dark:bg-[#121214] rounded-xl border border-zinc-200 dark:border-zinc-800 space-y-3 shadow-xs text-xs">
+                              <div className="p-4 bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 space-y-3 shadow-xs text-xs">
                                 <div className="flex items-center justify-between pb-2 border-b border-zinc-100 dark:border-zinc-800">
                                   <div className="flex items-center gap-2 font-semibold text-zinc-900 dark:text-white">
                                     <Key className="h-4 w-4 text-zinc-600 dark:text-zinc-300" />
@@ -2687,7 +2687,7 @@ Payload:
                               </div>
 
                               {/* 2. SSH Bastion Access Card */}
-                              <div className="p-4 bg-white dark:bg-[#121214] rounded-xl border border-zinc-200 dark:border-zinc-800 space-y-3 shadow-xs text-xs">
+                              <div className="p-4 bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 space-y-3 shadow-xs text-xs">
                                 <div className="flex items-center justify-between pb-2 border-b border-zinc-100 dark:border-zinc-800">
                                   <div className="flex items-center gap-2 font-semibold text-zinc-900 dark:text-white">
                                     <Globe className="h-4 w-4 text-zinc-600 dark:text-zinc-300" />
@@ -2731,7 +2731,7 @@ Payload:
                               </div>
 
                               {/* 3. Specs Details Card */}
-                              <div className="p-4 bg-white dark:bg-[#121214] rounded-xl border border-zinc-200 dark:border-zinc-800 space-y-3 shadow-xs text-xs">
+                              <div className="p-4 bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 space-y-3 shadow-xs text-xs">
                                 <div className="flex items-center justify-between pb-2 border-b border-zinc-100 dark:border-zinc-800">
                                   <div className="flex items-center gap-2 font-semibold text-zinc-900 dark:text-white">
                                     <Cpu className="h-4 w-4 text-zinc-600 dark:text-zinc-300" />
@@ -2814,17 +2814,17 @@ Payload:
                       </div>
 
                       {/* ACCESS GUIDE (COLLAPSIBLE HOW-TO) */}
-                      <div className="border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-[#121214] overflow-hidden shadow-xs">
+                      <div className="border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-zinc-900 overflow-hidden shadow-xs">
                         <button
                           type="button"
                           onClick={() => setShowAccessGuide(!showAccessGuide)}
-                          className="w-full flex items-center justify-between p-4 text-xs font-semibold text-zinc-900 dark:text-white hover:bg-zinc-50 dark:hover:bg-zinc-850 transition-colors cursor-pointer"
+                          className="w-full flex items-center justify-between p-4 text-xs font-semibold text-zinc-900 dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
                         >
                           <span className="flex items-center gap-2">
-                            <BookOpen className="h-4 w-4 text-zinc-500" />
-                            <span>วิธีการเชื่อมต่อและเข้าใช้งานเครื่องเซิร์ฟเวอร์ (Access Guide)</span>
+                            <BookOpen className="h-4 w-4 text-zinc-500 dark:text-zinc-400" />
+                            <span className="text-zinc-900 dark:text-zinc-100">วิธีการเชื่อมต่อและเข้าใช้งานเครื่องเซิร์ฟเวอร์ (Access Guide)</span>
                           </span>
-                          <span className="text-[11px] text-zinc-500 flex items-center gap-1 font-normal">
+                          <span className="text-[11px] text-zinc-500 dark:text-zinc-400 flex items-center gap-1 font-normal">
                             {showAccessGuide ? 'ซ่อนคู่มือ' : 'กดดูวิธีการ'}
                             {showAccessGuide ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
                           </span>
@@ -2908,7 +2908,7 @@ Payload:
 
                       {/* ACTIVE SERVERS LIST */}
                       {studentActiveServers.length === 0 && !studentPendingRequest ? (
-                        <div className="border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-[#121214] p-8 text-center space-y-4">
+                        <div className="border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-zinc-900 p-8 text-center space-y-4">
                           <Server className="h-8 w-8 mx-auto text-zinc-400" />
                           <div className="space-y-1">
                             <h3 className="text-sm font-semibold text-zinc-900 dark:text-white">
@@ -2938,7 +2938,7 @@ Payload:
                             return (
                               <div
                                 key={server.vmid}
-                                className="border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-[#121214] p-4 sm:p-5 shadow-xs flex flex-col justify-between space-y-4 transition-all hover:border-zinc-300 dark:hover:border-zinc-700"
+                                className="border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-zinc-900 p-4 sm:p-5 shadow-xs flex flex-col justify-between space-y-4 transition-all hover:border-zinc-300 dark:hover:border-zinc-700"
                               >
                                 <div className="space-y-3">
                                   {/* Card Top: Logo, Name, Status */}
@@ -3130,17 +3130,17 @@ Payload:
                   </div>
 
                   {/* COLLAPSIBLE HOW-TO GUIDE */}
-                  <div className="border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-[#121214] overflow-hidden shadow-xs">
+                  <div className="border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-zinc-900 overflow-hidden shadow-xs">
                     <button
                       type="button"
                       onClick={() => setShowMqttGuide(!showMqttGuide)}
-                      className="w-full flex items-center justify-between p-4 text-xs font-semibold text-zinc-900 dark:text-white hover:bg-zinc-50 dark:hover:bg-zinc-850 transition-colors cursor-pointer"
+                      className="w-full flex items-center justify-between p-4 text-xs font-semibold text-zinc-900 dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
                     >
                       <span className="flex items-center gap-2">
-                        <BookOpen className="h-4 w-4 text-zinc-500" />
-                        <span>วิธีการเชื่อมต่อและใช้งาน MQTT Broker</span>
+                        <BookOpen className="h-4 w-4 text-zinc-500 dark:text-zinc-400" />
+                        <span className="text-zinc-900 dark:text-zinc-100">วิธีการเชื่อมต่อและใช้งาน MQTT Broker</span>
                       </span>
-                      <span className="text-[11px] text-zinc-500 flex items-center gap-1 font-normal">
+                      <span className="text-[11px] text-zinc-500 dark:text-zinc-400 flex items-center gap-1 font-normal">
                         {showMqttGuide ? 'ซ่อนคู่มือ' : 'กดดูวิธีการ'}
                         {showMqttGuide ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
                       </span>
@@ -3173,7 +3173,7 @@ Payload:
                   </div>
 
                   {/* Specs */}
-                  <div id="sec-mqtt-specs" className="border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-[#121214] overflow-hidden shadow-xs">
+                  <div id="sec-mqtt-specs" className="border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-zinc-900 overflow-hidden shadow-xs">
                     <div className="px-4 py-3 bg-zinc-50 dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 text-xs font-semibold text-zinc-700 dark:text-zinc-300">
                       MQTT Specifications
                     </div>
@@ -3194,7 +3194,7 @@ Payload:
                   </div>
 
                   {/* MQTT Connection Credentials Card (Student Access) */}
-                  <div className="bg-white dark:bg-[#121214] rounded-xl border border-zinc-200 dark:border-zinc-800 p-4 space-y-3 shadow-xs">
+                  <div className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 p-4 space-y-3 shadow-xs">
                     <div className="flex items-center justify-between pb-2 border-b border-zinc-100 dark:border-zinc-800">
                       <div className="flex items-center gap-2">
                         <Key className="h-4 w-4 text-zinc-400" />
@@ -3317,7 +3317,7 @@ Payload:
                   </div>
 
                   {/* Live In-Browser Tester (Clean Neutral Console) */}
-                  <div id="sec-mqtt-console" className="border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-[#121214] p-4 sm:p-5 shadow-xs space-y-4">
+                  <div id="sec-mqtt-console" className="border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-zinc-900 p-4 sm:p-5 shadow-xs space-y-4">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                       <div className="flex items-center gap-2">
                         <Terminal className="h-4 w-4 text-zinc-700 dark:text-zinc-300 shrink-0" />
@@ -3342,7 +3342,7 @@ Payload:
                       <div className="space-y-3 pt-2 border-t border-zinc-100 dark:border-zinc-800">
                         <div className="space-y-2">
                           <div className="flex items-center border border-zinc-200 dark:border-zinc-700 rounded-lg overflow-hidden bg-zinc-50 dark:bg-zinc-800">
-                            <span className="px-2.5 py-1.5 text-xs text-zinc-500 dark:text-zinc-400 font-mono border-r border-zinc-200 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-850 shrink-0 select-none">
+                            <span className="px-2.5 py-1.5 text-xs text-zinc-500 dark:text-zinc-400 font-mono border-r border-zinc-200 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 shrink-0 select-none">
                               project/{session.studentId}/
                             </span>
                             <input
@@ -3442,17 +3442,17 @@ Payload:
                   </div>
 
                   {/* COLLAPSIBLE HOW-TO GUIDE */}
-                  <div className="border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-[#121214] overflow-hidden shadow-xs">
+                  <div className="border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-zinc-900 overflow-hidden shadow-xs">
                     <button
                       type="button"
                       onClick={() => setShowDbGuide(!showDbGuide)}
-                      className="w-full flex items-center justify-between p-4 text-xs font-semibold text-zinc-900 dark:text-white hover:bg-zinc-50 dark:hover:bg-zinc-850 transition-colors cursor-pointer"
+                      className="w-full flex items-center justify-between p-4 text-xs font-semibold text-zinc-900 dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
                     >
                       <span className="flex items-center gap-2">
-                        <BookOpen className="h-4 w-4 text-zinc-500" />
-                        <span>วิธีการบันทึกและเขียนคิวรีข้อมูล InfluxDB</span>
+                        <BookOpen className="h-4 w-4 text-zinc-500 dark:text-zinc-400" />
+                        <span className="text-zinc-900 dark:text-zinc-100">วิธีการบันทึกและเขียนคิวรีข้อมูล InfluxDB</span>
                       </span>
-                      <span className="text-[11px] text-zinc-500 flex items-center gap-1 font-normal">
+                      <span className="text-[11px] text-zinc-500 dark:text-zinc-400 flex items-center gap-1 font-normal">
                         {showDbGuide ? 'ซ่อนคู่มือ' : 'กดดูวิธีการ'}
                         {showDbGuide ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
                       </span>
@@ -3486,7 +3486,7 @@ sensor,device=esp32_01 temperature=26.4,humidity=62.1
                   </div>
 
                   {/* DB Specs Table */}
-                  <div id="sec-db-specs" className="border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-[#121214] overflow-hidden shadow-xs">
+                  <div id="sec-db-specs" className="border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-zinc-900 overflow-hidden shadow-xs">
                     <div className="px-4 py-3 bg-zinc-50 dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 text-xs font-semibold text-zinc-700 dark:text-zinc-300">
                       InfluxDB Configuration
                     </div>
@@ -3533,7 +3533,7 @@ sensor,device=esp32_01 temperature=26.4,humidity=62.1
                   </div>
 
                   {/* InfluxDB Admin UI Callout with Student Login Credentials */}
-                  <div className="border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-[#121214] p-4 sm:p-5 shadow-xs space-y-4">
+                  <div className="border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-zinc-900 p-4 sm:p-5 shadow-xs space-y-4">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                       <div className="flex items-start sm:items-center gap-3">
                         <InfluxDBLogo className="h-8 w-8 shrink-0" />
@@ -3566,7 +3566,7 @@ sensor,device=esp32_01 temperature=26.4,humidity=62.1
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2.5 text-xs">
                         {/* Username */}
-                        <div className="p-3 rounded-lg bg-white dark:bg-zinc-850 border border-zinc-200 dark:border-zinc-750">
+                        <div className="p-3 rounded-lg bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-800">
                           <span className="text-[10px] text-zinc-400 font-medium block">ชื่อผู้ใช้ (Username)</span>
                           <div className="flex items-center justify-between mt-1">
                             <span className="font-mono font-semibold text-zinc-900 dark:text-white text-xs select-all">
@@ -3588,7 +3588,7 @@ sensor,device=esp32_01 temperature=26.4,humidity=62.1
                         </div>
 
                         {/* Password */}
-                        <div className="p-3 rounded-lg bg-white dark:bg-zinc-850 border border-zinc-200 dark:border-zinc-750">
+                        <div className="p-3 rounded-lg bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-800">
                           <span className="text-[10px] text-zinc-400 font-medium block">รหัสผ่าน (Password)</span>
                           <div className="flex items-center justify-between mt-1">
                             <span className={`font-mono text-xs select-all ${showDbPassword ? 'font-semibold text-zinc-900 dark:text-white' : 'text-zinc-400 tracking-widest'}`}>
@@ -3620,7 +3620,7 @@ sensor,device=esp32_01 temperature=26.4,humidity=62.1
                         </div>
 
                         {/* Organization */}
-                        <div className="p-3 rounded-lg bg-white dark:bg-zinc-850 border border-zinc-200 dark:border-zinc-750">
+                        <div className="p-3 rounded-lg bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-800">
                           <span className="text-[10px] text-zinc-400 font-medium block">องค์กร (Organization)</span>
                           <div className="flex items-center justify-between mt-1">
                             <span className="font-mono font-semibold text-zinc-900 dark:text-white text-xs select-all truncate max-w-[120px]">
@@ -3642,7 +3642,7 @@ sensor,device=esp32_01 temperature=26.4,humidity=62.1
                         </div>
 
                         {/* Bucket */}
-                        <div className="p-3 rounded-lg bg-white dark:bg-zinc-850 border border-zinc-200 dark:border-zinc-750">
+                        <div className="p-3 rounded-lg bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-800">
                           <span className="text-[10px] text-zinc-400 font-medium block">ถังข้อมูลประจำตัว (Bucket)</span>
                           <div className="flex items-center justify-between mt-1">
                             <span className="font-mono font-semibold text-zinc-900 dark:text-white text-xs select-all truncate max-w-[120px]">
@@ -3703,17 +3703,17 @@ sensor,device=esp32_01 temperature=26.4,humidity=62.1
                   </div>
 
                   {/* COLLAPSIBLE HOW-TO GUIDE */}
-                  <div className="border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-[#121214] overflow-hidden shadow-xs">
+                  <div className="border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-zinc-900 overflow-hidden shadow-xs">
                     <button
                       type="button"
                       onClick={() => setShowApiGuide(!showApiGuide)}
-                      className="w-full flex items-center justify-between p-4 text-xs font-semibold text-zinc-900 dark:text-white hover:bg-zinc-50 dark:hover:bg-zinc-850 transition-colors cursor-pointer"
+                      className="w-full flex items-center justify-between p-4 text-xs font-semibold text-zinc-900 dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
                     >
                       <span className="flex items-center gap-2">
-                        <BookOpen className="h-4 w-4 text-zinc-500" />
-                        <span>วิธีการส่งคำขอ HTTP POST (API Guide)</span>
+                        <BookOpen className="h-4 w-4 text-zinc-500 dark:text-zinc-400" />
+                        <span className="text-zinc-900 dark:text-zinc-100">วิธีการส่งคำขอ HTTP POST (API Guide)</span>
                       </span>
-                      <span className="text-[11px] text-zinc-500 flex items-center gap-1 font-normal">
+                      <span className="text-[11px] text-zinc-500 dark:text-zinc-400 flex items-center gap-1 font-normal">
                         {showApiGuide ? 'ซ่อนคู่มือ' : 'กดดูวิธีการ'}
                         {showApiGuide ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
                       </span>
@@ -3849,7 +3849,7 @@ Authorization: Bearer ${session.token}`}
             </main>
 
             {/* DESKTOP RIGHT SIDEBAR: "ON THIS PAGE" (TABLE OF CONTENTS) */}
-            <aside className="hidden xl:block w-64 shrink-0 border-l border-zinc-200 dark:border-zinc-800 bg-white dark:bg-[#121214] p-6 sticky top-14 h-[calc(100vh-3.5rem)] overflow-y-auto transition-colors">
+            <aside className="hidden xl:block w-64 shrink-0 border-l border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 sticky top-14 h-[calc(100vh-3.5rem)] overflow-y-auto transition-colors">
               <div className="space-y-4">
                 <div className="text-xs font-semibold text-zinc-900 dark:text-white tracking-wider uppercase flex items-center gap-1.5">
                   <Bookmark className="h-3.5 w-3.5 text-zinc-500 dark:text-zinc-400" />
@@ -3892,7 +3892,7 @@ Authorization: Bearer ${session.token}`}
       {/* SEARCH COMMAND PALETTE MODAL */}
       {isSearchOpen && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-start justify-center pt-12 sm:pt-20 p-3 sm:p-4">
-          <div className="bg-white dark:bg-[#121214] rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-2xl w-full max-w-lg overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+          <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-2xl w-full max-w-lg overflow-hidden animate-in fade-in zoom-in-95 duration-150">
             <div className="flex items-center gap-3 px-4 py-3 border-b border-zinc-200 dark:border-zinc-800">
               <Search className="h-4 w-4 text-zinc-400 dark:text-zinc-500 shrink-0" />
               <input
@@ -3947,7 +3947,7 @@ Authorization: Bearer ${session.token}`}
       {/* SETTINGS MODAL */}
       {isSettingsOpen && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
-          <div className="bg-white dark:bg-[#121214] rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-2xl w-full max-w-md overflow-hidden max-h-[90vh] flex flex-col animate-in fade-in zoom-in-95 duration-150">
+          <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-2xl w-full max-w-md overflow-hidden max-h-[90vh] flex flex-col animate-in fade-in zoom-in-95 duration-150">
             <div className="flex items-center justify-between px-5 py-4 border-b border-zinc-100 dark:border-zinc-800 shrink-0">
               <div className="flex items-center gap-2">
                 <Settings className="h-4 w-4 text-zinc-700 dark:text-zinc-300" />
@@ -4116,7 +4116,7 @@ Authorization: Bearer ${session.token}`}
       {/* TERMS OF SERVICE MODAL (9 FULL OFFICIAL ARTICLES) */}
       {isTermsModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
-          <div className="bg-white dark:bg-[#121214] rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-2xl w-full max-w-3xl overflow-hidden max-h-[88vh] flex flex-col animate-in fade-in zoom-in-95 duration-150">
+          <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-2xl w-full max-w-3xl overflow-hidden max-h-[88vh] flex flex-col animate-in fade-in zoom-in-95 duration-150">
             {/* Modal Header */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-100 dark:border-zinc-800 shrink-0 bg-zinc-50/50 dark:bg-zinc-900/30">
               <div className="flex items-center gap-3">
@@ -4510,7 +4510,7 @@ Authorization: Bearer ${session.token}`}
       {/* ADMIN PIN UNLOCK MODAL */}
       {isAdminPinModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
-          <div className="bg-white dark:bg-[#121214] rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-2xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+          <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-2xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in-95 duration-150">
             <div className="flex items-center justify-between px-5 py-4 border-b border-zinc-100 dark:border-zinc-800">
               <div className="flex items-center gap-2">
                 <Lock className="h-4 w-4 text-zinc-700 dark:text-zinc-300" />
