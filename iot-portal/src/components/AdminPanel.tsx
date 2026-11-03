@@ -25,7 +25,8 @@ import {
   Terminal,
   Database,
   Radio,
-  FileDown
+  FileDown,
+  ExternalLink
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -261,6 +262,41 @@ export function AdminPanel({
               techniccom <span className="text-[10px] text-zinc-400">(DL20 Gen9)</span>
             </div>
           </div>
+        </div>
+
+        {/* QUICK ADMIN CONSOLES */}
+        <div className="mt-4 pt-3 border-t border-zinc-800/80 flex flex-wrap items-center gap-2 text-xs">
+          <span className="text-[11px] text-zinc-400 font-medium mr-1">คอนโซลผู้ดูแลระบบ:</span>
+          <a
+            href="https://emqx.pichyy.qzz.io"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-zinc-800/90 hover:bg-zinc-700 border border-zinc-700/80 text-zinc-200 hover:text-white transition-colors"
+          >
+            <Radio className="h-3 w-3 text-emerald-400" />
+            <span>EMQX Broker Console</span>
+            <ExternalLink className="h-2.5 w-2.5 opacity-60" />
+          </a>
+          <a
+            href="https://influx.pichyy.qzz.io"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-zinc-800/90 hover:bg-zinc-700 border border-zinc-700/80 text-zinc-200 hover:text-white transition-colors"
+          >
+            <Database className="h-3 w-3 text-purple-400" />
+            <span>InfluxDB Admin UI</span>
+            <ExternalLink className="h-2.5 w-2.5 opacity-60" />
+          </a>
+          <a
+            href="https://100.125.250.85:8006"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-zinc-800/90 hover:bg-zinc-700 border border-zinc-700/80 text-zinc-200 hover:text-white transition-colors"
+          >
+            <Server className="h-3 w-3 text-sky-400" />
+            <span>Proxmox VE (Host)</span>
+            <ExternalLink className="h-2.5 w-2.5 opacity-60" />
+          </a>
         </div>
       </div>
 

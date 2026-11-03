@@ -278,6 +278,15 @@ export default function App() {
     setTimeout(() => setCopiedDbKey(null), 2000)
   }
 
+  // MQTT UI Credentials reveal state
+  const [showMqttPassword, setShowMqttPassword] = useState(false)
+  const [copiedMqttKey, setCopiedMqttKey] = useState<string | null>(null)
+  const copyMqttText = (text: string, key: string) => {
+    navigator.clipboard.writeText(text)
+    setCopiedMqttKey(key)
+    setTimeout(() => setCopiedMqttKey(null), 2000)
+  }
+
   // Modals for CT System
   const [isTermsModalOpen, setIsTermsModalOpen] = useState(false)
   const [isTerminalOpen, setIsTerminalOpen] = useState(false)
@@ -314,6 +323,32 @@ export default function App() {
     }
   }
 
+  // Check for hidden /admin route on load and browser navigation
+  useEffect(() => {
+    const checkAdminPath = () => {
+      const path = window.location.pathname.toLowerCase()
+      if (path === '/admin' || path === '/admin/' || window.location.hash === '#admin') {
+        if (!isAdminUnlocked) {
+          setIsAdminPinModalOpen(true)
+        } else {
+          setActiveTab('admin')
+        }
+      }
+    }
+    checkAdminPath()
+    window.addEventListener('popstate', checkAdminPath)
+    return () => window.removeEventListener('popstate', checkAdminPath)
+  }, [isAdminUnlocked])
+
+  const handleCloseAdminPinModal = () => {
+    setIsAdminPinModalOpen(false)
+    setAdminPinInput('')
+    setAdminPinError('')
+    if (window.location.pathname.toLowerCase().startsWith('/admin') || window.location.hash === '#admin') {
+      window.history.pushState(null, '', '/')
+    }
+  }
+
   // Keyboard shortcut listener for Ctrl+K and ESC
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -328,7 +363,7 @@ export default function App() {
         setIsMobileTocOpen(false)
         setIsTermsModalOpen(false)
         setIsTerminalOpen(false)
-        setIsAdminPinModalOpen(false)
+        handleCloseAdminPinModal()
       }
     }
     window.addEventListener('keydown', handleKeyDown)
@@ -753,6 +788,22 @@ export default function App() {
     setAdminPinError('')
     const pin = adminPinInput.trim()
 
+    const activateAdmin = () => {
+      setIsAdminUnlocked(true)
+      setIsAdminPinModalOpen(false)
+      setActiveTab('admin')
+      window.history.pushState(null, '', '/admin')
+      if (!session) {
+        setSession({
+          studentId: 'ADMIN',
+          fullName: 'ผู้ดูแลระบบ (Admin Master)',
+          projectTitle: 'ศูนย์ควบคุม LBTech IoT & Cloud',
+          department: 'แผนกวิชาเทคโนโลยีคอมพิวเตอร์',
+          token: pin
+        })
+      }
+    }
+
     try {
       const res = await fetch('/api/admin/verify-pin', {
         method: 'POST',
@@ -760,9 +811,7 @@ export default function App() {
         body: JSON.stringify({ pin })
       })
       if (res.ok) {
-        setIsAdminUnlocked(true)
-        setIsAdminPinModalOpen(false)
-        setActiveTab('admin')
+        activateAdmin()
         return
       }
     } catch {
@@ -770,9 +819,7 @@ export default function App() {
     }
 
     if (pin === '2569' || pin === '07072569') {
-      setIsAdminUnlocked(true)
-      setIsAdminPinModalOpen(false)
-      setActiveTab('admin')
+      activateAdmin()
     } else {
       setAdminPinError('รหัสผ่าน PIN ไม่ถูกต้อง')
     }
@@ -792,7 +839,10 @@ export default function App() {
     if (!session) return
 
     setMqttStatus('connecting')
-    const subTopic = `project/${session.studentId}/#`
+    const subTopics = [
+      `lbtech/${session.studentId}/#`,
+      `project/${session.studentId}/#`
+    ]
 
     try {
       const client = mqtt.connect('wss://mqtt.pichyy.qzz.io/mqtt', {
@@ -800,17 +850,17 @@ export default function App() {
         password: session.token,
         clientId: `web_test_${Math.random().toString(16).substring(2, 8)}`,
         clean: true,
-        connectTimeout: 5000,
+        connectTimeout: 7000,
       })
 
       client.on('connect', () => {
         setMqttStatus('connected')
-        client.subscribe(subTopic, (err) => {
+        client.subscribe(subTopics, (err) => {
           if (!err) {
             setMessages((prev) => [
               {
-                topic: subTopic,
-                payload: `🟢 Connected WSS -> Subscribed: ${subTopic}`,
+                topic: subTopics[0],
+                payload: `🟢 เชื่อมต่อสำเร็จ (WSS:443) -> ติดตามข้อมูล (Subscribed): ${subTopics.join(', ')}`,
                 time: new Date().toLocaleTimeString(),
               },
               ...prev.slice(0, 30),
@@ -848,7 +898,12 @@ export default function App() {
 
   const handlePublishTest = () => {
     if (!session || !clientRef.current || mqttStatus !== 'connected') return
-    const topic = `project/${session.studentId}/${testTopicSuffix}`
+    const suffix = testTopicSuffix.trim()
+    const topic = suffix.startsWith('lbtech/') || suffix.startsWith('project/')
+      ? suffix
+      : suffix
+      ? `lbtech/${session.studentId}/${suffix}`
+      : `lbtech/${session.studentId}/telemetry`
     clientRef.current.publish(topic, testPayload)
   }
 
@@ -1535,36 +1590,9 @@ Payload:
               </span>
             </div>
 
-            {/* Right: Admin Mode Toggle, Theme Toggle & Search Button */}
+            {/* Right: Theme Toggle & Search Button (Admin access hidden at /admin) */}
             <div className="flex items-center gap-2">
-              {isAdminUnlocked ? (
-                <button
-                  type="button"
-                  onClick={() => handleTabChange('admin')}
-                  className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-xs font-medium cursor-pointer shadow-2xs transition-all ${
-                    activeTab === 'admin'
-                      ? 'border-emerald-500 bg-emerald-600 text-white'
-                      : 'border-emerald-300 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100'
-                  }`}
-                  title="เปิดแผงควบคุมอาจารย์ & ดูรหัสผ่าน"
-                >
-                  <ShieldCheck className="h-3.5 w-3.5" />
-                  <span className="hidden sm:inline">โหมดอาจารย์</span>
-                  <span className="text-[10px] px-1 rounded bg-emerald-200 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-200">
-                    ปลดล็อกแล้ว
-                  </span>
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => setIsAdminPinModalOpen(true)}
-                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700 text-xs text-zinc-600 dark:text-zinc-300 cursor-pointer shadow-2xs transition-all"
-                  title="เข้าสู่โหมดอาจารย์เพื่อตรวจสอบคำขอและดูรหัสผ่าน"
-                >
-                  <Lock className="h-3.5 w-3.5 text-zinc-400" />
-                  <span className="hidden sm:inline">โหมดอาจารย์</span>
-                </button>
-              )}
+              <ThemeToggle />
 
               <ThemeToggle />
 
@@ -2684,7 +2712,11 @@ Payload:
                   adminPin={adminPinInput || '2569'}
                   onLock={() => {
                     setIsAdminUnlocked(false)
+                    window.history.pushState(null, '', '/')
                     setActiveTab('overview')
+                    if (session?.studentId === 'ADMIN') {
+                      setSession(null)
+                    }
                   }}
                   onApproveRequest={handleApproveRequest}
                   onRejectRequest={handleRejectRequest}
@@ -2733,36 +2765,129 @@ Payload:
                     </div>
                   </div>
 
-                  {/* EMQX Admin Console Card (Teacher / Administrator Access) */}
-                  <div className="border border-zinc-200 dark:border-zinc-800 rounded-xl bg-zinc-50/70 dark:bg-zinc-900/40 p-4 shadow-2xs space-y-3">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                      <div className="flex items-start sm:items-center gap-3">
-                        <div className="h-9 w-9 rounded-lg bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 flex items-center justify-center shrink-0">
-                          <Radio className="h-4.5 w-4.5" />
-                        </div>
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <h3 className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">
-                              การเข้าถึงหน้าแอดมิน EMQX Console (สำหรับอาจารย์/ผู้ดูแล)
-                            </h3>
-                            <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300">
-                              Admin Access
-                            </span>
-                          </div>
-                          <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5">
-                            หน้าควบคุมสถานะ Broker ส่วนกลาง: ตรวจสอบสถานะการเชื่อมต่อ (Clients), ปริมาณข้อมูล (Throughput) และ Rule Engine
-                          </p>
+                  {/* MQTT Connection Credentials Card (Student Access) */}
+                  <div className="bg-white dark:bg-zinc-900 rounded-xl border border-emerald-200/80 dark:border-emerald-900/40 p-3.5 space-y-2.5">
+                    <div className="flex items-center justify-between pb-2 border-b border-zinc-100 dark:border-zinc-800">
+                      <div className="flex items-center gap-1.5">
+                        <Key className="h-3.5 w-3.5 text-emerald-500" />
+                        <span className="text-[11px] font-semibold text-emerald-900 dark:text-emerald-300">
+                          ข้อมูลบัญชีสำหรับเชื่อมต่อ MQTT Client (บอร์ด IoT / โค้ดโปรเจกต์)
+                        </span>
+                      </div>
+                      <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-800/60">
+                        พร้อมใช้งาน
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2.5 text-xs">
+                      {/* Host */}
+                      <div className="p-2.5 rounded-lg bg-zinc-50 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700/60">
+                        <span className="text-[10px] text-zinc-400 font-medium block">MQTT Host (Broker)</span>
+                        <div className="flex items-center justify-between mt-1">
+                          <span className="font-mono font-bold text-zinc-900 dark:text-white text-xs select-all">
+                            mqtt.pichyy.qzz.io
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => copyMqttText('mqtt.pichyy.qzz.io', 'mqtt_host')}
+                            className="p-1 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 cursor-pointer"
+                            title="คัดลอก Host"
+                          >
+                            {copiedMqttKey === 'mqtt_host' ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
+                          </button>
                         </div>
                       </div>
-                      <a
-                        href="https://emqx.pichyy.qzz.io"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-700 text-xs font-medium text-zinc-800 dark:text-zinc-200 transition-colors shadow-2xs shrink-0 cursor-pointer"
+
+                      {/* Ports */}
+                      <div className="p-2.5 rounded-lg bg-zinc-50 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700/60">
+                        <span className="text-[10px] text-zinc-400 font-medium block">พอร์ตเชื่อมต่อ (WSS / TCP)</span>
+                        <div className="flex items-center justify-between mt-1">
+                          <span className="font-mono text-zinc-900 dark:text-zinc-100 text-xs">
+                            <strong className="text-emerald-600 dark:text-emerald-400">443</strong> (WSS) / <strong>1883</strong> (TCP)
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => copyMqttText('443', 'mqtt_port')}
+                            className="p-1 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 cursor-pointer"
+                            title="คัดลอกพอร์ต"
+                          >
+                            {copiedMqttKey === 'mqtt_port' ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Username */}
+                      <div className="p-2.5 rounded-lg bg-zinc-50 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700/60">
+                        <span className="text-[10px] text-zinc-400 font-medium block">ชื่อผู้ใช้ (Username)</span>
+                        <div className="flex items-center justify-between mt-1">
+                          <span className="font-mono font-bold text-zinc-900 dark:text-white text-xs select-all">
+                            {session?.studentId || '693190900xx'}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => copyMqttText(session?.studentId || '', 'mqtt_user')}
+                            className="p-1 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 cursor-pointer"
+                            title="คัดลอก Username"
+                          >
+                            {copiedMqttKey === 'mqtt_user' ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Password */}
+                      <div className="p-2.5 rounded-lg bg-zinc-50 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700/60">
+                        <span className="text-[10px] text-zinc-400 font-medium block">รหัสผ่าน (Password)</span>
+                        <div className="flex items-center justify-between mt-1">
+                          <span className={`font-mono text-xs select-all ${showMqttPassword ? 'font-bold text-emerald-600 dark:text-emerald-400' : 'text-zinc-400 tracking-widest'}`}>
+                            {showMqttPassword ? (session?.token || '••••••••') : '••••••••'}
+                          </span>
+                          <div className="flex items-center">
+                            <button
+                              type="button"
+                              onClick={() => setShowMqttPassword(!showMqttPassword)}
+                              className="p-1 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 cursor-pointer"
+                              title={showMqttPassword ? 'ซ่อนรหัสผ่าน' : 'แสดงรหัสผ่าน'}
+                            >
+                              {showMqttPassword ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => copyMqttText(session?.token || '', 'mqtt_pass')}
+                              className="p-1 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 cursor-pointer"
+                              title="คัดลอกรหัสผ่าน"
+                            >
+                              {copiedMqttKey === 'mqtt_pass' ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Topic bar */}
+                    <div className="p-2.5 rounded-lg bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200/80 dark:border-zinc-700/60 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] text-zinc-400 font-medium whitespace-nowrap">หัวข้อประจำตัว (Topic):</span>
+                        <code className="font-mono text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 select-all break-all">
+                          lbtech/{session?.studentId || '693190900xx'}/telemetry
+                        </code>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => copyMqttText(`lbtech/${session?.studentId || '693190900xx'}/telemetry`, 'mqtt_topic')}
+                        className="inline-flex items-center gap-1 text-[11px] font-medium text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white shrink-0 self-end sm:self-auto cursor-pointer"
                       >
-                        <span>เปิดคอนโซล EMQX</span>
-                        <ChevronRight className="h-3.5 w-3.5" />
-                      </a>
+                        {copiedMqttKey === 'mqtt_topic' ? (
+                          <>
+                            <Check className="h-3 w-3 text-emerald-500" />
+                            <span className="text-emerald-500 font-medium">คัดลอกแล้ว</span>
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="h-3 w-3" />
+                            <span>คัดลอก Topic</span>
+                          </>
+                        )}
+                      </button>
                     </div>
                   </div>
 
@@ -3862,11 +3987,7 @@ Payload:
               </div>
               <button
                 type="button"
-                onClick={() => {
-                  setIsAdminPinModalOpen(false)
-                  setAdminPinInput('')
-                  setAdminPinError('')
-                }}
+                onClick={handleCloseAdminPinModal}
                 className="p-1 rounded-md text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 cursor-pointer"
               >
                 <X className="h-4 w-4" />
@@ -3902,11 +4023,7 @@ Payload:
                   type="button"
                   variant="outline"
                   size="sm"
-                  onClick={() => {
-                    setIsAdminPinModalOpen(false)
-                    setAdminPinInput('')
-                    setAdminPinError('')
-                  }}
+                  onClick={handleCloseAdminPinModal}
                   className="text-xs h-9 cursor-pointer"
                 >
                   ยกเลิก
