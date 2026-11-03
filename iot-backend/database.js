@@ -328,6 +328,13 @@ class Database {
     return normalized
   }
 
+  updateServer(vmid, updates = {}) {
+    const server = this.getServerByVmid(vmid)
+    if (!server) return null
+    const merged = { ...server, ...updates }
+    return this.saveServer(merged)
+  }
+
   deleteServer(vmid) {
     return this.removeServer(vmid)
   }
