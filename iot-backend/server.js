@@ -122,6 +122,13 @@ wss.on('connection', async (ws, req, url) => {
       `\x1b[90mWorkspace: /workspace (Persistent Storage)\x1b[0m\r\n\r\n`
     ws.send(welcome)
 
+    // Periodic Heartbeat Keepalive (25s) to prevent Cloudflare/NGINX idle drops
+    const keepAliveTimer = setInterval(() => {
+      if (ws.readyState === ws.OPEN) {
+        ws.ping()
+      }
+    }, 25000)
+
     // Pipe Container Output -> WebSocket Client
     session.stream.on('data', (chunk) => {
       if (ws.readyState === ws.OPEN) {
@@ -130,6 +137,7 @@ wss.on('connection', async (ws, req, url) => {
     })
 
     session.stream.on('end', () => {
+      clearInterval(keepAliveTimer)
       if (ws.readyState === ws.OPEN) {
         ws.send('\r\n\x1b[33m[Session Closed]\x1b[0m\r\n')
         ws.close()
@@ -142,6 +150,9 @@ wss.on('connection', async (ws, req, url) => {
         const text = msg.toString()
         if (text.startsWith('{') && text.endsWith('}')) {
           const parsed = JSON.parse(text)
+          if (parsed.type === 'ping') {
+            return // Ignored keepalive ping
+          }
           if (parsed.type === 'resize' && parsed.cols && parsed.rows) {
             session.resize(parsed.cols, parsed.rows)
             return
@@ -153,6 +164,7 @@ wss.on('connection', async (ws, req, url) => {
     })
 
     ws.on('close', () => {
+      clearInterval(keepAliveTimer)
       console.log(`[WS-TERMINAL] Connection closed for: ${targetId}`)
       session.stream.end()
     })

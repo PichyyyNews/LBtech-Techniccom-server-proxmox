@@ -42,6 +42,7 @@ export function EmbeddedTerminal({
   const xtermInstance = useRef<XTerm | null>(null)
   const fitAddonInstance = useRef<FitAddon | null>(null)
   const wsRef = useRef<WebSocket | null>(null)
+  const pingTimerRef = useRef<any>(null)
 
   const [connStatus, setConnStatus] = useState<'connecting' | 'connected' | 'disconnected' | 'error'>('connecting')
 
@@ -122,6 +123,11 @@ export function EmbeddedTerminal({
     setConnStatus('connecting')
     term.writeln(`\x1b[90mConnecting to web terminal at ${wsUrl}...\x1b[0m`)
 
+    if (pingTimerRef.current) {
+      clearInterval(pingTimerRef.current)
+      pingTimerRef.current = null
+    }
+
     const ws = new WebSocket(wsUrl)
     ws.binaryType = 'arraybuffer'
     wsRef.current = ws
@@ -136,6 +142,13 @@ export function EmbeddedTerminal({
           rows: term.rows
         }))
       } catch {}
+
+      // Keepalive heartbeat every 20s to prevent Cloudflare / Nginx idle connection drop
+      pingTimerRef.current = setInterval(() => {
+        if (ws.readyState === WebSocket.OPEN) {
+          ws.send(JSON.stringify({ type: 'ping' }))
+        }
+      }, 20000)
     }
 
     ws.onmessage = (event) => {
@@ -153,13 +166,23 @@ export function EmbeddedTerminal({
 
     ws.onclose = () => {
       setConnStatus('disconnected')
-      term.writeln(`\r\n\x1b[33m[Connection Closed] ปิดการเชื่อมต่อแล้ว\x1b[0m\r\n`)
+      if (pingTimerRef.current) {
+        clearInterval(pingTimerRef.current)
+        pingTimerRef.current = null
+      }
+      term.writeln(`\r\n\x1b[33m[Connection Closed] การเชื่อมต่อถูกปิด (หมดเวลา Idle หรือไม่มีการส่งข้อมูล)\x1b[0m`)
+      term.writeln(`\x1b[90m💡 กดปุ่ม [Enter] บนคีย์บอร์ด หรือคลิกปุ่มรีคอนเน็กต์ที่มุมบนขวา เพื่อเชื่อมต่อใหม่ทันที\x1b[0m\r\n`)
     }
 
     // Forward user key input to WebSocket
     term.onData((data) => {
       if (ws.readyState === WebSocket.OPEN) {
         ws.send(data)
+      } else if (ws.readyState === WebSocket.CLOSED || ws.readyState === WebSocket.CLOSING) {
+        // Auto-reconnect when pressing Enter if terminal was closed
+        if (data === '\r' || data === '\n') {
+          connectTerminal()
+        }
       }
     })
   }
@@ -193,6 +216,10 @@ export function EmbeddedTerminal({
   useEffect(() => {
     connectTerminal()
     return () => {
+      if (pingTimerRef.current) {
+        clearInterval(pingTimerRef.current)
+        pingTimerRef.current = null
+      }
       if (wsRef.current) {
         wsRef.current.close()
         wsRef.current = null

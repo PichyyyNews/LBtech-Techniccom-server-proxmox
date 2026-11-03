@@ -2524,13 +2524,13 @@ Payload:
                                   disabled={!isRunning}
                                   onClick={() => {
                                     setTerminalServer(selectedServer)
-                                    setTerminalMode('fullscreen')
+                                    setTerminalMode(terminalMode === 'fullscreen' ? 'embedded' : 'fullscreen')
                                   }}
                                   className="h-8 text-xs cursor-pointer hidden sm:inline-flex"
                                   title="ขยายคอนโซลเต็มหน้าจอ"
                                 >
                                   <Terminal className="h-3 w-3 mr-1" />
-                                  <span>เต็มจอ</span>
+                                  <span>{terminalMode === 'fullscreen' ? 'ย่อจอ' : 'เต็มจอ'}</span>
                                 </Button>
                               </div>
                             </div>
@@ -2565,9 +2565,15 @@ Payload:
                               ) : (
                                 <EmbeddedTerminal
                                   server={selectedServer}
-                                  mode="embedded"
+                                  mode={terminalMode === 'fullscreen' ? 'fullscreen' : 'embedded'}
                                   onModeChange={setTerminalMode}
-                                  onClose={() => setSelectedServerVmid(null)}
+                                  onClose={() => {
+                                    if (terminalMode === 'fullscreen') {
+                                      setTerminalMode('embedded')
+                                    } else {
+                                      setSelectedServerVmid(null)
+                                    }
+                                  }}
                                 />
                               )}
                             </div>
@@ -4457,8 +4463,8 @@ Authorization: Bearer ${session.token}`}
         </div>
       )}
 
-      {/* FLOATING MINIMIZED OR FULLSCREEN TERMINAL */}
-      {terminalServer && (terminalMode === 'minimized' || terminalMode === 'fullscreen') && (
+      {/* FLOATING MINIMIZED OR FULLSCREEN TERMINAL (From Server Hub when not inside dedicated workspace) */}
+      {terminalServer && selectedServerVmid === null && (terminalMode === 'minimized' || terminalMode === 'fullscreen') && (
         <EmbeddedTerminal
           server={terminalServer}
           mode={terminalMode}
