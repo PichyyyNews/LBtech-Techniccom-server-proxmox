@@ -1579,11 +1579,6 @@ Payload:
                 <span className="text-zinc-300 dark:text-zinc-700 hidden sm:inline">/</span>
                 <span className="text-xs text-zinc-500 dark:text-zinc-400 font-medium hidden sm:inline">System Setup</span>
               </div>
-
-              <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                Online
-              </span>
             </div>
 
             {/* Right: Theme Toggle & Search Button (Admin access hidden at /admin) */}
@@ -1820,7 +1815,7 @@ Payload:
             </aside>
 
             {/* MAIN CONTENT AREA */}
-            <main className="flex-1 min-w-0 p-4 sm:p-6 md:p-8 max-w-4xl mx-auto w-full">
+            <main className={`flex-1 min-w-0 p-4 sm:p-6 md:p-8 mx-auto w-full transition-all ${activeTab === 'ct-servers' ? 'max-w-7xl' : 'max-w-4xl'}`}>
               {/* TAB 1: OVERVIEW & CREDENTIALS */}
               {activeTab === 'overview' && (
                 <div className="space-y-6">
@@ -1838,10 +1833,6 @@ Payload:
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                       <div className="space-y-1">
                         <div className="flex flex-wrap items-center gap-2">
-                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-100 dark:bg-emerald-950/70 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
-                            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                            ออนไลน์พร้อมใช้งาน
-                          </span>
                           <span className="font-semibold text-sm text-zinc-900 dark:text-white">
                             {session.projectTitle}
                           </span>
@@ -1943,7 +1934,7 @@ Payload:
                     </div>
 
                     {isAdminUnlocked && (
-                      <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
+                      <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 border border-zinc-200 dark:border-zinc-700">
                         <ShieldCheck className="h-3.5 w-3.5" />
                         <span>โหมดอาจารย์ (Admin Review)</span>
                       </div>
@@ -1952,19 +1943,19 @@ Payload:
 
                   {/* ADMIN REVIEW QUEUE (Visible only when unlocked) */}
                   {isAdminUnlocked && (
-                    <div className="border border-emerald-200 dark:border-emerald-900/60 rounded-xl bg-emerald-50/40 dark:bg-emerald-950/20 p-4 sm:p-5 space-y-4">
+                    <div className="border border-zinc-200 dark:border-zinc-800 rounded-xl bg-zinc-50/50 dark:bg-zinc-900/40 p-4 sm:p-5 space-y-4">
                       <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2 text-xs font-semibold text-emerald-900 dark:text-emerald-300">
+                        <div className="flex items-center gap-2 text-xs font-semibold text-zinc-900 dark:text-zinc-100">
                           <ShieldCheck className="h-4 w-4" />
                           <span>คิวคำขอรอการอนุมัติ (Teacher Approval Queue)</span>
-                          <span className="px-2 py-0.5 text-[11px] rounded-full bg-emerald-200 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-200 font-mono">
+                          <span className="px-2 py-0.5 text-[11px] rounded-full bg-zinc-200 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 font-mono">
                             {ctRequests.filter((r) => r.status === 'pending').length} รายการ
                           </span>
                         </div>
                       </div>
 
                       {ctRequests.filter((r) => r.status === 'pending').length === 0 ? (
-                        <div className="text-xs text-emerald-700 dark:text-emerald-400 italic text-center py-4 bg-white/60 dark:bg-zinc-900/60 rounded-lg border border-emerald-100 dark:border-emerald-900">
+                        <div className="text-xs text-zinc-500 dark:text-zinc-400 italic text-center py-4 bg-white/60 dark:bg-zinc-900/60 rounded-lg border border-zinc-200 dark:border-zinc-800">
                           ไม่มีคำขอที่รอการอนุมัติในขณะนี้
                         </div>
                       ) : (
@@ -1974,7 +1965,7 @@ Payload:
                             .map((req) => (
                               <div
                                 key={req.id}
-                                className="p-4 bg-white dark:bg-zinc-900 border border-emerald-200 dark:border-emerald-800 rounded-xl shadow-xs space-y-3 text-xs"
+                                className="p-4 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-xs space-y-3 text-xs"
                               >
                                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 pb-2 border-b border-zinc-100 dark:border-zinc-800">
                                   <div>
@@ -2023,14 +2014,14 @@ Payload:
                                     size="sm"
                                     variant="outline"
                                     onClick={() => handleRejectRequest(req.id)}
-                                    className="h-8 text-xs text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 border-red-200 dark:border-red-900"
+                                    className="h-8 text-xs text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 border-red-200 dark:border-red-900 cursor-pointer"
                                   >
                                     ปฏิเสธคำขอ
                                   </Button>
                                   <Button
                                     size="sm"
                                     onClick={() => handleApproveRequest(req)}
-                                    className="h-8 text-xs bg-emerald-600 hover:bg-emerald-700 text-white"
+                                    className="h-8 text-xs bg-zinc-900 hover:bg-zinc-800 text-white dark:bg-white dark:hover:bg-zinc-200 dark:text-zinc-900 cursor-pointer font-medium"
                                   >
                                     <CheckCircle2 className="h-3.5 w-3.5 mr-1.5" />
                                     อนุมัติและสร้างเครื่องทันที
@@ -2453,9 +2444,9 @@ Payload:
                             </div>
                           </div>
 
-                          {/* Server Workspace Header Banner */}
-                          <div className="border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-[#121214] p-4 sm:p-5 shadow-xs">
-                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-zinc-100 dark:border-zinc-800">
+                          {/* Server Workspace Header Banner - Clean Monochrome Bar */}
+                          <div className="border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-[#121214] p-4 sm:p-4.5 shadow-xs">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                               <div className="flex items-center gap-3">
                                 <div className="shrink-0">
                                   {renderOSLogo(selectedServer.osKey, 'h-10 w-10')}
@@ -2465,49 +2456,51 @@ Payload:
                                     <h2 className="font-bold text-base text-zinc-900 dark:text-white">
                                       {selectedServer.name}
                                     </h2>
-                                    <span className="font-mono text-[10px] text-zinc-400 bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded">
+                                    <span className="font-mono text-[10px] text-zinc-500 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded border border-zinc-200 dark:border-zinc-700">
                                       CT {selectedServer.vmid}
                                     </span>
                                     <span
-                                      className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${
+                                      className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-medium border ${
                                         isRunning
-                                          ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800'
-                                          : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400'
+                                          ? 'bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 border-zinc-200 dark:border-zinc-700'
+                                          : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 border-zinc-200 dark:border-zinc-700'
                                       }`}
                                     >
                                       <span
                                         className={`h-1.5 w-1.5 rounded-full ${
-                                          isRunning ? 'bg-emerald-500 animate-pulse' : 'bg-zinc-400'
+                                          isRunning ? 'bg-zinc-800 dark:bg-zinc-200' : 'bg-zinc-400'
                                         }`}
                                       />
-                                      {isRunning ? 'ปกติ (Online)' : 'ปิดการทำงาน (Stopped)'}
+                                      {isRunning ? 'Online' : 'Stopped'}
                                     </span>
                                   </div>
                                   <div className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5 flex items-center gap-2">
                                     <span>{selectedServer.os}</span>
                                     <span>•</span>
-                                    <span>IP ภายใน: <code className="font-mono font-bold text-zinc-800 dark:text-zinc-200">{selectedServer.ip}</code></span>
+                                    <span>IP: <code className="font-mono font-semibold text-zinc-800 dark:text-zinc-200">{selectedServer.ip}</code></span>
                                   </div>
                                 </div>
                               </div>
 
-                              {/* Quick Power Controls */}
+                              {/* Quick Power Controls (Monochrome Black & White) */}
                               <div className="flex items-center gap-2 self-start sm:self-center">
                                 <Button
                                   size="sm"
                                   variant={isRunning ? 'outline' : 'default'}
                                   onClick={() => handleTogglePower(selectedServer.vmid)}
-                                  className="h-8 text-xs cursor-pointer"
+                                  className={`h-8 text-xs cursor-pointer ${
+                                    !isRunning ? 'bg-zinc-900 hover:bg-zinc-800 text-white dark:bg-white dark:hover:bg-zinc-200 dark:text-zinc-900' : ''
+                                  }`}
                                   title={isRunning ? 'ปิดเครื่อง' : 'เปิดเครื่อง'}
                                 >
                                   {isRunning ? (
                                     <>
-                                      <Square className="h-3 w-3 mr-1 text-red-500 fill-red-500" />
+                                      <Square className="h-3 w-3 mr-1 text-red-500 fill-current" />
                                       <span>ปิดเครื่อง</span>
                                     </>
                                   ) : (
                                     <>
-                                      <Play className="h-3 w-3 mr-1 text-emerald-500 fill-emerald-500" />
+                                      <Play className="h-3 w-3 mr-1 fill-current" />
                                       <span>เปิดเครื่อง</span>
                                     </>
                                   )}
@@ -2541,68 +2534,14 @@ Payload:
                                 </Button>
                               </div>
                             </div>
-
-                            {/* Sub-Tabs Selector */}
-                            <div className="flex items-center gap-2 pt-3">
-                              <button
-                                type="button"
-                                onClick={() => setServerWorkspaceTab('console')}
-                                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer flex items-center gap-1.5 ${
-                                  serverWorkspaceTab === 'console'
-                                    ? 'bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 shadow-2xs font-semibold'
-                                    : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800'
-                                }`}
-                              >
-                                <Terminal className="h-3.5 w-3.5" />
-                                <span>Web Console (คอนโซลพร้อมใช้งาน)</span>
-                              </button>
-
-                              <button
-                                type="button"
-                                onClick={() => setServerWorkspaceTab('status')}
-                                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer flex items-center gap-1.5 ${
-                                  serverWorkspaceTab === 'status'
-                                    ? 'bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 shadow-2xs font-semibold'
-                                    : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800'
-                                }`}
-                              >
-                                <Activity className="h-3.5 w-3.5" />
-                                <span>สถานะทรัพยากร (Status)</span>
-                              </button>
-
-                              <button
-                                type="button"
-                                onClick={() => setServerWorkspaceTab('config')}
-                                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer flex items-center gap-1.5 ${
-                                  serverWorkspaceTab === 'config'
-                                    ? 'bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 shadow-2xs font-semibold'
-                                    : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800'
-                                }`}
-                              >
-                                <Key className="h-3.5 w-3.5" />
-                                <span>ข้อมูลและการเชื่อมต่อ (Config)</span>
-                              </button>
-                            </div>
                           </div>
 
-                          {/* SUB-TAB 1: WEB CONSOLE (AUTO-MOUNTED & WAITING) */}
-                          {serverWorkspaceTab === 'console' && (
-                            <div className="space-y-3">
-                              {/* Console Notice / Tip */}
-                              <div className="p-3 bg-zinc-50 dark:bg-zinc-900/60 rounded-xl border border-zinc-200 dark:border-zinc-800 flex items-center justify-between text-xs text-zinc-600 dark:text-zinc-400">
-                                <div className="flex items-center gap-2">
-                                  <Terminal className="h-4 w-4 text-zinc-500 shrink-0" />
-                                  <span>
-                                    <strong>คอนโซล Linux Shell พร้อมใช้งาน:</strong> สั่งงาน ติดตั้งโปรแกรม (apt, docker, python) บนเบราว์เซอร์ได้ทันที
-                                  </span>
-                                </div>
-                                <span className="text-[11px] text-zinc-400 hidden sm:inline">
-                                  กดปุ่มขยายที่มุมขวาบนของคอนโซลเพื่อเปิดเต็มจอ
-                                </span>
-                              </div>
-
+                          {/* 2-COLUMN DEDICATED WORKSPACE: Left = Large Console, Right = Controls & Specs */}
+                          <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+                            {/* LEFT COLUMN: Large Dedicated Web Console (8 cols / ~67% width) */}
+                            <div className="lg:col-span-8 space-y-3">
                               {!isRunning ? (
-                                <div className="p-8 text-center border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-[#121214] space-y-4">
+                                <div className="p-12 text-center border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-[#121214] space-y-4">
                                   <div className="h-12 w-12 rounded-xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-zinc-500 mx-auto">
                                     <Square className="h-5 w-5 text-zinc-400" />
                                   </div>
@@ -2611,127 +2550,43 @@ Payload:
                                       เครื่องเซิร์ฟเวอร์ปิดอยู่ (Stopped)
                                     </h3>
                                     <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                                      กรุณาเปิดเครื่องเซิร์ฟเวอร์เพื่อเริ่มใช้งาน Web Console และบริการอื่นๆ
+                                      กรุณาเปิดเครื่องเซิร์ฟเวอร์เพื่อเริ่มใช้งาน Web Console และเชื่อมต่อภายนอก
                                     </p>
                                   </div>
                                   <Button
                                     size="sm"
                                     onClick={() => handleTogglePower(selectedServer.vmid)}
-                                    className="h-8 text-xs bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer inline-flex items-center gap-1.5"
+                                    className="h-9 px-4 text-xs bg-zinc-900 hover:bg-zinc-800 text-white dark:bg-white dark:hover:bg-zinc-200 dark:text-zinc-900 cursor-pointer inline-flex items-center gap-1.5 rounded-lg shadow-xs"
                                   >
-                                    <Play className="h-3.5 w-3.5 fill-white" />
+                                    <Play className="h-3.5 w-3.5 fill-current" />
                                     <span>เปิดเครื่องเซิร์ฟเวอร์</span>
                                   </Button>
                                 </div>
                               ) : (
-                                <div className="border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden shadow-xs">
-                                  <EmbeddedTerminal
-                                    server={selectedServer}
-                                    mode="embedded"
-                                    onModeChange={setTerminalMode}
-                                    onClose={() => setSelectedServerVmid(null)}
-                                  />
-                                </div>
+                                <EmbeddedTerminal
+                                  server={selectedServer}
+                                  mode="embedded"
+                                  onModeChange={setTerminalMode}
+                                  onClose={() => setSelectedServerVmid(null)}
+                                />
                               )}
                             </div>
-                          )}
 
-                          {/* SUB-TAB 2: STATUS & METRICS */}
-                          {serverWorkspaceTab === 'status' && (
-                            <div className="space-y-4">
-                              {/* 3 Metric Cards */}
-                              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-                                <div className="p-4 bg-white dark:bg-[#121214] rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-xs space-y-1">
-                                  <div className="flex items-center justify-between text-zinc-400 text-xs">
-                                    <span>หน่วยประมวลผล (vCPU)</span>
-                                    <Cpu className="h-4 w-4 text-zinc-500" />
-                                  </div>
-                                  <div className="text-xl font-bold text-zinc-900 dark:text-white font-mono">
-                                    {selectedServer.vcpu} <span className="text-xs font-normal text-zinc-400">Cores</span>
-                                  </div>
-                                  <div className="text-[11px] text-zinc-500">
-                                    {isRunning ? `การใช้งานเฉลี่ย ~${selectedServer.cpuUsage}%` : 'เครื่องปิดอยู่'}
-                                  </div>
-                                </div>
-
-                                <div className="p-4 bg-white dark:bg-[#121214] rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-xs space-y-1">
-                                  <div className="flex items-center justify-between text-zinc-400 text-xs">
-                                    <span>หน่วยความจำ (RAM)</span>
-                                    <Activity className="h-4 w-4 text-zinc-500" />
-                                  </div>
-                                  <div className="text-xl font-bold text-zinc-900 dark:text-white font-mono">
-                                    {selectedServer.ram} <span className="text-xs font-normal text-zinc-400">MB</span>
-                                  </div>
-                                  <div className="text-[11px] text-zinc-500">
-                                    {isRunning ? `ใช้ไป ~${selectedServer.ramUsage} MB` : '0 MB'}
-                                  </div>
-                                </div>
-
-                                <div className="p-4 bg-white dark:bg-[#121214] rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-xs space-y-1">
-                                  <div className="flex items-center justify-between text-zinc-400 text-xs">
-                                    <span>พื้นที่จัดเก็บข้อมูล (SSD)</span>
-                                    <HardDrive className="h-4 w-4 text-zinc-500" />
-                                  </div>
-                                  <div className="text-xl font-bold text-zinc-900 dark:text-white font-mono">
-                                    {selectedServer.disk} <span className="text-xs font-normal text-zinc-400">GB</span>
-                                  </div>
-                                  <div className="text-[11px] text-zinc-500">
-                                    NVMe Storage Pool
-                                  </div>
-                                </div>
-                              </div>
-
-                              {/* Specs Details Table */}
-                              <div className="border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-[#121214] overflow-hidden shadow-xs">
-                                <div className="px-4 py-3 bg-zinc-50 dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 text-xs font-semibold text-zinc-800 dark:text-zinc-200">
-                                  ข้อมูลจำเพาะระบบ (System Specifications)
-                                </div>
-                                <div className="divide-y divide-zinc-100 dark:divide-zinc-800 text-xs">
-                                  <div className="p-3.5 flex items-center justify-between">
-                                    <span className="text-zinc-500 dark:text-zinc-400">ชื่อเครื่อง (Hostname)</span>
-                                    <span className="font-mono font-semibold text-zinc-900 dark:text-white">{selectedServer.name}</span>
-                                  </div>
-                                  <div className="p-3.5 flex items-center justify-between">
-                                    <span className="text-zinc-500 dark:text-zinc-400">ระบบปฏิบัติการ (OS)</span>
-                                    <span className="font-medium text-zinc-900 dark:text-white">{selectedServer.os}</span>
-                                  </div>
-                                  <div className="p-3.5 flex items-center justify-between">
-                                    <span className="text-zinc-500 dark:text-zinc-400">หมายเลข Container (VMID)</span>
-                                    <span className="font-mono text-zinc-900 dark:text-white">{selectedServer.vmid}</span>
-                                  </div>
-                                  <div className="p-3.5 flex items-center justify-between">
-                                    <span className="text-zinc-500 dark:text-zinc-400">IP ภายในวิทยาลัย</span>
-                                    <code className="font-mono text-zinc-900 dark:text-white font-semibold">{selectedServer.ip}</code>
-                                  </div>
-                                  <div className="p-3.5 flex items-center justify-between">
-                                    <span className="text-zinc-500 dark:text-zinc-400">Global SSH Bastion Port</span>
-                                    <code className="font-mono text-zinc-900 dark:text-white font-semibold">10000 (TCP)</code>
-                                  </div>
-                                  <div className="p-3.5 flex items-center justify-between">
-                                    <span className="text-zinc-500 dark:text-zinc-400">เวลาทำงานต่อเนื่อง (Uptime)</span>
-                                    <span className="font-mono text-zinc-900 dark:text-white">{isRunning ? selectedServer.uptime || 'กำลังทำงาน' : 'ปิดอยู่'}</span>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          )}
-
-                          {/* SUB-TAB 3: CONFIG & CREDENTIALS */}
-                          {serverWorkspaceTab === 'config' && (
-                            <div className="space-y-4">
-                              {/* Credentials Card */}
+                            {/* RIGHT COLUMN: Credentials, SSH Bastion & Specs (4 cols / ~33% width) */}
+                            <div className="lg:col-span-4 space-y-4">
+                              {/* 1. Root Credentials Card */}
                               <div className="p-4 bg-white dark:bg-[#121214] rounded-xl border border-zinc-200 dark:border-zinc-800 space-y-3 shadow-xs text-xs">
                                 <div className="flex items-center justify-between pb-2 border-b border-zinc-100 dark:border-zinc-800">
                                   <div className="flex items-center gap-2 font-semibold text-zinc-900 dark:text-white">
-                                    <Key className="h-4 w-4 text-amber-500" />
-                                    <span>ข้อมูลเข้าสู่ระบบเซิร์ฟเวอร์ (Root Credentials)</span>
+                                    <Key className="h-4 w-4 text-zinc-600 dark:text-zinc-300" />
+                                    <span>ข้อมูลเข้าสู่ระบบ (Root)</span>
                                   </div>
-                                  <span className="text-[11px] text-zinc-400">สิทธิ์ Root สูงสุด</span>
+                                  <span className="text-[10px] text-zinc-400">สิทธิ์ Root</span>
                                 </div>
 
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div className="space-y-2.5">
                                   {/* Username */}
-                                  <div className="p-3 rounded-lg bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
+                                  <div className="p-2.5 rounded-lg bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
                                     <div className="space-y-0.5">
                                       <div className="text-[10px] text-zinc-400">Username</div>
                                       <code className="font-mono font-bold text-zinc-900 dark:text-white text-xs">root</code>
@@ -2744,7 +2599,7 @@ Payload:
                                       title="คัดลอก Username"
                                     >
                                       {copiedServerKey === `user_${selectedServer.vmid}` ? (
-                                        <Check className="h-3.5 w-3.5 text-emerald-600" />
+                                        <Check className="h-3.5 w-3.5 text-zinc-900 dark:text-zinc-100" />
                                       ) : (
                                         <Copy className="h-3.5 w-3.5" />
                                       )}
@@ -2752,7 +2607,7 @@ Payload:
                                   </div>
 
                                   {/* Password */}
-                                  <div className="p-3 rounded-lg bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
+                                  <div className="p-2.5 rounded-lg bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
                                     <div className="space-y-0.5 min-w-0 pr-2">
                                       <div className="text-[10px] text-zinc-400">Password</div>
                                       <code className="font-mono text-zinc-900 dark:text-white text-xs truncate block">
@@ -2793,7 +2648,7 @@ Payload:
                                         title="คัดลอก Password"
                                       >
                                         {copiedServerKey === `pass_${selectedServer.vmid}` ? (
-                                          <Check className="h-3.5 w-3.5 text-emerald-600" />
+                                          <Check className="h-3.5 w-3.5 text-zinc-900 dark:text-zinc-100" />
                                         ) : (
                                           <Copy className="h-3.5 w-3.5" />
                                         )}
@@ -2803,18 +2658,18 @@ Payload:
                                 </div>
                               </div>
 
-                              {/* SSH Bastion Access Card */}
+                              {/* 2. SSH Bastion Access Card */}
                               <div className="p-4 bg-white dark:bg-[#121214] rounded-xl border border-zinc-200 dark:border-zinc-800 space-y-3 shadow-xs text-xs">
                                 <div className="flex items-center justify-between pb-2 border-b border-zinc-100 dark:border-zinc-800">
                                   <div className="flex items-center gap-2 font-semibold text-zinc-900 dark:text-white">
-                                    <Globe className="h-4 w-4 text-sky-500" />
-                                    <span>คำสั่งเชื่อมต่อ SSH จากภายนอก (Global SSH Bastion)</span>
+                                    <Globe className="h-4 w-4 text-zinc-600 dark:text-zinc-300" />
+                                    <span>SSH Bastion (ภายนอก)</span>
                                   </div>
-                                  <span className="text-[11px] text-zinc-400">เข้าถึงได้จากทุกที่ทั่วโลก</span>
+                                  <span className="text-[10px] text-zinc-400 font-mono">Port 10000</span>
                                 </div>
 
-                                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 p-3 bg-zinc-50 dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800">
-                                  <code className="font-mono text-zinc-800 dark:text-zinc-200 text-xs select-all break-all">
+                                <div className="p-2.5 bg-zinc-50 dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 flex items-center justify-between gap-2">
+                                  <code className="font-mono text-zinc-800 dark:text-zinc-200 text-[11px] select-all break-all">
                                     ssh {selectedServer.studentId}@techniccom.tail59415d.ts.net -p 10000
                                   </code>
                                   <Button
@@ -2826,37 +2681,62 @@ Payload:
                                         `ssh_${selectedServer.vmid}`
                                       )
                                     }
-                                    className="h-7 text-xs px-2.5 shrink-0 cursor-pointer"
+                                    className="h-7 text-xs px-2 shrink-0 cursor-pointer"
                                   >
                                     {copiedServerKey === `ssh_${selectedServer.vmid}` ? (
-                                      <>
-                                        <Check className="h-3 w-3 text-emerald-600 mr-1" />
-                                        <span>คัดลอกแล้ว</span>
-                                      </>
+                                      <Check className="h-3 w-3 text-zinc-900 dark:text-zinc-100" />
                                     ) : (
-                                      <>
-                                        <Copy className="h-3 w-3 mr-1" />
-                                        <span>คัดลอกคำสั่ง</span>
-                                      </>
+                                      <Copy className="h-3 w-3" />
                                     )}
                                   </Button>
                                 </div>
 
-                                <div className="p-3 bg-zinc-50 dark:bg-zinc-900/50 rounded-lg border border-zinc-200/80 dark:border-zinc-800 text-[11px] text-zinc-500 dark:text-zinc-400 space-y-1">
-                                  <div className="font-semibold text-zinc-800 dark:text-zinc-200">การเชื่อมต่อผ่าน VS Code (Remote - SSH):</div>
-                                  <p className="leading-relaxed">
-                                    เปิดไฟล์ <code className="font-mono bg-zinc-200 dark:bg-zinc-800 px-1 py-0.5 rounded">~/.ssh/config</code> แล้วเพิ่มค่า:
-                                  </p>
-                                  <pre className="p-2 rounded bg-zinc-100 dark:bg-zinc-950 font-mono text-[10px] text-zinc-800 dark:text-zinc-300 overflow-x-auto">
+                                <div className="p-2.5 bg-zinc-50 dark:bg-zinc-900/50 rounded-lg border border-zinc-200/80 dark:border-zinc-800 text-[11px] text-zinc-500 dark:text-zinc-400 space-y-1">
+                                  <div className="font-medium text-zinc-800 dark:text-zinc-200">VS Code Remote - SSH config:</div>
+                                  <pre className="p-2 rounded bg-zinc-100 dark:bg-zinc-950 font-mono text-[10px] text-zinc-800 dark:text-zinc-300 overflow-x-auto leading-relaxed">
 {`Host lbtech-${selectedServer.name}
-    HostName techniccom.tail59415d.ts.net
-    Port 10000
-    User ${selectedServer.studentId}`}
+  HostName techniccom.tail59415d.ts.net
+  Port 10000
+  User ${selectedServer.studentId}`}
                                   </pre>
                                 </div>
                               </div>
+
+                              {/* 3. Specs Details Card */}
+                              <div className="p-4 bg-white dark:bg-[#121214] rounded-xl border border-zinc-200 dark:border-zinc-800 space-y-3 shadow-xs text-xs">
+                                <div className="flex items-center justify-between pb-2 border-b border-zinc-100 dark:border-zinc-800">
+                                  <div className="flex items-center gap-2 font-semibold text-zinc-900 dark:text-white">
+                                    <Cpu className="h-4 w-4 text-zinc-600 dark:text-zinc-300" />
+                                    <span>ข้อมูลทรัพยากร (Specs)</span>
+                                  </div>
+                                  <span className="font-mono text-[10px] text-zinc-400">CT {selectedServer.vmid}</span>
+                                </div>
+
+                                <div className="divide-y divide-zinc-100 dark:divide-zinc-800/80 text-xs">
+                                  <div className="py-2 flex items-center justify-between">
+                                    <span className="text-zinc-500 dark:text-zinc-400">หน่วยประมวลผล (vCPU)</span>
+                                    <span className="font-mono font-semibold text-zinc-900 dark:text-white">{selectedServer.vcpu} Cores</span>
+                                  </div>
+                                  <div className="py-2 flex items-center justify-between">
+                                    <span className="text-zinc-500 dark:text-zinc-400">หน่วยความจำ (RAM)</span>
+                                    <span className="font-mono font-semibold text-zinc-900 dark:text-white">{selectedServer.ram} MB</span>
+                                  </div>
+                                  <div className="py-2 flex items-center justify-between">
+                                    <span className="text-zinc-500 dark:text-zinc-400">พื้นที่จัดเก็บ (NVMe SSD)</span>
+                                    <span className="font-mono font-semibold text-zinc-900 dark:text-white">{selectedServer.disk} GB</span>
+                                  </div>
+                                  <div className="py-2 flex items-center justify-between">
+                                    <span className="text-zinc-500 dark:text-zinc-400">IP ภายในวิทยาลัย</span>
+                                    <code className="font-mono text-zinc-900 dark:text-white font-semibold">{selectedServer.ip}</code>
+                                  </div>
+                                  <div className="py-2 flex items-center justify-between">
+                                    <span className="text-zinc-500 dark:text-zinc-400">เวลาทำงาน (Uptime)</span>
+                                    <span className="font-mono text-zinc-900 dark:text-white">{isRunning ? selectedServer.uptime || 'กำลังทำงาน' : 'ปิดอยู่'}</span>
+                                  </div>
+                                </div>
+                              </div>
                             </div>
-                          )}
+                          </div>
                         </div>
                       )
                     })()
@@ -3055,18 +2935,18 @@ Payload:
                                     </div>
 
                                     <span
-                                      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold ${
+                                      className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-medium border ${
                                         isRunning
-                                          ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800'
-                                          : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400'
+                                          ? 'bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 border-zinc-200 dark:border-zinc-700'
+                                          : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 border-zinc-200 dark:border-zinc-700'
                                       }`}
                                     >
                                       <span
                                         className={`h-1.5 w-1.5 rounded-full ${
-                                          isRunning ? 'bg-emerald-500 animate-pulse' : 'bg-zinc-400'
+                                          isRunning ? 'bg-zinc-800 dark:bg-zinc-200' : 'bg-zinc-400'
                                         }`}
                                       />
-                                      {isRunning ? 'ปกติ (Online)' : 'ปิดอยู่'}
+                                      {isRunning ? 'Online' : 'Stopped'}
                                     </span>
                                   </div>
 
@@ -3105,13 +2985,15 @@ Payload:
                                       size="sm"
                                       variant={isRunning ? 'outline' : 'default'}
                                       onClick={() => handleTogglePower(server.vmid)}
-                                      className="h-7 text-xs px-2.5 cursor-pointer"
+                                      className={`h-7 text-xs px-2.5 cursor-pointer ${
+                                        !isRunning ? 'bg-zinc-900 hover:bg-zinc-800 text-white dark:bg-white dark:hover:bg-zinc-200 dark:text-zinc-900' : ''
+                                      }`}
                                       title={isRunning ? 'ปิดเครื่อง' : 'เปิดเครื่อง'}
                                     >
                                       {isRunning ? (
-                                        <Square className="h-3 w-3 text-red-500 fill-red-500" />
+                                        <Square className="h-3 w-3 text-red-500 fill-current" />
                                       ) : (
-                                        <Play className="h-3 w-3 text-emerald-500 fill-emerald-500" />
+                                        <Play className="h-3 w-3 fill-current" />
                                       )}
                                     </Button>
 
@@ -3193,7 +3075,7 @@ Payload:
                         <h1 className="text-lg sm:text-xl font-bold tracking-tight text-zinc-900 dark:text-white">
                           MQTT Broker (EMQX v5)
                         </h1>
-                        <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-950/40 text-emerald-400 border border-emerald-800/60 font-mono">
+                        <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700 font-mono">
                           v5.8
                         </span>
                       </div>
@@ -3306,7 +3188,7 @@ Payload:
                             className="p-1 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 cursor-pointer"
                             title="คัดลอก Host"
                           >
-                            {copiedMqttKey === 'mqtt_host' ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
+                            {copiedMqttKey === 'mqtt_host' ? <Check className="h-3.5 w-3.5 text-zinc-900 dark:text-zinc-100" /> : <Copy className="h-3.5 w-3.5" />}
                           </button>
                         </div>
                       </div>
@@ -3324,7 +3206,7 @@ Payload:
                             className="p-1 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 cursor-pointer"
                             title="คัดลอกพอร์ต"
                           >
-                            {copiedMqttKey === 'mqtt_port' ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
+                            {copiedMqttKey === 'mqtt_port' ? <Check className="h-3.5 w-3.5 text-zinc-900 dark:text-zinc-100" /> : <Copy className="h-3.5 w-3.5" />}
                           </button>
                         </div>
                       </div>
@@ -3342,7 +3224,7 @@ Payload:
                             className="p-1 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 cursor-pointer"
                             title="คัดลอก Username"
                           >
-                            {copiedMqttKey === 'mqtt_user' ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
+                            {copiedMqttKey === 'mqtt_user' ? <Check className="h-3.5 w-3.5 text-zinc-900 dark:text-zinc-100" /> : <Copy className="h-3.5 w-3.5" />}
                           </button>
                         </div>
                       </div>
@@ -3369,7 +3251,7 @@ Payload:
                               className="p-1 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 cursor-pointer"
                               title="คัดลอกรหัสผ่าน"
                             >
-                              {copiedMqttKey === 'mqtt_pass' ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
+                              {copiedMqttKey === 'mqtt_pass' ? <Check className="h-3.5 w-3.5 text-zinc-900 dark:text-zinc-100" /> : <Copy className="h-3.5 w-3.5" />}
                             </button>
                           </div>
                         </div>
@@ -3391,8 +3273,8 @@ Payload:
                       >
                         {copiedMqttKey === 'mqtt_topic' ? (
                           <>
-                            <Check className="h-3 w-3 text-emerald-500" />
-                            <span className="text-emerald-500 font-medium">คัดลอกแล้ว</span>
+                            <Check className="h-3 w-3 text-zinc-900 dark:text-zinc-100" />
+                            <span className="text-zinc-900 dark:text-zinc-100 font-medium">คัดลอกแล้ว</span>
                           </>
                         ) : (
                           <>
@@ -3484,7 +3366,7 @@ Payload:
                               messages.map((m, idx) => (
                                 <div key={idx} className="flex items-start gap-2 leading-relaxed">
                                   <span className="text-zinc-400 dark:text-zinc-500 shrink-0 text-[10px]">[{m.time}]</span>
-                                  <span className="text-emerald-700 dark:text-emerald-400 font-semibold shrink-0">{m.topic}:</span>
+                                  <span className="text-zinc-900 dark:text-zinc-100 font-semibold shrink-0">{m.topic}:</span>
                                   <span className="text-zinc-800 dark:text-zinc-200 break-all">{m.payload}</span>
                                 </div>
                               ))
@@ -3617,7 +3499,7 @@ sensor,device=esp32_01 temperature=26.4,humidity=62.1
                             title="คัดลอก Token"
                           >
                             {copiedDbKey === 'token_db' ? (
-                              <Check className="h-3.5 w-3.5 text-emerald-500" />
+                              <Check className="h-3.5 w-3.5 text-zinc-900 dark:text-zinc-100" />
                             ) : (
                               <Copy className="h-3.5 w-3.5" />
                             )}
@@ -3639,7 +3521,7 @@ sensor,device=esp32_01 temperature=26.4,humidity=62.1
                             <h3 className="text-sm font-bold text-zinc-900 dark:text-white">
                               InfluxDB v2 Management UI & Data Explorer
                             </h3>
-                            <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-sky-950/40 text-sky-400 border border-sky-800/60 font-mono">
+                            <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700 font-mono">
                               Web UI Ready
                             </span>
                           </div>
@@ -3681,7 +3563,7 @@ sensor,device=esp32_01 temperature=26.4,humidity=62.1
                               title="คัดลอก Username"
                             >
                               {copiedDbKey === 'db_user' ? (
-                                <Check className="h-3.5 w-3.5 text-emerald-500" />
+                                <Check className="h-3.5 w-3.5 text-zinc-900 dark:text-zinc-100" />
                               ) : (
                                 <Copy className="h-3.5 w-3.5" />
                               )}
@@ -3712,7 +3594,7 @@ sensor,device=esp32_01 temperature=26.4,humidity=62.1
                                 title="คัดลอกรหัสผ่าน"
                               >
                                 {copiedDbKey === 'db_pass' ? (
-                                  <Check className="h-3.5 w-3.5 text-emerald-500" />
+                                  <Check className="h-3.5 w-3.5 text-zinc-900 dark:text-zinc-100" />
                                 ) : (
                                   <Copy className="h-3.5 w-3.5" />
                                 )}
@@ -3735,7 +3617,7 @@ sensor,device=esp32_01 temperature=26.4,humidity=62.1
                               title="คัดลอก Organization"
                             >
                               {copiedDbKey === 'db_org' ? (
-                                <Check className="h-3.5 w-3.5 text-emerald-500" />
+                                <Check className="h-3.5 w-3.5 text-zinc-900 dark:text-zinc-100" />
                               ) : (
                                 <Copy className="h-3.5 w-3.5" />
                               )}
@@ -3757,7 +3639,7 @@ sensor,device=esp32_01 temperature=26.4,humidity=62.1
                               title="คัดลอก Bucket"
                             >
                               {copiedDbKey === 'db_bucket' ? (
-                                <Check className="h-3.5 w-3.5 text-emerald-500" />
+                                <Check className="h-3.5 w-3.5 text-zinc-900 dark:text-zinc-100" />
                               ) : (
                                 <Copy className="h-3.5 w-3.5" />
                               )}
@@ -4072,8 +3954,8 @@ Authorization: Bearer ${session.token}`}
               )}
 
               {settingsSaved && (
-                <div className="p-3 text-xs bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-400 rounded-lg border border-emerald-200 dark:border-emerald-800 font-medium flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                <div className="p-3 text-xs bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 rounded-lg border border-zinc-200 dark:border-zinc-700 font-medium flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-zinc-900 dark:text-zinc-100 shrink-0" />
                   <span>บันทึกการเปลี่ยนแปลงเรียบร้อยแล้ว</span>
                 </div>
               )}

@@ -252,31 +252,31 @@ export function EmbeddedTerminal({
   // FULLSCREEN OR EMBEDDED CONTAINER STYLES
   const containerClasses = mode === 'fullscreen'
     ? 'fixed inset-0 z-50 bg-[#0d1117] flex flex-col'
-    : 'mt-4 border border-zinc-800 rounded-xl overflow-hidden bg-[#0d1117] shadow-xl flex flex-col'
+    : 'border border-zinc-800 rounded-xl overflow-hidden bg-[#0d1117] shadow-sm flex flex-col w-full'
 
   const terminalHeight = mode === 'fullscreen'
     ? 'flex-1 h-full'
-    : 'h-[360px] sm:h-[420px]'
+    : 'h-[520px] sm:h-[580px] lg:h-[620px]'
 
   return (
     <div className={containerClasses}>
-      {/* Top Header Bar - Clean Engineering Grade (No macOS Colored Dots) */}
-      <div className="flex items-center justify-between px-3.5 py-2 bg-zinc-900 border-b border-zinc-800 text-xs">
+      {/* Top Header Bar - Clean Monochrome Engineering Grade */}
+      <div className="flex items-center justify-between px-3.5 py-2.5 bg-zinc-900 border-b border-zinc-800 text-xs">
         <div className="flex items-center gap-2.5">
           <div className="flex items-center gap-2 font-mono">
             <Terminal className="h-3.5 w-3.5 text-zinc-400" />
-            <span className="font-semibold text-zinc-200 tracking-tight">{server.name}</span>
+            <span className="font-semibold text-zinc-100 tracking-tight">{server.name}</span>
             <span className="text-[11px] text-zinc-400 hidden md:inline">({server.os})</span>
           </div>
 
           <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-medium ${
             connStatus === 'connected'
-              ? 'bg-emerald-950/40 text-emerald-400 border border-emerald-800/40'
+              ? 'bg-zinc-800 text-zinc-200 border border-zinc-700'
               : connStatus === 'connecting'
-              ? 'bg-amber-950/40 text-amber-400 border border-amber-800/40'
-              : 'bg-zinc-800 text-zinc-400 border border-zinc-700/60'
+              ? 'bg-zinc-800 text-zinc-400 border border-zinc-700'
+              : 'bg-zinc-800 text-zinc-500 border border-zinc-700/60'
           }`}>
-            <span className={`h-1.5 w-1.5 rounded-full ${connStatus === 'connected' ? 'bg-emerald-500' : connStatus === 'connecting' ? 'bg-amber-500 animate-pulse' : 'bg-zinc-500'}`} />
+            <span className={`h-1.5 w-1.5 rounded-full ${connStatus === 'connected' ? 'bg-zinc-100' : connStatus === 'connecting' ? 'bg-zinc-400 animate-pulse' : 'bg-zinc-600'}`} />
             {connStatus === 'connected' ? 'Connected' : connStatus === 'connecting' ? 'Connecting...' : 'Disconnected'}
           </span>
         </div>
