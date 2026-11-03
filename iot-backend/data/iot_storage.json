@@ -13,7 +13,7 @@
       "mqttUsername": "69319090021",
       "mqttTopicPrefix": "lbtech/69319090021/",
       "createdAt": "2026-11-03T10:17:08.084Z",
-      "updatedAt": "2026-11-03T10:17:08.085Z"
+      "updatedAt": "2026-11-03T11:48:00.000Z"
     },
     "69319090022": {
       "studentId": "69319090022",
@@ -27,8 +27,8 @@
       "influxOrg": "lbtech",
       "mqttUsername": "69319090022",
       "mqttTopicPrefix": "lbtech/69319090022/",
-      "createdAt": "2026-11-03T10:17:08.086Z",
-      "updatedAt": "2026-11-03T10:17:08.086Z"
+      "createdAt": "2026-11-03T10:17:08.084Z",
+      "updatedAt": "2026-11-03T11:48:00.000Z"
     },
     "69319090024": {
       "studentId": "69319090024",
@@ -42,8 +42,8 @@
       "influxOrg": "lbtech",
       "mqttUsername": "69319090024",
       "mqttTopicPrefix": "lbtech/69319090024/",
-      "createdAt": "2026-11-03T10:17:08.086Z",
-      "updatedAt": "2026-11-03T10:17:08.086Z"
+      "createdAt": "2026-11-03T10:17:08.084Z",
+      "updatedAt": "2026-11-03T11:48:00.000Z"
     },
     "69319090026": {
       "studentId": "69319090026",
@@ -57,8 +57,8 @@
       "influxOrg": "lbtech",
       "mqttUsername": "69319090026",
       "mqttTopicPrefix": "lbtech/69319090026/",
-      "createdAt": "2026-11-03T10:17:08.087Z",
-      "updatedAt": "2026-11-03T10:17:08.087Z"
+      "createdAt": "2026-11-03T10:17:08.084Z",
+      "updatedAt": "2026-11-03T11:48:00.000Z"
     },
     "69319090027": {
       "studentId": "69319090027",
@@ -72,8 +72,8 @@
       "influxOrg": "lbtech",
       "mqttUsername": "69319090027",
       "mqttTopicPrefix": "lbtech/69319090027/",
-      "createdAt": "2026-11-03T10:17:08.088Z",
-      "updatedAt": "2026-11-03T10:17:08.088Z"
+      "createdAt": "2026-11-03T10:17:08.084Z",
+      "updatedAt": "2026-11-03T11:48:00.000Z"
     },
     "69319090028": {
       "studentId": "69319090028",
@@ -87,8 +87,8 @@
       "influxOrg": "lbtech",
       "mqttUsername": "69319090028",
       "mqttTopicPrefix": "lbtech/69319090028/",
-      "createdAt": "2026-11-03T10:17:08.089Z",
-      "updatedAt": "2026-11-03T10:17:08.089Z"
+      "createdAt": "2026-11-03T10:17:08.084Z",
+      "updatedAt": "2026-11-03T11:48:00.000Z"
     },
     "69319090031": {
       "studentId": "69319090031",
@@ -102,8 +102,8 @@
       "influxOrg": "lbtech",
       "mqttUsername": "69319090031",
       "mqttTopicPrefix": "lbtech/69319090031/",
-      "createdAt": "2026-11-03T10:17:08.090Z",
-      "updatedAt": "2026-11-03T10:17:08.090Z"
+      "createdAt": "2026-11-03T10:17:08.084Z",
+      "updatedAt": "2026-11-03T11:48:00.000Z"
     },
     "69319090032": {
       "studentId": "69319090032",
@@ -117,8 +117,8 @@
       "influxOrg": "lbtech",
       "mqttUsername": "69319090032",
       "mqttTopicPrefix": "lbtech/69319090032/",
-      "createdAt": "2026-11-03T10:17:08.091Z",
-      "updatedAt": "2026-11-03T10:17:08.091Z"
+      "createdAt": "2026-11-03T10:17:08.084Z",
+      "updatedAt": "2026-11-03T11:48:00.000Z"
     },
     "69319090034": {
       "studentId": "69319090034",
@@ -132,8 +132,158 @@
       "influxOrg": "lbtech",
       "mqttUsername": "69319090034",
       "mqttTopicPrefix": "lbtech/69319090034/",
-      "createdAt": "2026-11-03T10:17:08.092Z",
-      "updatedAt": "2026-11-03T10:17:08.092Z"
+      "createdAt": "2026-11-03T10:17:08.084Z",
+      "updatedAt": "2026-11-03T11:48:00.000Z"
+    },
+    "69319090023": {
+      "studentId": "69319090023",
+      "fullName": "นายทักษดนย์ ชูชื่น",
+      "projectTitle": "ระบบมอนิเตอร์และแจ้งเตือนเซนเซอร์สภาพแวดล้อม",
+      "department": "เทคโนโลยีคอมพิวเตอร์",
+      "password": "Std@69319090023",
+      "token": "Std@69319090023",
+      "influxBucket": "telemetry-69319090023",
+      "influxToken": "lbtech_69319090023_token_live",
+      "influxOrg": "lbtech",
+      "mqttUsername": "69319090023",
+      "mqttTopicPrefix": "lbtech/69319090023/",
+      "createdAt": "2026-11-03T10:17:08.084Z",
+      "updatedAt": "2026-11-03T11:48:00.000Z"
+    },
+    "69319090025": {
+      "studentId": "69319090025",
+      "fullName": "นางสาวธันย์ชนก ทับทิมทอง",
+      "projectTitle": "ระบบบันทึกเวลาและสถิติการทำงานบุคลากร",
+      "department": "เทคโนโลยีคอมพิวเตอร์",
+      "password": "Std@69319090025",
+      "token": "Std@69319090025",
+      "influxBucket": "telemetry-69319090025",
+      "influxToken": "lbtech_69319090025_token_live",
+      "influxOrg": "lbtech",
+      "mqttUsername": "69319090025",
+      "mqttTopicPrefix": "lbtech/69319090025/",
+      "createdAt": "2026-11-03T10:17:08.084Z",
+      "updatedAt": "2026-11-03T11:48:00.000Z"
+    },
+    "69319090029": {
+      "studentId": "69319090029",
+      "fullName": "นางสาวปิยธิดา บุตรนิน",
+      "projectTitle": "ระบบติดตามพัสดุและคลังสินค้าอัตโนมัติ",
+      "department": "เทคโนโลยีคอมพิวเตอร์",
+      "password": "Std@69319090029",
+      "token": "Std@69319090029",
+      "influxBucket": "telemetry-69319090029",
+      "influxToken": "lbtech_69319090029_token_live",
+      "influxOrg": "lbtech",
+      "mqttUsername": "69319090029",
+      "mqttTopicPrefix": "lbtech/69319090029/",
+      "createdAt": "2026-11-03T10:17:08.084Z",
+      "updatedAt": "2026-11-03T11:48:00.000Z"
+    },
+    "69319090030": {
+      "studentId": "69319090030",
+      "fullName": "นายพิทวัส วงค์ตาเขียว",
+      "projectTitle": "ระบบควบคุมไฟและพลังงานอัจฉริยะ Smart Home",
+      "department": "เทคโนโลยีคอมพิวเตอร์",
+      "password": "Std@69319090030",
+      "token": "Std@69319090030",
+      "influxBucket": "telemetry-69319090030",
+      "influxToken": "lbtech_69319090030_token_live",
+      "influxOrg": "lbtech",
+      "mqttUsername": "69319090030",
+      "mqttTopicPrefix": "lbtech/69319090030/",
+      "createdAt": "2026-11-03T10:17:08.084Z",
+      "updatedAt": "2026-11-03T11:48:00.000Z"
+    },
+    "69319090033": {
+      "studentId": "69319090033",
+      "fullName": "นายภานุวัฒน์ ยิ้มพ่วง",
+      "projectTitle": "ระบบตรวจสอบอุณหภูมิและความชื้นโรงเรือนเกษตร",
+      "department": "เทคโนโลยีคอมพิวเตอร์",
+      "password": "Std@69319090033",
+      "token": "Std@69319090033",
+      "influxBucket": "telemetry-69319090033",
+      "influxToken": "lbtech_69319090033_token_live",
+      "influxOrg": "lbtech",
+      "mqttUsername": "69319090033",
+      "mqttTopicPrefix": "lbtech/69319090033/",
+      "createdAt": "2026-11-03T10:17:08.084Z",
+      "updatedAt": "2026-11-03T11:48:00.000Z"
+    },
+    "69319090035": {
+      "studentId": "69319090035",
+      "fullName": "นายศิรศักดิ์ ม่วงงาม",
+      "projectTitle": "ระบบสถานีวัดคุณภาพอากาศ PM2.5 และแจ้งเตือน",
+      "department": "เทคโนโลยีคอมพิวเตอร์",
+      "password": "Std@69319090035",
+      "token": "Std@69319090035",
+      "influxBucket": "telemetry-69319090035",
+      "influxToken": "lbtech_69319090035_token_live",
+      "influxOrg": "lbtech",
+      "mqttUsername": "69319090035",
+      "mqttTopicPrefix": "lbtech/69319090035/",
+      "createdAt": "2026-11-03T10:17:08.084Z",
+      "updatedAt": "2026-11-03T11:48:00.000Z"
+    },
+    "69319090036": {
+      "studentId": "69319090036",
+      "fullName": "นายศิวา พุทธโชติ",
+      "projectTitle": "ระบบแจ้งซ่อมและเบิกจ่ายอุปกรณ์คอมพิวเตอร์",
+      "department": "เทคโนโลยีคอมพิวเตอร์",
+      "password": "Std@69319090036",
+      "token": "Std@69319090036",
+      "influxBucket": "telemetry-69319090036",
+      "influxToken": "lbtech_69319090036_token_live",
+      "influxOrg": "lbtech",
+      "mqttUsername": "69319090036",
+      "mqttTopicPrefix": "lbtech/69319090036/",
+      "createdAt": "2026-11-03T10:17:08.084Z",
+      "updatedAt": "2026-11-03T11:48:00.000Z"
+    },
+    "69319090037": {
+      "studentId": "69319090037",
+      "fullName": "นายศุภกร แสงจันทร์",
+      "projectTitle": "ระบบรดน้ำต้นไม้อัตโนมัติควบคุมผ่านคลาวด์",
+      "department": "เทคโนโลยีคอมพิวเตอร์",
+      "password": "Std@69319090037",
+      "token": "Std@69319090037",
+      "influxBucket": "telemetry-69319090037",
+      "influxToken": "lbtech_69319090037_token_live",
+      "influxOrg": "lbtech",
+      "mqttUsername": "69319090037",
+      "mqttTopicPrefix": "lbtech/69319090037/",
+      "createdAt": "2026-11-03T10:17:08.084Z",
+      "updatedAt": "2026-11-03T11:48:00.000Z"
+    },
+    "69319090038": {
+      "studentId": "69319090038",
+      "fullName": "นางสาวโสธิตา มีผล",
+      "projectTitle": "ระบบจัดการร้านอาหารและสั่งเมนูออนไลน์",
+      "department": "เทคโนโลยีคอมพิวเตอร์",
+      "password": "Std@69319090038",
+      "token": "Std@69319090038",
+      "influxBucket": "telemetry-69319090038",
+      "influxToken": "lbtech_69319090038_token_live",
+      "influxOrg": "lbtech",
+      "mqttUsername": "69319090038",
+      "mqttTopicPrefix": "lbtech/69319090038/",
+      "createdAt": "2026-11-03T10:17:08.084Z",
+      "updatedAt": "2026-11-03T11:48:00.000Z"
+    },
+    "69319090039": {
+      "studentId": "69319090039",
+      "fullName": "นายอนาวินทร์ แก้วเก้า",
+      "projectTitle": "ระบบกล้องรักษาความปลอดภัยและแจ้งเตือนผู้บุกรุก",
+      "department": "เทคโนโลยีคอมพิวเตอร์",
+      "password": "Std@69319090039",
+      "token": "Std@69319090039",
+      "influxBucket": "telemetry-69319090039",
+      "influxToken": "lbtech_69319090039_token_live",
+      "influxOrg": "lbtech",
+      "mqttUsername": "69319090039",
+      "mqttTopicPrefix": "lbtech/69319090039/",
+      "createdAt": "2026-11-03T10:17:08.084Z",
+      "updatedAt": "2026-11-03T11:48:00.000Z"
     }
   },
   "ct_requests": [
