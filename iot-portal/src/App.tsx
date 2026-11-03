@@ -46,6 +46,10 @@ import {
   Plus,
   Minus,
   ArrowLeft,
+  ChevronUp,
+  BookOpen,
+  HelpCircle,
+  ExternalLink,
 } from 'lucide-react'
 import { DebianLogo, UbuntuLogo, AlpineLogo, renderOSLogo } from '@/components/OSLogos'
 import { AdminPanel } from '@/components/AdminPanel'
@@ -302,6 +306,14 @@ export default function App() {
   const [isTermsModalOpen, setIsTermsModalOpen] = useState(false)
   const [terminalServer, setTerminalServer] = useState<CTServer | null>(null)
   const [terminalMode, setTerminalMode] = useState<'embedded' | 'minimized' | 'fullscreen'>('embedded')
+
+  // Server Hub & Dedicated Workspace State
+  const [selectedServerVmid, setSelectedServerVmid] = useState<number | null>(null)
+  const [serverWorkspaceTab, setServerWorkspaceTab] = useState<'console' | 'status' | 'config'>('console')
+  const [showAccessGuide, setShowAccessGuide] = useState(true)
+  const [showMqttGuide, setShowMqttGuide] = useState(false)
+  const [showDbGuide, setShowDbGuide] = useState(false)
+  const [showApiGuide, setShowApiGuide] = useState(false)
 
   // Admin PIN Protection & Mode
   const [isAdminUnlocked, setIsAdminUnlocked] = useState(false)
@@ -2392,23 +2404,481 @@ Payload:
                         </div>
                       </div>
                     </div>
+                  ) : selectedServerVmid !== null ? (
+                    /* ========================================================================= */
+                    /* 2.1) DEDICATED SERVER WORKSPACE (Selected Server Detail & Console)        */
+                    /* ========================================================================= */
+                    (() => {
+                      const selectedServer =
+                        studentActiveServers.find((s) => s.vmid === selectedServerVmid) ||
+                        ctServers.find((s) => s.vmid === selectedServerVmid)
+
+                      if (!selectedServer) {
+                        return (
+                          <div className="p-8 text-center border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-[#121214] space-y-3">
+                            <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                              ไม่พบข้อมูลเซิร์ฟเวอร์ที่เลือก หรือเซิร์ฟเวอร์ถูกลบแล้ว
+                            </p>
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="outline"
+                              onClick={() => setSelectedServerVmid(null)}
+                              className="text-xs"
+                            >
+                              <ArrowLeft className="h-3.5 w-3.5 mr-1.5" />
+                              กลับสู่ Server Hub
+                            </Button>
+                          </div>
+                        )
+                      }
+
+                      const isRunning = selectedServer.status === 'running'
+
+                      return (
+                        <div className="space-y-4">
+                          {/* Top Navigation Breadcrumb */}
+                          <div className="flex items-center justify-between">
+                            <button
+                              type="button"
+                              onClick={() => setSelectedServerVmid(null)}
+                              className="inline-flex items-center gap-1.5 text-xs text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white font-medium transition-colors cursor-pointer"
+                            >
+                              <ArrowLeft className="h-4 w-4" />
+                              <span>กลับสู่ Server Hub (หน้ารวมเซิร์ฟเวอร์)</span>
+                            </button>
+
+                            <div className="text-[11px] text-zinc-400 font-mono">
+                              CT ID: {selectedServer.vmid}
+                            </div>
+                          </div>
+
+                          {/* Server Workspace Header Banner */}
+                          <div className="border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-[#121214] p-4 sm:p-5 shadow-xs">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-zinc-100 dark:border-zinc-800">
+                              <div className="flex items-center gap-3">
+                                <div className="shrink-0">
+                                  {renderOSLogo(selectedServer.osKey, 'h-10 w-10')}
+                                </div>
+                                <div>
+                                  <div className="flex items-center gap-2">
+                                    <h2 className="font-bold text-base text-zinc-900 dark:text-white">
+                                      {selectedServer.name}
+                                    </h2>
+                                    <span className="font-mono text-[10px] text-zinc-400 bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded">
+                                      CT {selectedServer.vmid}
+                                    </span>
+                                    <span
+                                      className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${
+                                        isRunning
+                                          ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800'
+                                          : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400'
+                                      }`}
+                                    >
+                                      <span
+                                        className={`h-1.5 w-1.5 rounded-full ${
+                                          isRunning ? 'bg-emerald-500 animate-pulse' : 'bg-zinc-400'
+                                        }`}
+                                      />
+                                      {isRunning ? 'ปกติ (Online)' : 'ปิดการทำงาน (Stopped)'}
+                                    </span>
+                                  </div>
+                                  <div className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5 flex items-center gap-2">
+                                    <span>{selectedServer.os}</span>
+                                    <span>•</span>
+                                    <span>IP ภายใน: <code className="font-mono font-bold text-zinc-800 dark:text-zinc-200">{selectedServer.ip}</code></span>
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Quick Power Controls */}
+                              <div className="flex items-center gap-2 self-start sm:self-center">
+                                <Button
+                                  size="sm"
+                                  variant={isRunning ? 'outline' : 'default'}
+                                  onClick={() => handleTogglePower(selectedServer.vmid)}
+                                  className="h-8 text-xs cursor-pointer"
+                                  title={isRunning ? 'ปิดเครื่อง' : 'เปิดเครื่อง'}
+                                >
+                                  {isRunning ? (
+                                    <>
+                                      <Square className="h-3 w-3 mr-1 text-red-500 fill-red-500" />
+                                      <span>ปิดเครื่อง</span>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Play className="h-3 w-3 mr-1 text-emerald-500 fill-emerald-500" />
+                                      <span>เปิดเครื่อง</span>
+                                    </>
+                                  )}
+                                </Button>
+
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  disabled={!isRunning}
+                                  onClick={() => handleReboot(selectedServer.vmid)}
+                                  className="h-8 text-xs cursor-pointer"
+                                  title="รีสตาร์ตเครื่อง"
+                                >
+                                  <RotateCw className="h-3 w-3 mr-1" />
+                                  <span>รีสตาร์ต</span>
+                                </Button>
+
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  disabled={!isRunning}
+                                  onClick={() => {
+                                    setTerminalServer(selectedServer)
+                                    setTerminalMode('fullscreen')
+                                  }}
+                                  className="h-8 text-xs cursor-pointer hidden sm:inline-flex"
+                                  title="ขยายคอนโซลเต็มหน้าจอ"
+                                >
+                                  <Terminal className="h-3 w-3 mr-1" />
+                                  <span>เต็มจอ</span>
+                                </Button>
+                              </div>
+                            </div>
+
+                            {/* Sub-Tabs Selector */}
+                            <div className="flex items-center gap-2 pt-3">
+                              <button
+                                type="button"
+                                onClick={() => setServerWorkspaceTab('console')}
+                                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer flex items-center gap-1.5 ${
+                                  serverWorkspaceTab === 'console'
+                                    ? 'bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 shadow-2xs font-semibold'
+                                    : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800'
+                                }`}
+                              >
+                                <Terminal className="h-3.5 w-3.5" />
+                                <span>Web Console (คอนโซลพร้อมใช้งาน)</span>
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={() => setServerWorkspaceTab('status')}
+                                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer flex items-center gap-1.5 ${
+                                  serverWorkspaceTab === 'status'
+                                    ? 'bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 shadow-2xs font-semibold'
+                                    : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800'
+                                }`}
+                              >
+                                <Activity className="h-3.5 w-3.5" />
+                                <span>สถานะทรัพยากร (Status)</span>
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={() => setServerWorkspaceTab('config')}
+                                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer flex items-center gap-1.5 ${
+                                  serverWorkspaceTab === 'config'
+                                    ? 'bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 shadow-2xs font-semibold'
+                                    : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800'
+                                }`}
+                              >
+                                <Key className="h-3.5 w-3.5" />
+                                <span>ข้อมูลและการเชื่อมต่อ (Config)</span>
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* SUB-TAB 1: WEB CONSOLE (AUTO-MOUNTED & WAITING) */}
+                          {serverWorkspaceTab === 'console' && (
+                            <div className="space-y-3">
+                              {/* Console Notice / Tip */}
+                              <div className="p-3 bg-zinc-50 dark:bg-zinc-900/60 rounded-xl border border-zinc-200 dark:border-zinc-800 flex items-center justify-between text-xs text-zinc-600 dark:text-zinc-400">
+                                <div className="flex items-center gap-2">
+                                  <Terminal className="h-4 w-4 text-zinc-500 shrink-0" />
+                                  <span>
+                                    <strong>คอนโซล Linux Shell พร้อมใช้งาน:</strong> สั่งงาน ติดตั้งโปรแกรม (apt, docker, python) บนเบราว์เซอร์ได้ทันที
+                                  </span>
+                                </div>
+                                <span className="text-[11px] text-zinc-400 hidden sm:inline">
+                                  กดปุ่มขยายที่มุมขวาบนของคอนโซลเพื่อเปิดเต็มจอ
+                                </span>
+                              </div>
+
+                              {!isRunning ? (
+                                <div className="p-8 text-center border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-[#121214] space-y-4">
+                                  <div className="h-12 w-12 rounded-xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-zinc-500 mx-auto">
+                                    <Square className="h-5 w-5 text-zinc-400" />
+                                  </div>
+                                  <div className="space-y-1">
+                                    <h3 className="text-sm font-semibold text-zinc-900 dark:text-white">
+                                      เครื่องเซิร์ฟเวอร์ปิดอยู่ (Stopped)
+                                    </h3>
+                                    <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                                      กรุณาเปิดเครื่องเซิร์ฟเวอร์เพื่อเริ่มใช้งาน Web Console และบริการอื่นๆ
+                                    </p>
+                                  </div>
+                                  <Button
+                                    size="sm"
+                                    onClick={() => handleTogglePower(selectedServer.vmid)}
+                                    className="h-8 text-xs bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer inline-flex items-center gap-1.5"
+                                  >
+                                    <Play className="h-3.5 w-3.5 fill-white" />
+                                    <span>เปิดเครื่องเซิร์ฟเวอร์</span>
+                                  </Button>
+                                </div>
+                              ) : (
+                                <div className="border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden shadow-xs">
+                                  <EmbeddedTerminal
+                                    server={selectedServer}
+                                    mode="embedded"
+                                    onModeChange={setTerminalMode}
+                                    onClose={() => setSelectedServerVmid(null)}
+                                  />
+                                </div>
+                              )}
+                            </div>
+                          )}
+
+                          {/* SUB-TAB 2: STATUS & METRICS */}
+                          {serverWorkspaceTab === 'status' && (
+                            <div className="space-y-4">
+                              {/* 3 Metric Cards */}
+                              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                                <div className="p-4 bg-white dark:bg-[#121214] rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-xs space-y-1">
+                                  <div className="flex items-center justify-between text-zinc-400 text-xs">
+                                    <span>หน่วยประมวลผล (vCPU)</span>
+                                    <Cpu className="h-4 w-4 text-zinc-500" />
+                                  </div>
+                                  <div className="text-xl font-bold text-zinc-900 dark:text-white font-mono">
+                                    {selectedServer.vcpu} <span className="text-xs font-normal text-zinc-400">Cores</span>
+                                  </div>
+                                  <div className="text-[11px] text-zinc-500">
+                                    {isRunning ? `การใช้งานเฉลี่ย ~${selectedServer.cpuUsage}%` : 'เครื่องปิดอยู่'}
+                                  </div>
+                                </div>
+
+                                <div className="p-4 bg-white dark:bg-[#121214] rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-xs space-y-1">
+                                  <div className="flex items-center justify-between text-zinc-400 text-xs">
+                                    <span>หน่วยความจำ (RAM)</span>
+                                    <Activity className="h-4 w-4 text-zinc-500" />
+                                  </div>
+                                  <div className="text-xl font-bold text-zinc-900 dark:text-white font-mono">
+                                    {selectedServer.ram} <span className="text-xs font-normal text-zinc-400">MB</span>
+                                  </div>
+                                  <div className="text-[11px] text-zinc-500">
+                                    {isRunning ? `ใช้ไป ~${selectedServer.ramUsage} MB` : '0 MB'}
+                                  </div>
+                                </div>
+
+                                <div className="p-4 bg-white dark:bg-[#121214] rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-xs space-y-1">
+                                  <div className="flex items-center justify-between text-zinc-400 text-xs">
+                                    <span>พื้นที่จัดเก็บข้อมูล (SSD)</span>
+                                    <HardDrive className="h-4 w-4 text-zinc-500" />
+                                  </div>
+                                  <div className="text-xl font-bold text-zinc-900 dark:text-white font-mono">
+                                    {selectedServer.disk} <span className="text-xs font-normal text-zinc-400">GB</span>
+                                  </div>
+                                  <div className="text-[11px] text-zinc-500">
+                                    NVMe Storage Pool
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Specs Details Table */}
+                              <div className="border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-[#121214] overflow-hidden shadow-xs">
+                                <div className="px-4 py-3 bg-zinc-50 dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 text-xs font-semibold text-zinc-800 dark:text-zinc-200">
+                                  ข้อมูลจำเพาะระบบ (System Specifications)
+                                </div>
+                                <div className="divide-y divide-zinc-100 dark:divide-zinc-800 text-xs">
+                                  <div className="p-3.5 flex items-center justify-between">
+                                    <span className="text-zinc-500 dark:text-zinc-400">ชื่อเครื่อง (Hostname)</span>
+                                    <span className="font-mono font-semibold text-zinc-900 dark:text-white">{selectedServer.name}</span>
+                                  </div>
+                                  <div className="p-3.5 flex items-center justify-between">
+                                    <span className="text-zinc-500 dark:text-zinc-400">ระบบปฏิบัติการ (OS)</span>
+                                    <span className="font-medium text-zinc-900 dark:text-white">{selectedServer.os}</span>
+                                  </div>
+                                  <div className="p-3.5 flex items-center justify-between">
+                                    <span className="text-zinc-500 dark:text-zinc-400">หมายเลข Container (VMID)</span>
+                                    <span className="font-mono text-zinc-900 dark:text-white">{selectedServer.vmid}</span>
+                                  </div>
+                                  <div className="p-3.5 flex items-center justify-between">
+                                    <span className="text-zinc-500 dark:text-zinc-400">IP ภายในวิทยาลัย</span>
+                                    <code className="font-mono text-zinc-900 dark:text-white font-semibold">{selectedServer.ip}</code>
+                                  </div>
+                                  <div className="p-3.5 flex items-center justify-between">
+                                    <span className="text-zinc-500 dark:text-zinc-400">Global SSH Bastion Port</span>
+                                    <code className="font-mono text-zinc-900 dark:text-white font-semibold">10000 (TCP)</code>
+                                  </div>
+                                  <div className="p-3.5 flex items-center justify-between">
+                                    <span className="text-zinc-500 dark:text-zinc-400">เวลาทำงานต่อเนื่อง (Uptime)</span>
+                                    <span className="font-mono text-zinc-900 dark:text-white">{isRunning ? selectedServer.uptime || 'กำลังทำงาน' : 'ปิดอยู่'}</span>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* SUB-TAB 3: CONFIG & CREDENTIALS */}
+                          {serverWorkspaceTab === 'config' && (
+                            <div className="space-y-4">
+                              {/* Credentials Card */}
+                              <div className="p-4 bg-white dark:bg-[#121214] rounded-xl border border-zinc-200 dark:border-zinc-800 space-y-3 shadow-xs text-xs">
+                                <div className="flex items-center justify-between pb-2 border-b border-zinc-100 dark:border-zinc-800">
+                                  <div className="flex items-center gap-2 font-semibold text-zinc-900 dark:text-white">
+                                    <Key className="h-4 w-4 text-amber-500" />
+                                    <span>ข้อมูลเข้าสู่ระบบเซิร์ฟเวอร์ (Root Credentials)</span>
+                                  </div>
+                                  <span className="text-[11px] text-zinc-400">สิทธิ์ Root สูงสุด</span>
+                                </div>
+
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                  {/* Username */}
+                                  <div className="p-3 rounded-lg bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
+                                    <div className="space-y-0.5">
+                                      <div className="text-[10px] text-zinc-400">Username</div>
+                                      <code className="font-mono font-bold text-zinc-900 dark:text-white text-xs">root</code>
+                                    </div>
+                                    <Button
+                                      size="sm"
+                                      variant="ghost"
+                                      onClick={() => copyServerText('root', `user_${selectedServer.vmid}`)}
+                                      className="h-7 w-7 p-0 cursor-pointer text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
+                                      title="คัดลอก Username"
+                                    >
+                                      {copiedServerKey === `user_${selectedServer.vmid}` ? (
+                                        <Check className="h-3.5 w-3.5 text-emerald-600" />
+                                      ) : (
+                                        <Copy className="h-3.5 w-3.5" />
+                                      )}
+                                    </Button>
+                                  </div>
+
+                                  {/* Password */}
+                                  <div className="p-3 rounded-lg bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
+                                    <div className="space-y-0.5 min-w-0 pr-2">
+                                      <div className="text-[10px] text-zinc-400">Password</div>
+                                      <code className="font-mono text-zinc-900 dark:text-white text-xs truncate block">
+                                        {showServerPasswords[selectedServer.vmid]
+                                          ? selectedServer.rootPassword || 'News030347'
+                                          : '••••••••••••'}
+                                      </code>
+                                    </div>
+                                    <div className="flex items-center gap-1 shrink-0">
+                                      <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        onClick={() =>
+                                          setShowServerPasswords((prev) => ({
+                                            ...prev,
+                                            [selectedServer.vmid]: !prev[selectedServer.vmid]
+                                          }))
+                                        }
+                                        className="h-7 w-7 p-0 cursor-pointer text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
+                                        title={showServerPasswords[selectedServer.vmid] ? 'ซ่อนรหัสผ่าน' : 'แสดงรหัสผ่าน'}
+                                      >
+                                        {showServerPasswords[selectedServer.vmid] ? (
+                                          <EyeOff className="h-3.5 w-3.5" />
+                                        ) : (
+                                          <Eye className="h-3.5 w-3.5" />
+                                        )}
+                                      </Button>
+                                      <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        onClick={() =>
+                                          copyServerText(
+                                            selectedServer.rootPassword || 'News030347',
+                                            `pass_${selectedServer.vmid}`
+                                          )
+                                        }
+                                        className="h-7 w-7 p-0 cursor-pointer text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
+                                        title="คัดลอก Password"
+                                      >
+                                        {copiedServerKey === `pass_${selectedServer.vmid}` ? (
+                                          <Check className="h-3.5 w-3.5 text-emerald-600" />
+                                        ) : (
+                                          <Copy className="h-3.5 w-3.5" />
+                                        )}
+                                      </Button>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* SSH Bastion Access Card */}
+                              <div className="p-4 bg-white dark:bg-[#121214] rounded-xl border border-zinc-200 dark:border-zinc-800 space-y-3 shadow-xs text-xs">
+                                <div className="flex items-center justify-between pb-2 border-b border-zinc-100 dark:border-zinc-800">
+                                  <div className="flex items-center gap-2 font-semibold text-zinc-900 dark:text-white">
+                                    <Globe className="h-4 w-4 text-sky-500" />
+                                    <span>คำสั่งเชื่อมต่อ SSH จากภายนอก (Global SSH Bastion)</span>
+                                  </div>
+                                  <span className="text-[11px] text-zinc-400">เข้าถึงได้จากทุกที่ทั่วโลก</span>
+                                </div>
+
+                                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 p-3 bg-zinc-50 dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800">
+                                  <code className="font-mono text-zinc-800 dark:text-zinc-200 text-xs select-all break-all">
+                                    ssh {selectedServer.studentId}@techniccom.tail59415d.ts.net -p 10000
+                                  </code>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() =>
+                                      copyServerText(
+                                        `ssh ${selectedServer.studentId}@techniccom.tail59415d.ts.net -p 10000`,
+                                        `ssh_${selectedServer.vmid}`
+                                      )
+                                    }
+                                    className="h-7 text-xs px-2.5 shrink-0 cursor-pointer"
+                                  >
+                                    {copiedServerKey === `ssh_${selectedServer.vmid}` ? (
+                                      <>
+                                        <Check className="h-3 w-3 text-emerald-600 mr-1" />
+                                        <span>คัดลอกแล้ว</span>
+                                      </>
+                                    ) : (
+                                      <>
+                                        <Copy className="h-3 w-3 mr-1" />
+                                        <span>คัดลอกคำสั่ง</span>
+                                      </>
+                                    )}
+                                  </Button>
+                                </div>
+
+                                <div className="p-3 bg-zinc-50 dark:bg-zinc-900/50 rounded-lg border border-zinc-200/80 dark:border-zinc-800 text-[11px] text-zinc-500 dark:text-zinc-400 space-y-1">
+                                  <div className="font-semibold text-zinc-800 dark:text-zinc-200">การเชื่อมต่อผ่าน VS Code (Remote - SSH):</div>
+                                  <p className="leading-relaxed">
+                                    เปิดไฟล์ <code className="font-mono bg-zinc-200 dark:bg-zinc-800 px-1 py-0.5 rounded">~/.ssh/config</code> แล้วเพิ่มค่า:
+                                  </p>
+                                  <pre className="p-2 rounded bg-zinc-100 dark:bg-zinc-950 font-mono text-[10px] text-zinc-800 dark:text-zinc-300 overflow-x-auto">
+{`Host lbtech-${selectedServer.name}
+    HostName techniccom.tail59415d.ts.net
+    Port 10000
+    User ${selectedServer.studentId}`}
+                                  </pre>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )
+                    })()
                   ) : (
                     /* ========================================================================= */
-                    /* 3) ACTIVE & PENDING SERVERS DASHBOARD VIEW                                */
+                    /* 2.2) SERVER HUB OVERVIEW (List of All Servers & Access Guide)             */
                     /* ========================================================================= */
-                    <div id="sec-ct-active" className="space-y-4">
-                      {/* Section Header with + Request Button beside it */}
+                    <div id="sec-ct-active" className="space-y-5">
+                      {/* Section Title & Request Button */}
                       <div className="flex items-center justify-between gap-3">
                         <div>
                           <h2 className="text-xs font-semibold text-zinc-800 dark:text-zinc-200 uppercase tracking-wider flex items-center gap-2">
-                            <span>เครื่องเซิร์ฟเวอร์ของคุณ</span>
+                            <span>ศูนย์รวมเครื่องเซิร์ฟเวอร์ (Server Hub)</span>
                             <span className="font-mono text-zinc-400">
                               ({studentActiveServers.length + (studentPendingRequest ? 1 : 0)}/2 เครื่อง)
                             </span>
                           </h2>
+                          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+                            เลือกเครื่องเซิร์ฟเวอร์ด้านล่างเพื่อเข้าสู่หน้าทำงานและเปิด Web Console
+                          </p>
                         </div>
 
-                        {/* Request Server Button beside Title */}
                         <Button
                           type="button"
                           size="sm"
@@ -2435,358 +2905,249 @@ Payload:
                         </Button>
                       </div>
 
-                      {/* PENDING SERVER CARD (Status: รอ) */}
+                      {/* ACCESS GUIDE (COLLAPSIBLE HOW-TO) */}
+                      <div className="border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-[#121214] overflow-hidden shadow-xs">
+                        <button
+                          type="button"
+                          onClick={() => setShowAccessGuide(!showAccessGuide)}
+                          className="w-full flex items-center justify-between p-4 text-xs font-semibold text-zinc-900 dark:text-white hover:bg-zinc-50 dark:hover:bg-zinc-850 transition-colors cursor-pointer"
+                        >
+                          <span className="flex items-center gap-2">
+                            <BookOpen className="h-4 w-4 text-zinc-500" />
+                            <span>วิธีการเชื่อมต่อและเข้าใช้งานเครื่องเซิร์ฟเวอร์ (Access Guide)</span>
+                          </span>
+                          <span className="text-[11px] text-zinc-500 flex items-center gap-1 font-normal">
+                            {showAccessGuide ? 'ซ่อนคู่มือ' : 'กดดูวิธีการ'}
+                            {showAccessGuide ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+                          </span>
+                        </button>
+
+                        {showAccessGuide && (
+                          <div className="p-4 border-t border-zinc-100 dark:border-zinc-800 grid grid-cols-1 md:grid-cols-3 gap-3 text-xs bg-zinc-50/50 dark:bg-zinc-900/30">
+                            <div className="p-3 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 space-y-1">
+                              <div className="font-semibold text-zinc-900 dark:text-white flex items-center gap-1.5">
+                                <Terminal className="h-3.5 w-3.5 text-zinc-500" />
+                                <span>1. Web Console ในตัว</span>
+                              </div>
+                              <p className="text-[11px] text-zinc-500 dark:text-zinc-400 leading-relaxed">
+                                กดปุ่ม <strong>เข้าทำงานในเครื่อง</strong> ที่การ์ดเครื่อง เพื่อเปิดหน้าต่าง Terminal บนเว็บ สั่งงานคำสั่ง Linux ได้ทันทีโดยไม่ต้องลงโปรแกรม
+                              </p>
+                            </div>
+
+                            <div className="p-3 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 space-y-1">
+                              <div className="font-semibold text-zinc-900 dark:text-white flex items-center gap-1.5">
+                                <Globe className="h-3.5 w-3.5 text-zinc-500" />
+                                <span>2. SSH จากที่บ้าน / ภายนอก</span>
+                              </div>
+                              <p className="text-[11px] text-zinc-500 dark:text-zinc-400 leading-relaxed">
+                                ยิง SSH จาก VS Code, PuTTY หรือ Terminal เข้าพอร์ต 10000 ด้วยคำสั่ง <code className="font-mono text-[10px] bg-zinc-100 dark:bg-zinc-800 px-1 py-0.5 rounded">ssh รหัสนักศึกษา@techniccom.tail59415d.ts.net -p 10000</code>
+                              </p>
+                            </div>
+
+                            <div className="p-3 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 space-y-1">
+                              <div className="font-semibold text-zinc-900 dark:text-white flex items-center gap-1.5">
+                                <Key className="h-3.5 w-3.5 text-zinc-500" />
+                                <span>3. สิทธิ์ Root และ Docker</span>
+                              </div>
+                              <p className="text-[11px] text-zinc-500 dark:text-zinc-400 leading-relaxed">
+                                นักศึกษาได้รับสิทธิ์ <strong>root</strong> เต็มระบบ สามารถลง Docker, ติดตั้ง Web Server (Nginx, Node, Python) หรือ Database ได้ตามต้องการ
+                              </p>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* PENDING SERVER CARD (Status: รออนุมัติ) */}
                       {studentPendingRequest && (
-                        <div className="border-2 border-dashed border-amber-300 dark:border-amber-800/80 rounded-2xl bg-amber-50/50 dark:bg-amber-950/20 p-5 space-y-4 transition-colors">
-                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-amber-200/80 dark:border-amber-900/60">
+                        <div className="border border-dashed border-amber-300 dark:border-amber-800/80 rounded-xl bg-amber-50/40 dark:bg-amber-950/20 p-4 space-y-3">
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-amber-200/60 dark:border-amber-900/40">
                             <div className="flex items-center gap-3">
                               <div className="shrink-0">
-                                {renderOSLogo(studentPendingRequest.os, 'h-9 w-9')}
+                                {renderOSLogo(studentPendingRequest.os, 'h-8 w-8')}
                               </div>
                               <div>
                                 <div className="flex items-center gap-2">
                                   <h3 className="font-bold text-sm text-zinc-900 dark:text-white">
                                     {studentPendingRequest.serverName}
                                   </h3>
-                                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-amber-100 dark:bg-amber-950/70 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-800">
+                                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-100 dark:bg-amber-950/70 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-800">
                                     <Clock className="h-3 w-3 animate-spin" />
-                                    <span>รออนุมัติ (Pending)</span>
+                                    <span>รออาจารย์อนุมัติ</span>
                                   </span>
                                 </div>
-                                <div className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5 flex items-center gap-2">
-                                  <span className="font-medium text-zinc-700 dark:text-zinc-300">{studentPendingRequest.os}</span>
-                                  <span>•</span>
-                                  <span className="font-mono">{studentPendingRequest.vcpu} vCPU / {studentPendingRequest.ram} MB / {studentPendingRequest.disk} GB</span>
+                                <div className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5">
+                                  {studentPendingRequest.os} • {studentPendingRequest.vcpu} vCPU / {studentPendingRequest.ram} MB RAM / {studentPendingRequest.disk} GB Disk
                                 </div>
                               </div>
                             </div>
 
-                            <div className="flex items-center gap-2 self-start sm:self-center">
-                              <span className="text-[11px] text-amber-700 dark:text-amber-400 font-medium hidden sm:inline">
-                                รออาจารย์ตรวจสอบคำขอ
-                              </span>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => handleRejectRequest(studentPendingRequest.id)}
-                                className="h-7 text-xs text-zinc-600 dark:text-zinc-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 border-zinc-200 dark:border-zinc-700 cursor-pointer"
-                                title="ยกเลิกคำขอนี้หากต้องการแก้ไขข้อมูลใหม่"
-                              >
-                                ยกเลิกคำขอ
-                              </Button>
-                            </div>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleRejectRequest(studentPendingRequest.id)}
+                              className="h-7 text-xs text-zinc-600 dark:text-zinc-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 border-zinc-200 dark:border-zinc-700 cursor-pointer self-start sm:self-center"
+                              title="ยกเลิกคำขอนี้"
+                            >
+                              ยกเลิกคำขอ
+                            </Button>
                           </div>
 
-                          <div className="p-3 rounded-xl bg-white/80 dark:bg-zinc-900/60 border border-amber-200 dark:border-amber-900/40 text-xs space-y-1.5">
-                            <div className="text-[11px] text-zinc-500 dark:text-zinc-400 font-medium">
-                              วัตถุประสงค์ที่ระบุในการขอเครื่อง:
-                            </div>
-                            <p className="text-zinc-800 dark:text-zinc-200 text-xs italic">
-                              "{studentPendingRequest.purpose}"
-                            </p>
-                            <div className="text-[10px] text-amber-700 dark:text-amber-400 pt-1 flex items-center gap-1">
-                              <AlertTriangle className="h-3 w-3 shrink-0" />
-                              <span>เมื่ออาจารย์กดอนุมัติแล้ว ระบบจะสร้าง Container ให้เสร็จสิ้น สถานะจะเปลี่ยนเป็น "ปกติ" และสามารถคลิกเข้าใช้งาน Web Console ได้ทันที</span>
-                            </div>
+                          <div className="text-xs text-zinc-600 dark:text-zinc-400 italic">
+                            "{studentPendingRequest.purpose}"
                           </div>
                         </div>
                       )}
 
-                      {/* ACTIVE SERVERS (Status: ปกติ / Online) */}
-                      <div className="grid grid-cols-1 gap-4">
-                        {studentActiveServers.map((server) => {
-                          const isRunning = server.status === 'running'
-                          return (
-                            <div
-                              key={server.vmid}
-                              className="border border-zinc-200 dark:border-zinc-800 rounded-2xl bg-white dark:bg-[#121214] p-5 sm:p-6 shadow-xs space-y-4 transition-colors"
-                            >
-                              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-zinc-100 dark:border-zinc-800">
-                                <div className="flex items-center gap-3">
-                                  <div className="shrink-0">
-                                    {renderOSLogo(server.osKey, 'h-9 w-9')}
-                                  </div>
-                                  <div>
-                                    <div className="flex items-center gap-2">
-                                      <h3 className="font-bold text-sm text-zinc-900 dark:text-white">
-                                        {server.name}
-                                      </h3>
-                                      <span className="font-mono text-[10px] text-zinc-400 bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded">
-                                        CT {server.vmid}
-                                      </span>
+                      {/* ACTIVE SERVERS LIST */}
+                      {studentActiveServers.length === 0 && !studentPendingRequest ? (
+                        <div className="border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-[#121214] p-8 text-center space-y-4">
+                          <Server className="h-8 w-8 mx-auto text-zinc-400" />
+                          <div className="space-y-1">
+                            <h3 className="text-sm font-semibold text-zinc-900 dark:text-white">
+                              ยังไม่มีเครื่องเซิร์ฟเวอร์ในกลุ่มของคุณ
+                            </h3>
+                            <p className="text-xs text-zinc-500 dark:text-zinc-400 max-w-sm mx-auto">
+                              ยื่นขอเครื่องคอมพิวเตอร์แม่ข่ายเสมือนเพื่อเริ่มพัฒนาโครงงาน ได้สเปก vCPU, RAM, SSD และ Web Console พร้อมใช้งาน
+                            </p>
+                          </div>
+                          <Button
+                            size="sm"
+                            onClick={() => {
+                              setReqError('')
+                              setReqSuccess('')
+                              setIsCreatingServer(true)
+                            }}
+                            className="h-8 text-xs bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 hover:bg-zinc-800 cursor-pointer"
+                          >
+                            <Plus className="h-3.5 w-3.5 mr-1" />
+                            <span>ขอเครื่องเซิร์ฟเวอร์</span>
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {studentActiveServers.map((server) => {
+                            const isRunning = server.status === 'running'
+                            return (
+                              <div
+                                key={server.vmid}
+                                className="border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-[#121214] p-4 sm:p-5 shadow-xs flex flex-col justify-between space-y-4 transition-all hover:border-zinc-300 dark:hover:border-zinc-700"
+                              >
+                                <div className="space-y-3">
+                                  {/* Card Top: Logo, Name, Status */}
+                                  <div className="flex items-start justify-between gap-2">
+                                    <div className="flex items-center gap-3">
+                                      <div className="shrink-0">
+                                        {renderOSLogo(server.osKey, 'h-9 w-9')}
+                                      </div>
+                                      <div>
+                                        <div className="flex items-center gap-2">
+                                          <h3 className="font-bold text-sm text-zinc-900 dark:text-white">
+                                            {server.name}
+                                          </h3>
+                                          <span className="font-mono text-[10px] text-zinc-400 bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded">
+                                            CT {server.vmid}
+                                          </span>
+                                        </div>
+                                        <div className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5">
+                                          {server.os}
+                                        </div>
+                                      </div>
+                                    </div>
+
+                                    <span
+                                      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold ${
+                                        isRunning
+                                          ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800'
+                                          : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400'
+                                      }`}
+                                    >
                                       <span
-                                        className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${
-                                          isRunning
-                                            ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800'
-                                            : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400'
+                                        className={`h-1.5 w-1.5 rounded-full ${
+                                          isRunning ? 'bg-emerald-500 animate-pulse' : 'bg-zinc-400'
                                         }`}
-                                      >
-                                        <span
-                                          className={`h-1.5 w-1.5 rounded-full ${
-                                            isRunning ? 'bg-emerald-500 animate-pulse' : 'bg-zinc-400'
-                                          }`}
-                                        />
-                                        {isRunning ? 'ปกติ (Online)' : 'ปิดการทำงาน (Stopped)'}
-                                      </span>
-                                    </div>
-                                    <div className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5">
-                                      {server.os} • IP: <code className="font-mono font-bold text-zinc-800 dark:text-zinc-200">{server.ip}</code>
-                                    </div>
-                                  </div>
-                                </div>
-
-                                <div className="flex items-center gap-2 self-start sm:self-center">
-                                  {/* Web Console Button: CLICK TO USE IMMEDIATELY */}
-                                  <Button
-                                    size="sm"
-                                    disabled={!isRunning}
-                                    onClick={() => {
-                                      if (terminalServer?.vmid === server.vmid) {
-                                        if (terminalMode === 'minimized') {
-                                          setTerminalMode('embedded')
-                                        } else {
-                                          setTerminalServer(null)
-                                        }
-                                      } else {
-                                        setTerminalServer(server)
-                                        setTerminalMode('embedded')
-                                      }
-                                    }}
-                                    className="h-8 text-xs bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 hover:bg-zinc-800 dark:hover:bg-zinc-200 shadow-2xs font-semibold cursor-pointer"
-                                  >
-                                    <Terminal className="h-3.5 w-3.5 mr-1.5" />
-                                    <span>
-                                      {terminalServer?.vmid === server.vmid && terminalMode === 'embedded'
-                                        ? 'ซ่อน Web Console'
-                                        : 'เปิด Web Console'}
+                                      />
+                                      {isRunning ? 'ปกติ (Online)' : 'ปิดอยู่'}
                                     </span>
-                                  </Button>
+                                  </div>
 
-                                  <Button
-                                    size="sm"
-                                    variant={isRunning ? 'outline' : 'default'}
-                                    onClick={() => handleTogglePower(server.vmid)}
-                                    className="h-8 text-xs"
-                                    title={isRunning ? 'ปิดเครื่อง' : 'เปิดเครื่อง'}
-                                  >
-                                    {isRunning ? (
-                                      <>
-                                        <Square className="h-3 w-3 mr-1 text-red-500 fill-red-500" />
-                                        <span>ปิด</span>
-                                      </>
-                                    ) : (
-                                      <>
-                                        <Play className="h-3 w-3 mr-1 text-emerald-500 fill-emerald-500" />
-                                        <span>เปิด</span>
-                                      </>
-                                    )}
-                                  </Button>
+                                  {/* Specs Chips */}
+                                  <div className="grid grid-cols-3 gap-2 text-xs">
+                                    <div className="p-2 rounded-lg bg-zinc-50 dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 text-center">
+                                      <div className="text-[10px] text-zinc-400">vCPU</div>
+                                      <div className="font-mono font-semibold text-zinc-900 dark:text-white text-xs mt-0.5">
+                                        {server.vcpu} Core
+                                      </div>
+                                    </div>
+                                    <div className="p-2 rounded-lg bg-zinc-50 dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 text-center">
+                                      <div className="text-[10px] text-zinc-400">RAM</div>
+                                      <div className="font-mono font-semibold text-zinc-900 dark:text-white text-xs mt-0.5">
+                                        {server.ram} MB
+                                      </div>
+                                    </div>
+                                    <div className="p-2 rounded-lg bg-zinc-50 dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 text-center">
+                                      <div className="text-[10px] text-zinc-400">SSD</div>
+                                      <div className="font-mono font-semibold text-zinc-900 dark:text-white text-xs mt-0.5">
+                                        {server.disk} GB
+                                      </div>
+                                    </div>
+                                  </div>
 
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    disabled={!isRunning}
-                                    onClick={() => handleReboot(server.vmid)}
-                                    className="h-8 text-xs"
-                                    title="รีสตาร์ตเครื่อง"
-                                  >
-                                    <RotateCw className="h-3 w-3" />
-                                  </Button>
+                                  <div className="text-[11px] text-zinc-500 dark:text-zinc-400 flex items-center justify-between pt-1">
+                                    <span>IP: <code className="font-mono font-semibold text-zinc-800 dark:text-zinc-200">{server.ip}</code></span>
+                                    <span>SSH Port: <code className="font-mono text-zinc-700 dark:text-zinc-300">10000</code></span>
+                                  </div>
+                                </div>
 
-                                  {isAdminUnlocked && (
+                                {/* Card Bottom Actions */}
+                                <div className="pt-3 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-between gap-2">
+                                  <div className="flex items-center gap-1.5">
                                     <Button
                                       size="sm"
-                                      variant="ghost"
-                                      onClick={() => handleDestroyServer(server.vmid)}
-                                      className="h-8 text-xs text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40"
-                                      title="ลบเครื่อง CT ถาวร (Admin Only)"
+                                      variant={isRunning ? 'outline' : 'default'}
+                                      onClick={() => handleTogglePower(server.vmid)}
+                                      className="h-7 text-xs px-2.5 cursor-pointer"
+                                      title={isRunning ? 'ปิดเครื่อง' : 'เปิดเครื่อง'}
                                     >
-                                      <Trash2 className="h-3 w-3" />
+                                      {isRunning ? (
+                                        <Square className="h-3 w-3 text-red-500 fill-red-500" />
+                                      ) : (
+                                        <Play className="h-3 w-3 text-emerald-500 fill-emerald-500" />
+                                      )}
                                     </Button>
-                                  )}
-                                </div>
-                              </div>
 
-                              {/* Specs & Usage Cards */}
-                              <div className="grid grid-cols-3 gap-2.5 text-xs">
-                                <div className="p-3 bg-zinc-50 dark:bg-zinc-800/60 rounded-xl border border-zinc-100 dark:border-zinc-800">
-                                  <div className="flex items-center gap-1.5 text-zinc-400 text-[11px] mb-1">
-                                    <Cpu className="h-3.5 w-3.5" />
-                                    <span>vCPU Cores</span>
-                                  </div>
-                                  <div className="font-semibold text-zinc-900 dark:text-white">
-                                    {server.vcpu} Cores
-                                  </div>
-                                  <div className="text-[10px] text-zinc-500 mt-0.5">
-                                    {isRunning ? `ใช้งาน ~${server.cpuUsage}%` : 'ไม่ได้ทำงาน'}
-                                  </div>
-                                </div>
-
-                                <div className="p-3 bg-zinc-50 dark:bg-zinc-800/60 rounded-xl border border-zinc-100 dark:border-zinc-800">
-                                  <div className="flex items-center gap-1.5 text-zinc-400 text-[11px] mb-1">
-                                    <Activity className="h-3.5 w-3.5" />
-                                    <span>RAM Memory</span>
-                                  </div>
-                                  <div className="font-semibold text-zinc-900 dark:text-white">
-                                    {server.ram} MB
-                                  </div>
-                                  <div className="text-[10px] text-zinc-500 mt-0.5">
-                                    {isRunning ? `ใช้ไป ~${server.ramUsage} MB` : '0 MB'}
-                                  </div>
-                                </div>
-
-                                <div className="p-3 bg-zinc-50 dark:bg-zinc-800/60 rounded-xl border border-zinc-100 dark:border-zinc-800">
-                                  <div className="flex items-center gap-1.5 text-zinc-400 text-[11px] mb-1">
-                                    <HardDrive className="h-3.5 w-3.5" />
-                                    <span>Storage Disk</span>
-                                  </div>
-                                  <div className="font-semibold text-zinc-900 dark:text-white">
-                                    {server.disk} GB
-                                  </div>
-                                  <div className="text-[10px] text-zinc-500 mt-0.5">
-                                    SSD pve-extra
-                                  </div>
-                                </div>
-                              </div>
-
-                              {/* Server Credentials & Access Section */}
-                              <div className="space-y-2.5">
-                                {/* Credentials Box */}
-                                <div className="p-3 bg-zinc-50 dark:bg-zinc-800/40 rounded-xl border border-zinc-200 dark:border-zinc-800 space-y-2 text-xs">
-                                  <div className="flex items-center justify-between text-xs pb-1 border-b border-zinc-200/60 dark:border-zinc-700/60">
-                                    <div className="flex items-center gap-1.5 font-medium text-zinc-800 dark:text-zinc-200">
-                                      <Key className="h-3.5 w-3.5 text-amber-500" />
-                                      <span>ข้อมูลเข้าสู่ระบบเซิร์ฟเวอร์ (Credentials)</span>
-                                    </div>
-                                    <span className="text-[10px] text-zinc-400">สิทธิ์ Root System</span>
-                                  </div>
-
-                                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-                                    {/* Username */}
-                                    <div className="flex items-center justify-between bg-white dark:bg-zinc-900 px-2.5 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-700">
-                                      <div className="flex items-center gap-2 min-w-0">
-                                        <span className="text-zinc-400 text-[11px] shrink-0">User:</span>
-                                        <code className="font-mono font-semibold text-zinc-900 dark:text-zinc-100 text-xs">root</code>
-                                      </div>
-                                      <Button
-                                        size="sm"
-                                        variant="ghost"
-                                        onClick={() => copyServerText('root', `user_${server.vmid}`)}
-                                        className="h-6 w-6 p-0 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100"
-                                        title="คัดลอก Username"
-                                      >
-                                        {copiedServerKey === `user_${server.vmid}` ? <Check className="h-3 w-3 text-emerald-600" /> : <Copy className="h-3 w-3" />}
-                                      </Button>
-                                    </div>
-
-                                    {/* Password */}
-                                    <div className="flex items-center justify-between bg-white dark:bg-zinc-900 px-2.5 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-700">
-                                      <div className="flex items-center gap-2 min-w-0">
-                                        <span className="text-zinc-400 text-[11px] shrink-0">Pass:</span>
-                                        <code className="font-mono text-zinc-900 dark:text-zinc-100 text-xs truncate">
-                                          {showServerPasswords[server.vmid] ? (server.rootPassword || 'News030347') : '••••••••••••'}
-                                        </code>
-                                      </div>
-                                      <div className="flex items-center gap-1 shrink-0">
-                                        <Button
-                                          size="sm"
-                                          variant="ghost"
-                                          onClick={() => setShowServerPasswords(prev => ({ ...prev, [server.vmid]: !prev[server.vmid] }))}
-                                          className="h-6 w-6 p-0 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100"
-                                          title={showServerPasswords[server.vmid] ? 'ซ่อนรหัสผ่าน' : 'แสดงรหัสผ่าน'}
-                                        >
-                                          {showServerPasswords[server.vmid] ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
-                                        </Button>
-                                        <Button
-                                          size="sm"
-                                          variant="ghost"
-                                          onClick={() => copyServerText(server.rootPassword || 'News030347', `pass_${server.vmid}`)}
-                                          className="h-6 w-6 p-0 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100"
-                                          title="คัดลอก Password"
-                                        >
-                                          {copiedServerKey === `pass_${server.vmid}` ? <Check className="h-3 w-3 text-emerald-600" /> : <Copy className="h-3 w-3" />}
-                                        </Button>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-
-                                {/* Access Notice Box */}
-                                <div className="p-3 bg-zinc-50 dark:bg-zinc-800/40 rounded-xl border border-zinc-200 dark:border-zinc-800 space-y-2 text-xs">
-                                  {/* Web Console Recommended */}
-                                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 p-2 bg-emerald-50/70 dark:bg-emerald-950/20 border border-emerald-200/70 dark:border-emerald-800/40 rounded-lg">
-                                    <div className="flex items-center gap-2">
-                                      <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-600 text-white shrink-0">
-                                        แนะนำสูงสุด
-                                      </span>
-                                      <span className="text-zinc-700 dark:text-zinc-300 text-[11px]">
-                                        <strong>Web Console:</strong> กดเข้าใช้งานได้ทันทีจากทุกอุปกรณ์ ไม่ต้องลงโปรแกรม ไม่ต้องใช้ SSH
-                                      </span>
-                                    </div>
-                                    <Button
-                                      size="sm"
-                                      onClick={() => {
-                                        if (terminalServer?.vmid === server.vmid && terminalMode === 'embedded') {
-                                          setTerminalServer(null)
-                                        } else {
-                                          setTerminalServer(server)
-                                          setTerminalMode('embedded')
-                                        }
-                                      }}
-                                      className="h-7 text-xs px-3 bg-emerald-600 hover:bg-emerald-700 text-white font-medium shrink-0 cursor-pointer shadow-2xs"
-                                    >
-                                      <Terminal className="h-3 w-3 mr-1" />
-                                      <span>{terminalServer?.vmid === server.vmid && terminalMode === 'embedded' ? 'ซ่อน Console' : 'เปิด Web Console'}</span>
-                                    </Button>
-                                  </div>
-
-                                  {/* SSH Command (Global One-Click Access via Tailscale Funnel) */}
-                                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 p-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg">
-                                    <div className="flex items-center gap-2 min-w-0">
-                                      <span className="text-zinc-400 shrink-0 text-[11px]">SSH (จากทุกที่ทั่วโลก):</span>
-                                      <code className="font-mono text-zinc-800 dark:text-zinc-200 select-all truncate text-[11px]">
-                                        ssh {server.studentId}@techniccom.tail59415d.ts.net -p 10000
-                                      </code>
-                                    </div>
                                     <Button
                                       size="sm"
                                       variant="outline"
-                                      onClick={() => copyServerText(`ssh ${server.studentId}@techniccom.tail59415d.ts.net -p 10000`, `ssh_${server.vmid}`)}
-                                      className="h-6 text-[11px] px-2 shrink-0 cursor-pointer"
+                                      disabled={!isRunning}
+                                      onClick={() => handleReboot(server.vmid)}
+                                      className="h-7 text-xs px-2 cursor-pointer"
+                                      title="รีสตาร์ตเครื่อง"
                                     >
-                                      {copiedServerKey === `ssh_${server.vmid}` ? (
-                                        <>
-                                          <Check className="h-3 w-3 text-emerald-600 mr-1" />
-                                          <span>คัดลอกแล้ว</span>
-                                        </>
-                                      ) : (
-                                        <>
-                                          <Copy className="h-3 w-3 mr-1" />
-                                          <span>คัดลอกคำสั่ง</span>
-                                        </>
-                                      )}
+                                      <RotateCw className="h-3 w-3" />
                                     </Button>
                                   </div>
 
-                                  <div className="text-[10px] text-zinc-500 dark:text-zinc-400 leading-relaxed px-1">
-                                    💡 <strong>วิธีเข้าใช้งานจากที่บ้าน/ภายนอก:</strong> ก๊อปปี้คำสั่งด้านบนไปวางใน CMD / PowerShell / Terminal บนคอมตัวเอง กด Enter แล้วใส่รหัสผ่าน root ระบบจะโยนเข้าเครื่องของคุณทันทีโดยไม่ต้องลงโปรแกรมเพิ่ม หรือกดเปิด <strong>Web Console</strong> ด้านบนเพื่อใช้งานผ่านเบราว์เซอร์ได้ทันที
-                                  </div>
+                                  {/* PRIMARY BUTTON: ENTER DEDICATED WORKSPACE */}
+                                  <Button
+                                    size="sm"
+                                    onClick={() => {
+                                      setSelectedServerVmid(server.vmid)
+                                      setServerWorkspaceTab('console')
+                                      setTerminalServer(server)
+                                      setTerminalMode('embedded')
+                                    }}
+                                    className="h-8 text-xs px-3.5 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 hover:bg-zinc-800 dark:hover:bg-zinc-200 font-semibold cursor-pointer shadow-2xs inline-flex items-center gap-1.5"
+                                  >
+                                    <Terminal className="h-3.5 w-3.5" />
+                                    <span>เข้าทำงานในเครื่อง</span>
+                                    <ChevronRight className="h-3.5 w-3.5 -mr-0.5" />
+                                  </Button>
                                 </div>
                               </div>
-
-                              {/* EMBEDDED WEB TERMINAL (In-Page, Not Modal) */}
-                              {terminalServer?.vmid === server.vmid && terminalMode === 'embedded' && (
-                                <EmbeddedTerminal
-                                  server={terminalServer}
-                                  mode={terminalMode}
-                                  onModeChange={setTerminalMode}
-                                  onClose={() => setTerminalServer(null)}
-                                />
-                              )}
-                            </div>
-                          )
-                        })}
-                      </div>
+                            )
+                          })}
+                        </div>
+                      )}
                     </div>
                   )}
 
@@ -2830,6 +3191,60 @@ Payload:
                     <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
                       ระบบส่งข้อความ Real-time รองรับทั้ง WebSockets (WSS) และ Pub/Sub ความเร็วสูง
                     </p>
+                  </div>
+
+                  {/* NOTE CALLOUT */}
+                  <div className="p-3.5 rounded-xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-xs flex items-start gap-3">
+                    <HelpCircle className="h-4 w-4 text-zinc-500 shrink-0 mt-0.5" />
+                    <div className="space-y-1">
+                      <div className="font-semibold text-zinc-900 dark:text-zinc-100">ข้อควรทราบเกี่ยวกับระบบ MQTT</div>
+                      <p className="text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                        ระบบแยกสิทธิ์ตามรหัสนักศึกษา อนุญาตให้ Publish และ Subscribe เฉพาะ Topic ภายใต้ <code className="font-mono bg-zinc-200 dark:bg-zinc-800 px-1 py-0.5 rounded text-zinc-800 dark:text-zinc-200">project/{session.studentId}/#</code> เท่านั้น เพื่อป้องกันไม่ให้ข้อมูลหรือคำสั่งควบคุมชนกับกลุ่มอื่น
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* COLLAPSIBLE HOW-TO GUIDE */}
+                  <div className="border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-[#121214] overflow-hidden shadow-xs">
+                    <button
+                      type="button"
+                      onClick={() => setShowMqttGuide(!showMqttGuide)}
+                      className="w-full flex items-center justify-between p-4 text-xs font-semibold text-zinc-900 dark:text-white hover:bg-zinc-50 dark:hover:bg-zinc-850 transition-colors cursor-pointer"
+                    >
+                      <span className="flex items-center gap-2">
+                        <BookOpen className="h-4 w-4 text-zinc-500" />
+                        <span>วิธีการเชื่อมต่อและใช้งาน MQTT Broker</span>
+                      </span>
+                      <span className="text-[11px] text-zinc-500 flex items-center gap-1 font-normal">
+                        {showMqttGuide ? 'ซ่อนคู่มือ' : 'กดดูวิธีการ'}
+                        {showMqttGuide ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+                      </span>
+                    </button>
+
+                    {showMqttGuide && (
+                      <div className="p-4 border-t border-zinc-100 dark:border-zinc-800 space-y-3 text-xs bg-zinc-50/50 dark:bg-zinc-900/30">
+                        <div className="space-y-1.5">
+                          <div className="font-semibold text-zinc-800 dark:text-zinc-200">1. การเชื่อมต่อจากบอร์ดไมโครคอนโทรลเลอร์ (ESP32 / ESP8266):</div>
+                          <p className="text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                            ตั้งค่า Host เป็น <code className="font-mono bg-zinc-100 dark:bg-zinc-800 px-1 py-0.5 rounded">mqtt.pichyy.qzz.io</code> พอร์ต 1883 (TCP ปกติ) หรือ 8084 (TLS) โดยใส่ Username เป็นรหัสนักศึกษา และ Password ตามที่ได้รับในระบบ
+                          </p>
+                        </div>
+                        <div className="space-y-1.5">
+                          <div className="font-semibold text-zinc-800 dark:text-zinc-200">2. การเชื่อมต่อจากเว็บแอปพลิเคชัน (React / Vue / HTML):</div>
+                          <p className="text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                            เชื่อมต่อไปยัง Secure WebSocket: <code className="font-mono bg-zinc-100 dark:bg-zinc-800 px-1 py-0.5 rounded">wss://mqtt.pichyy.qzz.io/mqtt</code> ด้วยไลบรารี <code>mqtt.js</code> หรือ <code>paho-mqtt</code>
+                          </p>
+                        </div>
+                        <div className="space-y-1.5">
+                          <div className="font-semibold text-zinc-800 dark:text-zinc-200">3. โครงสร้าง Topic ที่แนะนำ:</div>
+                          <ul className="list-disc pl-5 space-y-1 text-zinc-600 dark:text-zinc-400">
+                            <li>ส่งค่าเซนเซอร์: <code className="font-mono bg-zinc-100 dark:bg-zinc-800 px-1 py-0.5 rounded">project/{session.studentId}/sensor</code></li>
+                            <li>ส่งคำสั่งควบคุมบอร์ด: <code className="font-mono bg-zinc-100 dark:bg-zinc-800 px-1 py-0.5 rounded">project/{session.studentId}/control</code></li>
+                            <li>สถานะการทำงานบอร์ด: <code className="font-mono bg-zinc-100 dark:bg-zinc-800 px-1 py-0.5 rounded">project/{session.studentId}/status</code></li>
+                          </ul>
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   {/* Specs */}
@@ -3090,6 +3505,61 @@ Payload:
                     </p>
                   </div>
 
+                  {/* NOTE CALLOUT */}
+                  <div className="p-3.5 rounded-xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-xs flex items-start gap-3">
+                    <HelpCircle className="h-4 w-4 text-zinc-500 shrink-0 mt-0.5" />
+                    <div className="space-y-1">
+                      <div className="font-semibold text-zinc-900 dark:text-zinc-100">ข้อควรทราบเกี่ยวกับระบบ InfluxDB</div>
+                      <p className="text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                        ข้อมูลเซนเซอร์จะถูกแยกเก็บใน Bucket เฉพาะของกลุ่มคุณ โดยมี Organization คือ <code className="font-mono bg-zinc-200 dark:bg-zinc-800 px-1 py-0.5 rounded text-zinc-800 dark:text-zinc-200">lbtech</code> และ Bucket คือ <code className="font-mono bg-zinc-200 dark:bg-zinc-800 px-1 py-0.5 rounded text-zinc-800 dark:text-zinc-200">bucket_{session.studentId}</code> ต้องแนบ Influx API Token ใน Header ทุกครั้งที่เขียนหรืออ่านข้อมูล
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* COLLAPSIBLE HOW-TO GUIDE */}
+                  <div className="border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-[#121214] overflow-hidden shadow-xs">
+                    <button
+                      type="button"
+                      onClick={() => setShowDbGuide(!showDbGuide)}
+                      className="w-full flex items-center justify-between p-4 text-xs font-semibold text-zinc-900 dark:text-white hover:bg-zinc-50 dark:hover:bg-zinc-850 transition-colors cursor-pointer"
+                    >
+                      <span className="flex items-center gap-2">
+                        <BookOpen className="h-4 w-4 text-zinc-500" />
+                        <span>วิธีการบันทึกและเขียนคิวรีข้อมูล InfluxDB</span>
+                      </span>
+                      <span className="text-[11px] text-zinc-500 flex items-center gap-1 font-normal">
+                        {showDbGuide ? 'ซ่อนคู่มือ' : 'กดดูวิธีการ'}
+                        {showDbGuide ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+                      </span>
+                    </button>
+
+                    {showDbGuide && (
+                      <div className="p-4 border-t border-zinc-100 dark:border-zinc-800 space-y-3 text-xs bg-zinc-50/50 dark:bg-zinc-900/30">
+                        <div className="space-y-1.5">
+                          <div className="font-semibold text-zinc-800 dark:text-zinc-200">1. การบันทึกข้อมูล (Write Data):</div>
+                          <p className="text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                            สามารถบันทึกผ่าน HTTP POST ไปที่ <code className="font-mono bg-zinc-100 dark:bg-zinc-800 px-1 py-0.5 rounded">https://influx.pichyy.qzz.io/api/v2/write?org=lbtech&bucket=bucket_{session.studentId}</code> โดยส่งข้อมูลในรูปแบบ Line Protocol
+                          </p>
+                        </div>
+                        <div className="space-y-1.5">
+                          <div className="font-semibold text-zinc-800 dark:text-zinc-200">2. ตัวอย่างรูปแบบ Line Protocol:</div>
+                          <pre className="p-2.5 rounded-lg bg-zinc-100 dark:bg-zinc-950 font-mono text-[11px] text-zinc-800 dark:text-zinc-300 overflow-x-auto">
+sensor,device=esp32_01 temperature=26.4,humidity=62.1
+                          </pre>
+                        </div>
+                        <div className="space-y-1.5">
+                          <div className="font-semibold text-zinc-800 dark:text-zinc-200">3. ตัวอย่างคำสั่ง Flux Query ดึงข้อมูลย้อนหลัง 1 ชั่วโมง:</div>
+                          <pre className="p-2.5 rounded-lg bg-zinc-100 dark:bg-zinc-950 font-mono text-[11px] text-zinc-800 dark:text-zinc-300 overflow-x-auto">
+{`from(bucket: "bucket_${session.studentId}")
+  |> range(start: -1h)
+  |> filter(fn: (r) => r._measurement == "sensor")
+  |> yield(name: "mean")`}
+                          </pre>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
                   {/* DB Specs Table */}
                   <div id="sec-db-specs" className="border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-[#121214] overflow-hidden shadow-xs">
                     <div className="px-4 py-3 bg-zinc-50 dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 text-xs font-semibold text-zinc-700 dark:text-zinc-300">
@@ -3301,6 +3771,62 @@ Payload:
                     <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
                       ช่องทาง HTTP POST สำหรับไมโครคอนโทรลเลอร์หรือแอปพลิเคชันที่ต้องการส่งค่าโดยไม่ต่อค้าง MQTT
                     </p>
+                  </div>
+
+                  {/* NOTE CALLOUT */}
+                  <div className="p-3.5 rounded-xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-xs flex items-start gap-3">
+                    <HelpCircle className="h-4 w-4 text-zinc-500 shrink-0 mt-0.5" />
+                    <div className="space-y-1">
+                      <div className="font-semibold text-zinc-900 dark:text-zinc-100">ข้อควรทราบเกี่ยวกับระบบ REST API</div>
+                      <p className="text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                        เหมาะสำหรับอุปกรณ์ประหยัดพลังงาน (Deep Sleep) ที่ตื่นขึ้นมาส่งข้อมูลเป็นรอบๆ แล้วดับไป การส่งทุกครั้งต้องระบุ Header <code className="font-mono bg-zinc-200 dark:bg-zinc-800 px-1 py-0.5 rounded text-zinc-800 dark:text-zinc-200">Authorization: Bearer {session.token.slice(0, 10)}...</code> เพื่อยืนยันตัวตน
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* COLLAPSIBLE HOW-TO GUIDE */}
+                  <div className="border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-[#121214] overflow-hidden shadow-xs">
+                    <button
+                      type="button"
+                      onClick={() => setShowApiGuide(!showApiGuide)}
+                      className="w-full flex items-center justify-between p-4 text-xs font-semibold text-zinc-900 dark:text-white hover:bg-zinc-50 dark:hover:bg-zinc-850 transition-colors cursor-pointer"
+                    >
+                      <span className="flex items-center gap-2">
+                        <BookOpen className="h-4 w-4 text-zinc-500" />
+                        <span>วิธีการส่งคำขอ HTTP POST (API Guide)</span>
+                      </span>
+                      <span className="text-[11px] text-zinc-500 flex items-center gap-1 font-normal">
+                        {showApiGuide ? 'ซ่อนคู่มือ' : 'กดดูวิธีการ'}
+                        {showApiGuide ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+                      </span>
+                    </button>
+
+                    {showApiGuide && (
+                      <div className="p-4 border-t border-zinc-100 dark:border-zinc-800 space-y-3 text-xs bg-zinc-50/50 dark:bg-zinc-900/30">
+                        <div className="space-y-1.5">
+                          <div className="font-semibold text-zinc-800 dark:text-zinc-200">1. Endpoint URL สำหรับส่งข้อมูล (Telemetry):</div>
+                          <code className="font-mono bg-zinc-100 dark:bg-zinc-800 px-2 py-1 rounded text-zinc-900 dark:text-white block">
+                            POST https://iot.pichyy.qzz.io/api/telemetry
+                          </code>
+                        </div>
+                        <div className="space-y-1.5">
+                          <div className="font-semibold text-zinc-800 dark:text-zinc-200">2. HTTP Headers ที่จำเป็น:</div>
+                          <pre className="p-2.5 rounded-lg bg-zinc-100 dark:bg-zinc-950 font-mono text-[11px] text-zinc-800 dark:text-zinc-300 overflow-x-auto">
+{`Content-Type: application/json
+Authorization: Bearer ${session.token}`}
+                          </pre>
+                        </div>
+                        <div className="space-y-1.5">
+                          <div className="font-semibold text-zinc-800 dark:text-zinc-200">3. ตัวอย่างคำสั่ง cURL:</div>
+                          <pre className="p-2.5 rounded-lg bg-zinc-100 dark:bg-zinc-950 font-mono text-[11px] text-zinc-800 dark:text-zinc-300 overflow-x-auto">
+{`curl -X POST https://iot.pichyy.qzz.io/api/telemetry \\
+  -H "Content-Type: application/json" \\
+  -H "Authorization: Bearer ${session.token}" \\
+  -d '{"deviceId": "esp32_01", "data": {"temp": 28.5, "humidity": 65}}'`}
+                          </pre>
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   <div id="sec-api-specs" className="space-y-2">

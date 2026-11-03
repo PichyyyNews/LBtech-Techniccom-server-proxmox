@@ -176,19 +176,19 @@ export function AdminPanel({
 
   return (
     <div className="space-y-6">
-      {/* HEADER BANNER */}
-      <div className="p-5 rounded-2xl bg-gradient-to-r from-emerald-950/40 via-zinc-900 to-zinc-900 border border-emerald-500/30 shadow-lg relative overflow-hidden">
+      {/* HEADER BANNER - Clean Neutral Surface */}
+      <div className="p-5 rounded-xl bg-zinc-900 border border-zinc-800 shadow-xs relative overflow-hidden">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 relative z-10">
           <div className="flex items-center gap-3.5">
-            <div className="h-12 w-12 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0 shadow-inner">
-              <ShieldCheck className="h-6 w-6" />
+            <div className="h-11 w-11 rounded-lg bg-zinc-800 border border-zinc-700/80 flex items-center justify-center text-emerald-400 shrink-0">
+              <ShieldCheck className="h-5 w-5" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-lg sm:text-xl font-bold text-white tracking-tight">
+                <h1 className="text-base sm:text-lg font-bold text-white tracking-tight">
                   แผงควบคุมอาจารย์และผู้ดูแลระบบ
                 </h1>
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 uppercase">
+                <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-950/60 text-emerald-400 border border-emerald-800/80 uppercase">
                   Admin Master
                 </span>
               </div>

@@ -260,37 +260,29 @@ export function EmbeddedTerminal({
 
   return (
     <div className={containerClasses}>
-      {/* Top Header Bar */}
-      <div className="flex items-center justify-between px-3.5 py-2.5 bg-[#161b22] border-b border-zinc-800/80 text-xs">
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1.5">
-            <span className="h-3 w-3 rounded-full bg-red-500/80 inline-block" />
-            <span className="h-3 w-3 rounded-full bg-amber-500/80 inline-block" />
-            <span className="h-3 w-3 rounded-full bg-emerald-500/80 inline-block" />
-          </div>
-
-          <div className="h-4 w-px bg-zinc-700/60 mx-1 hidden sm:block" />
-
-          <div className="flex items-center gap-1.5 font-mono">
+      {/* Top Header Bar - Clean Engineering Grade (No macOS Colored Dots) */}
+      <div className="flex items-center justify-between px-3.5 py-2 bg-zinc-900 border-b border-zinc-800 text-xs">
+        <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2 font-mono">
             <Terminal className="h-3.5 w-3.5 text-zinc-400" />
-            <span className="font-semibold text-zinc-200">{server.name}</span>
-            <span className="text-[11px] text-zinc-400 hidden sm:inline">({server.os} • IP: {server.ip})</span>
+            <span className="font-semibold text-zinc-200 tracking-tight">{server.name}</span>
+            <span className="text-[11px] text-zinc-400 hidden md:inline">({server.os})</span>
           </div>
 
-          <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium ${
+          <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-medium ${
             connStatus === 'connected'
-              ? 'bg-emerald-950/60 text-emerald-400 border border-emerald-800/60'
+              ? 'bg-emerald-950/40 text-emerald-400 border border-emerald-800/40'
               : connStatus === 'connecting'
-              ? 'bg-amber-950/60 text-amber-400 border border-amber-800/60'
-              : 'bg-red-950/60 text-red-400 border border-red-800/60'
+              ? 'bg-amber-950/40 text-amber-400 border border-amber-800/40'
+              : 'bg-zinc-800 text-zinc-400 border border-zinc-700/60'
           }`}>
-            <span className={`h-1.5 w-1.5 rounded-full ${connStatus === 'connected' ? 'bg-emerald-400' : 'bg-red-400'}`} />
+            <span className={`h-1.5 w-1.5 rounded-full ${connStatus === 'connected' ? 'bg-emerald-500' : connStatus === 'connecting' ? 'bg-amber-500 animate-pulse' : 'bg-zinc-500'}`} />
             {connStatus === 'connected' ? 'Connected' : connStatus === 'connecting' ? 'Connecting...' : 'Disconnected'}
           </span>
         </div>
 
         {/* Window Controls */}
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 text-zinc-400">
           {/* Reconnect */}
           <button
             type="button"
