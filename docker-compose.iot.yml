@@ -34,7 +34,21 @@ services:
     volumes:
       - influxdb-data:/var/lib/influxdb2
 
-  # 3. Centralized Backend API (Proxmox Provisioning + InfluxDB/EMQX Auto-Provisioning + Database)
+  # 3. PostgreSQL Database (Enterprise Relational Storage สำหรับบัญชีผู้ใช้, เครื่องเซิร์ฟเวอร์ และ Audit Logs)
+  postgres:
+    image: postgres:16-alpine
+    container_name: iot-postgres
+    restart: always
+    environment:
+      - POSTGRES_DB=lbtech_iot
+      - POSTGRES_USER=iotuser
+      - POSTGRES_PASSWORD=Techniccom.Postgres2026!
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+  # 4. Centralized Backend API (Proxmox Provisioning + InfluxDB/EMQX Auto-Provisioning + Database)
   backend:
     build:
       context: ./iot-backend
@@ -46,6 +60,12 @@ services:
     environment:
       - PORT=5000
       - NODE_ENV=production
+      - POSTGRES_URL=postgresql://iotuser:Techniccom.Postgres2026!@postgres:5432/lbtech_iot
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=lbtech_iot
+      - POSTGRES_USER=iotuser
+      - POSTGRES_PASSWORD=Techniccom.Postgres2026!
       - PVE_HOST=10.10.10.1
       - PVE_PORT=8006
       - PVE_USER=tc-admin@pam
@@ -68,8 +88,9 @@ services:
     depends_on:
       - emqx
       - influxdb
+      - postgres
 
-  # 4. Student IoT Portal (UI สมัครสมาชิก, ขอเครื่อง CT, แผงควบคุมอาจารย์ & ดูรหัสผ่าน)
+  # 5. Student IoT Portal (UI สมัครสมาชิก, ขอเครื่อง CT, แผงควบคุมอาจารย์ & ดูรหัสผ่าน)
   portal:
     build:
       context: ./iot-portal
@@ -86,4 +107,5 @@ volumes:
   emqx-data:
   emqx-log:
   influxdb-data:
+  postgres-data:
   backend-data:

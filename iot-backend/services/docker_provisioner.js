@@ -235,9 +235,40 @@ export async function createTerminalSession(containerId, { cols = 80, rows = 24 
 }
 
 /**
- * Fetch live container resource statistics (CPU %, Memory %, Network, PIDs)
+ * Calculate student workspace directory size in Megabytes
  */
-export async function getContainerLiveStats(containerId) {
+export function getWorkspaceDiskUsageMB(studentId, serverName) {
+  try {
+    const dataDir = process.env.DATA_DIR || '/app/data'
+    const cleanName = (serverName || '').replace(/[^a-zA-Z0-9_-]/g, '_')
+    const workspacePath = path.join(dataDir, 'workspaces', studentId, cleanName)
+    if (!fs.existsSync(workspacePath)) return 0
+
+    let totalBytes = 0
+    function scan(dir) {
+      try {
+        const entries = fs.readdirSync(dir, { withFileTypes: true })
+        for (const entry of entries) {
+          const res = path.resolve(dir, entry.name)
+          if (entry.isDirectory()) {
+            scan(res)
+          } else if (entry.isFile()) {
+            totalBytes += fs.statSync(res).size
+          }
+        }
+      } catch {}
+    }
+    scan(workspacePath)
+    return Number((totalBytes / (1024 * 1024)).toFixed(1))
+  } catch {
+    return 0
+  }
+}
+
+/**
+ * Fetch live container resource statistics (CPU %, Memory %, Disk %, Network, PIDs)
+ */
+export async function getContainerLiveStats(containerId, serverMeta = null) {
   try {
     const container = docker.getContainer(containerId)
     const stats = await container.stats({ stream: false })
@@ -263,12 +294,29 @@ export async function getContainerLiveStats(containerId) {
     const memLimit = stats.memory_stats?.limit || (1024 * 1024 * 1024)
     const memPercent = memLimit > 0 ? (memUsage / memLimit) * 100.0 : 0.0
 
+    // Disk Storage Quota Calculation
+    let diskUsageMB = 0
+    let diskLimitGB = Number(serverMeta?.disk || 10)
+    let diskPercent = 0
+    let diskQuotaExceeded = false
+
+    if (serverMeta && serverMeta.studentId && serverMeta.name) {
+      diskUsageMB = getWorkspaceDiskUsageMB(serverMeta.studentId, serverMeta.name)
+      const diskLimitMB = diskLimitGB * 1024
+      diskPercent = diskLimitMB > 0 ? Number(((diskUsageMB / diskLimitMB) * 100).toFixed(1)) : 0
+      diskQuotaExceeded = diskUsageMB >= diskLimitMB
+    }
+
     return {
       running: true,
       cpuPercent: Math.min(100, Math.max(0, Number(cpuPercent.toFixed(1)))),
       memPercent: Math.min(100, Math.max(0, Number(memPercent.toFixed(1)))),
       memUsageMB: Number((memUsage / (1024 * 1024)).toFixed(1)),
       memLimitMB: Number((memLimit / (1024 * 1024)).toFixed(0)),
+      diskUsageMB,
+      diskLimitGB,
+      diskPercent: Math.min(100, diskPercent),
+      diskQuotaExceeded,
       pids: stats.pids_stats?.current || 0
     }
   } catch (err) {
@@ -278,6 +326,10 @@ export async function getContainerLiveStats(containerId) {
       memPercent: 0,
       memUsageMB: 0,
       memLimitMB: 0,
+      diskUsageMB: 0,
+      diskLimitGB: Number(serverMeta?.disk || 10),
+      diskPercent: 0,
+      diskQuotaExceeded: false,
       pids: 0
     }
   }

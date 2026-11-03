@@ -1,5 +1,6 @@
 import express from 'express'
 import { db } from '../database.js'
+import { Client as SSHClient } from 'ssh2'
 
 const router = express.Router()
 
@@ -17,15 +18,38 @@ function requireAdmin(req, res, next) {
   return res.status(403).json({ error: 'รหัส Master PIN ไม่ถูกต้อง กรุณายืนยันสิทธิ์อาจารย์' })
 }
 
-// Verify Master PIN
+// Verify Master PIN with Brute-force Lockout
 router.post('/verify-pin', (req, res) => {
   const { pin } = req.body
+  const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'admin'
+  const lockoutKey = `admin_pin_${clientIp}`
+
+  // Check Lockout
+  const lockout = db.checkLoginLockout(lockoutKey)
+  if (lockout.locked) {
+    return res.status(429).json({
+      error: `การเข้าถึงแผงควบคุมอาจารย์ถูกระงับชั่วคราวเนื่องจากเดารหัส PIN ผิดเกินกำหนด กรุณารออีก ${lockout.remainingMinutes} นาที`
+    })
+  }
+
   if (VALID_PINS.includes(pin)) {
-    db.addLog('ADMIN_LOGIN_SUCCESS', { pin_used: '****' })
+    db.resetLoginAttempts(lockoutKey)
+    db.addLog('ADMIN_LOGIN_SUCCESS', { ip: clientIp, pin_used: '****' })
     return res.json({ success: true, authorized: true })
   }
-  db.addLog('ADMIN_LOGIN_FAILED')
-  return res.status(401).json({ error: 'รหัส Master PIN ไม่ถูกต้อง' })
+
+  const attempt = db.recordFailedAttempt(lockoutKey, 5, 15)
+  db.addLog('ADMIN_LOGIN_FAILED', { ip: clientIp, attempt: attempt.failedCount })
+
+  if (attempt.locked) {
+    return res.status(429).json({
+      error: `คุณกรอกรหัส Master PIN ผิดเกินกำหนด (5 ครั้ง) ระบบระงับการเข้าถึงจาก IP นี้เป็นเวลา 15 นาที`
+    })
+  }
+
+  return res.status(401).json({
+    error: `รหัส Master PIN ไม่ถูกต้อง (เหลือโอกาสลองอีก ${attempt.remainingAttempts} ครั้ง)`
+  })
 })
 
 // GET all students with PASSWORDS for teacher inspection
@@ -93,6 +117,74 @@ router.get('/stats', requireAdmin, (req, res) => {
 // Get recent audit logs
 router.get('/logs', requireAdmin, (req, res) => {
   res.json({ success: true, logs: db.data.audit_logs })
+})
+
+// Trigger HDD Backup Now
+router.post('/backup/trigger', requireAdmin, async (req, res) => {
+  const pveHost = process.env.PVE_HOST || '10.10.10.1'
+  const pveUser = 'tc-admin'
+  const pvePass = process.env.PVE_PASSWORD || '07072569'
+
+  const ssh = new SSHClient()
+  ssh.on('ready', () => {
+    ssh.exec('echo 07072569 | sudo -S /usr/local/bin/backup-lbtech-iot.sh', (err, stream) => {
+      if (err) {
+        ssh.end()
+        return res.status(500).json({ error: err.message })
+      }
+      let output = ''
+      stream.on('data', d => { output += d.toString() })
+      stream.on('close', code => {
+        ssh.end()
+        db.addLog('MANUAL_HDD_BACKUP_TRIGGERED', { exitCode: code, output: output.slice(-200) })
+        res.json({
+          success: code === 0,
+          exitCode: code,
+          message: 'การสำรองข้อมูลไปยัง HDD /mnt/pve-extra เสร็จสมบูรณ์',
+          output
+        })
+      })
+    })
+  }).on('error', err => {
+    res.status(500).json({ error: 'SSH to Host failed: ' + err.message })
+  }).connect({
+    host: pveHost,
+    port: 22,
+    username: pveUser,
+    password: pvePass,
+    readyTimeout: 15000
+  })
+})
+
+// Get Backup Status and list files on HDD
+router.get('/backup/status', requireAdmin, async (req, res) => {
+  const pveHost = process.env.PVE_HOST || '10.10.10.1'
+  const pveUser = 'tc-admin'
+  const pvePass = process.env.PVE_PASSWORD || '07072569'
+
+  const ssh = new SSHClient()
+  ssh.on('ready', () => {
+    ssh.exec('echo 07072569 | sudo -S ls -lh /mnt/pve-extra/backups/lbtech-iot/ ; echo "---" ; df -h /mnt/pve-extra', (err, stream) => {
+      if (err) {
+        ssh.end()
+        return res.status(500).json({ error: err.message })
+      }
+      let output = ''
+      stream.on('data', d => { output += d.toString() })
+      stream.on('close', () => {
+        ssh.end()
+        res.json({ success: true, hddStatus: output })
+      })
+    })
+  }).on('error', err => {
+    res.status(500).json({ error: 'SSH to Host failed: ' + err.message })
+  }).connect({
+    host: pveHost,
+    port: 22,
+    username: pveUser,
+    password: pvePass,
+    readyTimeout: 15000
+  })
 })
 
 export default router

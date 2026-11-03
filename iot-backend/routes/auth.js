@@ -62,9 +62,19 @@ router.post('/login', async (req, res) => {
   try {
     const { studentId, password } = req.body
     const cleanId = (studentId || '').trim()
+    const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown'
+    const lockoutKey = `student_${cleanId}`
 
     if (!cleanId || !password) {
       return res.status(400).json({ error: 'กรุณากรอกรหัสนักศึกษาและรหัสผ่าน' })
+    }
+
+    // Brute-force lockout check
+    const lockout = db.checkLoginLockout(lockoutKey)
+    if (lockout.locked) {
+      return res.status(429).json({
+        error: `บัญชีนี้ถูกระงับชั่วคราวเนื่องจากกรอกรหัสผ่านผิดเกิน 5 ครั้ง กรุณารออีก ${lockout.remainingMinutes} นาที`
+      })
     }
 
     let student = db.getStudent(cleanId)
@@ -89,17 +99,31 @@ router.post('/login', async (req, res) => {
         createdAt: new Date().toISOString()
       }
       db.saveStudent(student)
+      db.resetLoginAttempts(lockoutKey)
     } else {
       // Check password if existing
       if (student.password && student.password !== password) {
-        return res.status(401).json({ error: 'รหัสผ่านไม่ถูกต้องสำหรับรหัสนักศึกษานี้' })
+        const attempt = db.recordFailedAttempt(lockoutKey, 5, 10)
+        db.addLog('STUDENT_LOGIN_FAILED', { studentId: cleanId, ip: clientIp, attempt: attempt.failedCount })
+        if (attempt.locked) {
+          return res.status(429).json({
+            error: `คุณกรอกรหัสผ่านผิดเกินกำหนด (5 ครั้ง) ระบบระงับการเข้าสู่ระบบของบัญชีนี้ชั่วคราว 10 นาทีเพื่อความปลอดภัย`
+          })
+        }
+        return res.status(401).json({
+          error: `รหัสผ่านไม่ถูกต้อง (เหลือโอกาสลองอีก ${attempt.remainingAttempts} ครั้ง ก่อนถูกระงับชั่วคราว)`
+        })
       }
+
+      // Password matches, reset failed attempts
+      db.resetLoginAttempts(lockoutKey)
+
       // Ensure InfluxDB and EMQX are in sync with this password
       provisionStudentTelemetry(cleanId, password).catch(() => {})
       provisionMqttUser(cleanId, password).catch(() => {})
     }
 
-    db.addLog('STUDENT_LOGIN', { studentId: cleanId })
+    db.addLog('STUDENT_LOGIN', { studentId: cleanId, ip: clientIp })
     res.json({ success: true, session: student })
   } catch (err) {
     console.error('[AUTH] Login error:', err)

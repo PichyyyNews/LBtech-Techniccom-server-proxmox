@@ -322,6 +322,10 @@ export default function App() {
     memPercent: number
     memUsageMB: number
     memLimitMB: number
+    diskUsageMB?: number
+    diskLimitGB?: number
+    diskPercent?: number
+    diskQuotaExceeded?: boolean
     pids: number
   } | null>(null)
 
@@ -2554,7 +2558,7 @@ Payload:
                                     </span>
                                     {isRunning && liveStats?.running && (
                                       <span className="inline-flex items-center gap-1 font-mono text-[10px] text-zinc-600 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded border border-zinc-200 dark:border-zinc-700">
-                                        CPU: {liveStats.cpuPercent}% | RAM: {liveStats.memPercent}%
+                                        CPU: {liveStats.cpuPercent}% | RAM: {liveStats.memPercent}% | Disk: {liveStats.diskPercent || 0}%
                                       </span>
                                     )}
                                   </div>
@@ -2872,10 +2876,30 @@ Payload:
                                     )}
                                   </div>
 
-                                  {/* Disk */}
-                                  <div className="py-2 flex items-center justify-between">
-                                    <span className="text-zinc-500 dark:text-zinc-400">พื้นที่จัดเก็บ (NVMe SSD)</span>
-                                    <span className="font-mono font-semibold text-zinc-900 dark:text-white">{selectedServer.disk} GB</span>
+                                  {/* Disk Storage Quota & Live Progress */}
+                                  <div className="py-2.5 space-y-1.5">
+                                    <div className="flex items-center justify-between">
+                                      <span className="text-zinc-500 dark:text-zinc-400">พื้นที่จัดเก็บ (SSD Quota)</span>
+                                      <span className="font-mono text-zinc-900 dark:text-white">
+                                        {isRunning && liveStats?.diskUsageMB !== undefined ? (
+                                          <span className="font-semibold text-zinc-900 dark:text-zinc-100">
+                                            {liveStats.diskUsageMB} MB / {selectedServer.disk} GB ({liveStats.diskPercent || 0}%)
+                                          </span>
+                                        ) : (
+                                          <span>{selectedServer.disk} GB</span>
+                                        )}
+                                      </span>
+                                    </div>
+                                    {isRunning && liveStats?.diskPercent !== undefined && (
+                                      <div className="h-1.5 w-full bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+                                        <div
+                                          className={`h-full rounded-full transition-all duration-500 ${
+                                            (liveStats.diskPercent || 0) > 85 ? 'bg-amber-500' : 'bg-zinc-800 dark:bg-zinc-200'
+                                          }`}
+                                          style={{ width: `${Math.min(100, Math.max(1, liveStats.diskPercent || 0))}%` }}
+                                        />
+                                      </div>
+                                    )}
                                   </div>
 
                                   {/* Active Processes */}

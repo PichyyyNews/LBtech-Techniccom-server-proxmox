@@ -304,7 +304,7 @@ router.get('/servers/:vmid/stats', async (req, res) => {
       return res.status(404).json({ error: 'ไม่พบเซิร์ฟเวอร์' })
     }
     const containerId = server.containerId || server.name
-    const stats = await getContainerLiveStats(containerId)
+    const stats = await getContainerLiveStats(containerId, server)
     res.json({ success: true, stats })
   } catch (err) {
     res.status(500).json({ error: err.message })
@@ -331,7 +331,7 @@ router.get('/servers/:vmid/stats/stream', async (req, res) => {
 
   const sendStats = async () => {
     if (!active) return
-    const stats = await getContainerLiveStats(containerId)
+    const stats = await getContainerLiveStats(containerId, server)
     if (!active) return
     res.write(`data: ${JSON.stringify(stats)}\n\n`)
   }
