@@ -176,7 +176,23 @@ export default function App() {
   })
 
   // Active Menu Tab
-  const [activeTab, setActiveTab] = useState<TabType>('overview')
+  const [activeTab, setActiveTab] = useState<TabType>(() => {
+    if (typeof window !== 'undefined') {
+      const p = window.location.pathname.toLowerCase()
+      if (p === '/admin' || p === '/admin/' || window.location.hash === '#admin') {
+        try {
+          const savedPin = localStorage.getItem('lbtech_admin_pin')
+          if (savedPin) return 'admin'
+          const savedSession = localStorage.getItem('lbtech_iot_session')
+          if (savedSession) {
+            const s = JSON.parse(savedSession)
+            if (s?.studentId === 'ADMIN') return 'admin'
+          }
+        } catch {}
+      }
+    }
+    return 'overview'
+  })
 
   // Auth Mode: 'register' | 'login'
   const [authMode, setAuthMode] = useState<'register' | 'login'>('register')
@@ -510,11 +526,65 @@ export default function App() {
     }
   }
 
-  // Admin PIN Protection & Mode
-  const [isAdminUnlocked, setIsAdminUnlocked] = useState(false)
+  // Admin PIN Protection & Mode (Persistent across page reloads)
+  const [isAdminUnlocked, setIsAdminUnlocked] = useState<boolean>(() => {
+    try {
+      const savedPin = localStorage.getItem('lbtech_admin_pin')
+      if (savedPin) return true
+      const savedSession = localStorage.getItem('lbtech_iot_session')
+      if (savedSession) {
+        const s = JSON.parse(savedSession)
+        if (s?.studentId === 'ADMIN' && s?.token) return true
+      }
+      return false
+    } catch {
+      return false
+    }
+  })
   const [isAdminPinModalOpen, setIsAdminPinModalOpen] = useState(false)
-  const [adminPinInput, setAdminPinInput] = useState('')
+  const [adminPinInput, setAdminPinInput] = useState<string>(() => {
+    try {
+      const savedPin = localStorage.getItem('lbtech_admin_pin')
+      if (savedPin) return savedPin
+      const savedSession = localStorage.getItem('lbtech_iot_session')
+      if (savedSession) {
+        const s = JSON.parse(savedSession)
+        if (s?.studentId === 'ADMIN' && s?.token) return s.token
+      }
+      return ''
+    } catch {
+      return ''
+    }
+  })
   const [adminPinError, setAdminPinError] = useState('')
+
+  // Validate saved admin session with server in background on mount
+  useEffect(() => {
+    const savedPin = localStorage.getItem('lbtech_admin_pin') || (session?.studentId === 'ADMIN' ? session.token : '')
+    if (savedPin) {
+      fetch('/api/admin/verify-pin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pin: savedPin })
+      })
+        .then((res) => {
+          if (!res.ok && (res.status === 401 || res.status === 403)) {
+            try {
+              localStorage.removeItem('lbtech_admin_pin')
+            } catch {}
+            setIsAdminUnlocked(false)
+            setAdminPinInput('')
+            if (window.location.pathname.toLowerCase().startsWith('/admin')) {
+              setActiveTab('overview')
+              window.history.pushState(null, '', '/')
+            }
+          }
+        })
+        .catch(() => {
+          // offline fallback, ignore network errors
+        })
+    }
+  }, [])
 
   // Sync session to localStorage
   useEffect(() => {
@@ -541,6 +611,22 @@ export default function App() {
     }
   }
 
+  // Handle Logout (Clears both student session and admin unlock)
+  const handleLogout = () => {
+    setSession(null)
+    setIsAdminUnlocked(false)
+    setAdminPinInput('')
+    try {
+      localStorage.removeItem('lbtech_admin_pin')
+    } catch (e) {
+      console.error(e)
+    }
+    if (activeTab === 'admin') {
+      setActiveTab('overview')
+      window.history.pushState(null, '', '/')
+    }
+  }
+
   // Check for hidden /admin route on load and browser navigation
   useEffect(() => {
     const checkAdminPath = () => {
@@ -560,7 +646,9 @@ export default function App() {
 
   const handleCloseAdminPinModal = () => {
     setIsAdminPinModalOpen(false)
-    setAdminPinInput('')
+    if (!isAdminUnlocked) {
+      setAdminPinInput('')
+    }
     setAdminPinError('')
     if (window.location.pathname.toLowerCase().startsWith('/admin') || window.location.hash === '#admin') {
       window.history.pushState(null, '', '/')
@@ -998,6 +1086,11 @@ export default function App() {
       setIsAdminPinModalOpen(false)
       setActiveTab('admin')
       window.history.pushState(null, '', '/admin')
+      try {
+        localStorage.setItem('lbtech_admin_pin', pin)
+      } catch (err) {
+        console.error(err)
+      }
       if (!session) {
         setSession({
           studentId: 'ADMIN',
@@ -1017,6 +1110,11 @@ export default function App() {
       })
       if (res.ok) {
         activateAdmin()
+        return
+      }
+      const data = await res.json().catch(() => ({}))
+      if (data?.error) {
+        setAdminPinError(data.error)
         return
       }
     } catch {
@@ -1861,6 +1959,25 @@ Payload:
 
             {/* Right: Theme Toggle & Search Button (Admin access hidden at /admin) */}
             <div className="flex items-center gap-1.5 sm:gap-2">
+              {isAdminUnlocked && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveTab('admin')
+                    window.history.pushState(null, '', '/admin')
+                  }}
+                  className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-xs font-medium transition-colors cursor-pointer shadow-2xs ${
+                    activeTab === 'admin'
+                      ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300'
+                      : 'border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-200'
+                  }`}
+                  title="เปิดแผงควบคุมอาจารย์"
+                >
+                  <ShieldCheck className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                  <span className="hidden sm:inline text-[11px]">แผงควบคุมอาจารย์</span>
+                </button>
+              )}
+
               {/* Copy link for AI (llms.txt) */}
               <button
                 type="button"
@@ -2032,7 +2149,7 @@ Payload:
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => setSession(null)}
+                    onClick={handleLogout}
                     className="w-full text-xs h-8 text-zinc-500 dark:text-zinc-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 justify-start"
                   >
                     <LogOut className="h-3.5 w-3.5 mr-2" />
@@ -2109,7 +2226,7 @@ Payload:
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => setSession(null)}
+                  onClick={handleLogout}
                   className="w-full text-xs h-7 text-zinc-500 dark:text-zinc-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 justify-start"
                 >
                   <LogOut className="h-3.5 w-3.5 mr-2" />
@@ -3479,6 +3596,12 @@ Payload:
                   adminPin={adminPinInput || '2569'}
                   onLock={() => {
                     setIsAdminUnlocked(false)
+                    setAdminPinInput('')
+                    try {
+                      localStorage.removeItem('lbtech_admin_pin')
+                    } catch (e) {
+                      console.error(e)
+                    }
                     window.history.pushState(null, '', '/')
                     setActiveTab('overview')
                     if (session?.studentId === 'ADMIN') {
