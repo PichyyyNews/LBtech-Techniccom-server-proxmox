@@ -1,6 +1,12 @@
 import express from 'express'
 import { db } from '../database.js'
 import { Client as SSHClient } from 'ssh2'
+import {
+  getPoolDashboardSnapshot,
+  getContainerProcesses,
+  killContainerProcess,
+  getContainerLiveStats
+} from '../services/docker_provisioner.js'
 
 const router = express.Router()
 
@@ -109,6 +115,139 @@ router.get('/stats', requireAdmin, (req, res) => {
         }
       }
     })
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// Pool Summary Dashboard (Snapshot)
+router.get('/pool/summary', requireAdmin, async (req, res) => {
+  try {
+    const servers = db.getServers()
+    const snapshot = await getPoolDashboardSnapshot(servers)
+    res.json(snapshot)
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message })
+  }
+})
+
+// Pool Summary Dashboard Realtime Stream (SSE)
+router.get('/pool/stream', requireAdmin, (req, res) => {
+  res.setHeader('Content-Type', 'text/event-stream')
+  res.setHeader('Cache-Control', 'no-cache')
+  res.setHeader('Connection', 'keep-alive')
+  if (typeof res.flushHeaders === 'function') {
+    res.flushHeaders()
+  }
+
+  let isAlive = true
+
+  const sendPoolSnapshot = async () => {
+    if (!isAlive) return
+    try {
+      const servers = db.getServers()
+      const snapshot = await getPoolDashboardSnapshot(servers)
+      if (!isAlive) return
+      res.write(`data: ${JSON.stringify(snapshot)}\n\n`)
+    } catch (err) {
+      if (isAlive) {
+        res.write(`data: ${JSON.stringify({ error: err.message })}\n\n`)
+      }
+    }
+  }
+
+  sendPoolSnapshot()
+  const interval = setInterval(sendPoolSnapshot, 2000)
+
+  req.on('close', () => {
+    isAlive = false
+    clearInterval(interval)
+  })
+})
+
+// Single Server Live Stats & Process Stream (SSE)
+router.get('/servers/:vmid/stream', requireAdmin, (req, res) => {
+  const { vmid } = req.params
+  const server = db.getServerByVmid(vmid) || db.getServers().find(s => s.containerId === vmid || String(s.vmid) === String(vmid))
+  if (!server) {
+    return res.status(404).json({ error: 'ไม่พบเซิร์ฟเวอร์' })
+  }
+
+  res.setHeader('Content-Type', 'text/event-stream')
+  res.setHeader('Cache-Control', 'no-cache')
+  res.setHeader('Connection', 'keep-alive')
+  if (typeof res.flushHeaders === 'function') {
+    res.flushHeaders()
+  }
+
+  const containerId = server.containerId || server.name
+  let isAlive = true
+
+  const sendServerMetrics = async () => {
+    if (!isAlive) return
+    try {
+      const [stats, processes] = await Promise.all([
+        getContainerLiveStats(containerId, server),
+        getContainerProcesses(containerId)
+      ])
+      if (!isAlive) return
+      res.write(`data: ${JSON.stringify({
+        success: true,
+        vmid: server.vmid,
+        serverName: server.name,
+        studentId: server.studentId,
+        containerId,
+        stats,
+        processes,
+        timestamp: new Date().toISOString()
+      })}\n\n`)
+    } catch (err) {
+      if (isAlive) {
+        res.write(`data: ${JSON.stringify({ error: err.message })}\n\n`)
+      }
+    }
+  }
+
+  sendServerMetrics()
+  const interval = setInterval(sendServerMetrics, 2000)
+
+  req.on('close', () => {
+    isAlive = false
+    clearInterval(interval)
+  })
+})
+
+// Single Server Processes (Snapshot)
+router.get('/servers/:vmid/processes', requireAdmin, async (req, res) => {
+  try {
+    const { vmid } = req.params
+    const server = db.getServerByVmid(vmid) || db.getServers().find(s => s.containerId === vmid || String(s.vmid) === String(vmid))
+    if (!server) {
+      return res.status(404).json({ error: 'ไม่พบเซิร์ฟเวอร์' })
+    }
+    const containerId = server.containerId || server.name
+    const processes = await getContainerProcesses(containerId)
+    res.json({ success: true, vmid: server.vmid, processes })
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// Kill Process inside Student Container
+router.post('/servers/:vmid/processes/:pid/kill', requireAdmin, async (req, res) => {
+  try {
+    const { vmid, pid } = req.params
+    const server = db.getServerByVmid(vmid) || db.getServers().find(s => s.containerId === vmid || String(s.vmid) === String(vmid))
+    if (!server) {
+      return res.status(404).json({ error: 'ไม่พบเซิร์ฟเวอร์' })
+    }
+    const containerId = server.containerId || server.name
+    const result = await killContainerProcess(containerId, pid)
+    if (result.success) {
+      db.addLog('ADMIN_KILLED_PROCESS', { vmid: server.vmid, pid, server: server.name })
+      return res.json({ success: true, message: `ยุติโปรเซส PID ${pid} เรียบร้อยแล้ว` })
+    }
+    res.status(400).json({ error: result.error || 'ไม่สามารถยุติโปรเซสได้' })
   } catch (err) {
     res.status(500).json({ error: err.message })
   }

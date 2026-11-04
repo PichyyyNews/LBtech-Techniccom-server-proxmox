@@ -30,11 +30,96 @@ import {
   MessageSquare,
   HelpCircle,
   Send,
-  Sparkles
+  Sparkles,
+  Layers,
+  Zap,
+  BarChart3,
+  Gauge,
+  X,
+  ShieldAlert,
+  Flame,
+  Globe
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { renderOSLogo } from '@/components/OSLogos'
+
+export interface ProcessItem {
+  user: string
+  pid: number
+  cpu: number
+  mem: number
+  vsz: string
+  rss: string
+  stat: string
+  time: string
+  command: string
+  vmid?: number
+  serverName?: string
+  studentId?: string
+}
+
+export interface PoolServerItem {
+  vmid: number
+  studentId: string
+  serverName: string
+  containerId: string
+  containerName: string
+  os: string
+  osKey?: string
+  ip: string
+  status: 'running' | 'stopped'
+  vcpu: number
+  ram: number
+  disk: number
+  customDomain?: string
+  webPort?: number
+  stats: {
+    running: boolean
+    cpuPercent: number
+    memPercent: number
+    memUsageMB: number
+    memLimitMB: number
+    diskUsageMB: number
+    diskLimitGB: number
+    diskPercent: number
+    diskQuotaExceeded: boolean
+    pids: number
+  }
+  processCount: number
+  topProcess: ProcessItem | null
+}
+
+export interface PoolData {
+  success: boolean
+  timestamp: string
+  nodeInfo: {
+    nodeName: string
+    model: string
+    ncpu: number
+    hostMemTotalMB: number
+    dockerVersion: string
+    os: string
+    containersRunning: number
+    containersTotal: number
+  }
+  poolSummary: {
+    totalServers: number
+    runningServers: number
+    stoppedServers: number
+    totalCpuPercent: number
+    avgCpuPercent: number
+    totalUsedRamMB: number
+    totalAllocatedRamMB: number
+    hostMemTotalMB: number
+    ramPercentOfHost: number
+    totalUsedDiskMB: number
+    totalAllocatedDiskGB: number
+    totalAllocatedVcpu: number
+  }
+  servers: PoolServerItem[]
+  topProcesses: ProcessItem[]
+}
 
 export interface EnrichedStudent {
   studentId: string
@@ -100,13 +185,157 @@ export function AdminPanel({
   ctRequests,
   ctServers
 }: AdminPanelProps) {
-  const [activeSubTab, setActiveSubTab] = useState<'passwords' | 'queue' | 'servers' | 'tickets'>('passwords')
+  const [activeSubTab, setActiveSubTab] = useState<'pool' | 'servers' | 'passwords' | 'queue' | 'tickets'>('pool')
   const [students, setStudents] = useState<EnrichedStudent[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [revealedPasswords, setRevealedPasswords] = useState<{ [id: string]: boolean }>({})
   const [copiedKey, setCopiedKey] = useState<string | null>(null)
   const [isApprovingId, setIsApprovingId] = useState<string | null>(null)
+
+  // Real-time Cluster / Pool Streaming State
+  const [poolData, setPoolData] = useState<PoolData | null>(null)
+  const [isPoolStreamConnected, setIsPoolStreamConnected] = useState(false)
+  const [poolFilterQuery, setPoolFilterQuery] = useState('')
+
+  // Single Server Process Inspector Modal State
+  const [selectedProcessServer, setSelectedProcessServer] = useState<any | null>(null)
+  const [serverProcessStreamData, setServerProcessStreamData] = useState<{
+    stats?: any
+    processes?: ProcessItem[]
+  } | null>(null)
+  const [isProcessStreamConnected, setIsProcessStreamConnected] = useState(false)
+  const [processSearchQuery, setProcessSearchQuery] = useState('')
+  const [isKillingPid, setIsKillingPid] = useState<number | null>(null)
+  const [actionSuccessMsg, setActionSuccessMsg] = useState('')
+
+  // Connect to Pool SSE Stream
+  useEffect(() => {
+    let es: EventSource | null = null
+    let reconnectTimer: any = null
+    let isCancelled = false
+
+    const connectPoolStream = () => {
+      if (isCancelled) return
+      try {
+        es = new EventSource(`/api/admin/pool/stream?pin=${encodeURIComponent(adminPin)}`)
+        es.onopen = () => {
+          if (!isCancelled) setIsPoolStreamConnected(true)
+        }
+        es.onmessage = (event) => {
+          if (isCancelled) return
+          try {
+            const data = JSON.parse(event.data)
+            if (data && data.poolSummary) {
+              setPoolData(data)
+              setIsPoolStreamConnected(true)
+            }
+          } catch (e) {
+            console.error('Pool SSE parse error:', e)
+          }
+        }
+        es.onerror = () => {
+          if (isCancelled) return
+          setIsPoolStreamConnected(false)
+          es?.close()
+          reconnectTimer = setTimeout(connectPoolStream, 3000)
+        }
+      } catch (err) {
+        setIsPoolStreamConnected(false)
+      }
+    }
+
+    connectPoolStream()
+
+    return () => {
+      isCancelled = true
+      if (es) es.close()
+      if (reconnectTimer) clearTimeout(reconnectTimer)
+    }
+  }, [adminPin])
+
+  // Connect to Single Server Stream when modal opens
+  useEffect(() => {
+    if (!selectedProcessServer) {
+      setServerProcessStreamData(null)
+      setIsProcessStreamConnected(false)
+      return
+    }
+
+    let es: EventSource | null = null
+    let isCancelled = false
+
+    const connectServerStream = () => {
+      if (isCancelled) return
+      try {
+        const vmid = selectedProcessServer.vmid
+        es = new EventSource(`/api/admin/servers/${vmid}/stream?pin=${encodeURIComponent(adminPin)}`)
+        es.onopen = () => {
+          if (!isCancelled) setIsProcessStreamConnected(true)
+        }
+        es.onmessage = (event) => {
+          if (isCancelled) return
+          try {
+            const data = JSON.parse(event.data)
+            if (data && data.success) {
+              setServerProcessStreamData({
+                stats: data.stats,
+                processes: data.processes || []
+              })
+              setIsProcessStreamConnected(true)
+            }
+          } catch (e) {
+            console.error('Server SSE parse error:', e)
+          }
+        }
+        es.onerror = () => {
+          if (!isCancelled) setIsProcessStreamConnected(false)
+        }
+      } catch {
+        setIsProcessStreamConnected(false)
+      }
+    }
+
+    connectServerStream()
+
+    return () => {
+      isCancelled = true
+      if (es) es.close()
+    }
+  }, [selectedProcessServer, adminPin])
+
+  const handleKillProcess = async (vmid: number, pid: number, cmd: string) => {
+    if (!confirm(`ยืนยันการบังคับปิดโปรเซส PID ${pid} (${cmd.slice(0, 40)})?`)) {
+      return
+    }
+    setIsKillingPid(pid)
+    try {
+      const res = await fetch(`/api/admin/servers/${vmid}/processes/${pid}/kill`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-pin': adminPin
+        }
+      })
+      const data = await res.json()
+      if (res.ok) {
+        setActionSuccessMsg(`ยุติโปรเซส PID ${pid} สำเร็จแล้ว`)
+        setTimeout(() => setActionSuccessMsg(''), 3000)
+        if (serverProcessStreamData) {
+          setServerProcessStreamData(prev => prev ? {
+            ...prev,
+            processes: (prev.processes || []).filter(p => p.pid !== pid)
+          } : null)
+        }
+      } else {
+        alert(data.error || 'ไม่สามารถยุติโปรเซสได้')
+      }
+    } catch (e: any) {
+      alert('Error: ' + e.message)
+    } finally {
+      setIsKillingPid(null)
+    }
+  }
 
   // Support Tickets State
   const [tickets, setTickets] = useState<SupportTicket[]>([])
@@ -361,11 +590,28 @@ export function AdminPanel({
       </div>
 
       {/* SUB-TABS NAVIGATION */}
-      <div className="flex items-center gap-2 border-b border-zinc-200 dark:border-zinc-800 pb-2">
+      <div className="flex items-center gap-2 border-b border-zinc-200 dark:border-zinc-800 pb-2 overflow-x-auto">
+        <button
+          type="button"
+          onClick={() => setActiveSubTab('pool')}
+          className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold cursor-pointer transition-all shrink-0 ${
+            activeSubTab === 'pool'
+              ? 'bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 shadow-sm'
+              : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'
+          }`}
+        >
+          <Activity className="h-3.5 w-3.5 text-emerald-400" />
+          <span>ภาพรวม Resource Pool & โปรเซส</span>
+          <span className="flex h-2 w-2 relative">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+          </span>
+        </button>
+
         <button
           type="button"
           onClick={() => setActiveSubTab('passwords')}
-          className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold cursor-pointer transition-all ${
+          className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold cursor-pointer transition-all shrink-0 ${
             activeSubTab === 'passwords'
               ? 'bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 shadow-sm'
               : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'
@@ -430,6 +676,475 @@ export function AdminPanel({
           )}
         </button>
       </div>
+
+      {/* ACTION SUCCESS NOTIFICATION */}
+      {actionSuccessMsg && (
+        <div className="p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-emerald-400 text-xs flex items-center justify-between animate-in fade-in">
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="h-4 w-4" />
+            <span>{actionSuccessMsg}</span>
+          </div>
+          <button onClick={() => setActionSuccessMsg('')} className="text-zinc-400 hover:text-white">
+            <X className="h-3.5 w-3.5" />
+          </button>
+        </div>
+      )}
+
+      {/* ==================================================================== */}
+      {/* SUB-TAB 0: CLUSTER RESOURCE POOL & PROCESS STREAM                    */}
+      {/* ==================================================================== */}
+      {activeSubTab === 'pool' && (
+        <div className="space-y-6">
+          {/* POOL HEADER & LIVE SSE STREAM STATUS */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-zinc-900 border border-zinc-800 p-4 rounded-xl">
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="text-sm font-bold text-white tracking-tight flex items-center gap-2">
+                  <Activity className="h-4 w-4 text-emerald-400" />
+                  สตรีมทรัพยากรคลัสเตอร์ & โปรเซส (Realtime Pool Stream)
+                </h2>
+                {isPoolStreamConnected ? (
+                  <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-mono bg-emerald-950/80 border border-emerald-800 text-emerald-400">
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                    LIVE SSE (2s)
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-mono bg-amber-950/80 border border-amber-800 text-amber-400">
+                    <RefreshCw className="h-3 w-3 animate-spin" />
+                    กำลังเชื่อมต่อสตรีม...
+                  </span>
+                )}
+              </div>
+              <p className="text-xs text-zinc-400 mt-1">
+                มอนิเตอร์การใช้งาน CPU, RAM, Disk และโปรเซสของคอนเทนเนอร์นักศึกษาแบบเรียลไทม์ พร้อมระบบสั่งยุติโปรเซส
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2 text-[11px] text-zinc-400 font-mono">
+              <span>โฮสต์: {poolData?.nodeInfo?.model || 'HP DL20 Gen9'}</span>
+              <span>•</span>
+              <span>{poolData?.nodeInfo?.ncpu || 2} Cores</span>
+              <span>•</span>
+              <span>{poolData?.nodeInfo?.hostMemTotalMB || 8192} MB</span>
+            </div>
+          </div>
+
+          {/* 4 POOL SUMMARY METRIC CARDS */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {/* CPU POOL */}
+            <div className="p-3.5 rounded-xl bg-zinc-900/90 border border-zinc-800 flex flex-col justify-between">
+              <div className="flex items-center justify-between text-zinc-400 text-xs">
+                <span>CPU Pool โหลดเฉลี่ย</span>
+                <Cpu className="h-4 w-4 text-emerald-400" />
+              </div>
+              <div className="mt-2">
+                <div className="text-2xl font-bold font-mono text-white">
+                  {poolData?.poolSummary?.avgCpuPercent ?? 0}%
+                </div>
+                <div className="w-full bg-zinc-800 h-1.5 rounded-full mt-2 overflow-hidden">
+                  <div
+                    className="h-full bg-emerald-500 transition-all duration-500 rounded-full"
+                    style={{ width: `${Math.min(100, poolData?.poolSummary?.avgCpuPercent || 0)}%` }}
+                  />
+                </div>
+                <span className="text-[10px] text-zinc-400 font-mono mt-1.5 block">
+                  จัดสรร: {poolData?.poolSummary?.totalAllocatedVcpu || 0} vCPUs จาก {poolData?.nodeInfo?.ncpu || 2} คอร์
+                </span>
+              </div>
+            </div>
+
+            {/* RAM POOL */}
+            <div className="p-3.5 rounded-xl bg-zinc-900/90 border border-zinc-800 flex flex-col justify-between">
+              <div className="flex items-center justify-between text-zinc-400 text-xs">
+                <span>RAM คอนเทนเนอร์ที่ใช้จริง</span>
+                <Activity className="h-4 w-4 text-sky-400" />
+              </div>
+              <div className="mt-2">
+                <div className="text-2xl font-bold font-mono text-sky-400">
+                  {poolData?.poolSummary?.totalUsedRamMB ?? 0}{' '}
+                  <span className="text-xs text-zinc-400 font-normal">MB</span>
+                </div>
+                <div className="w-full bg-zinc-800 h-1.5 rounded-full mt-2 overflow-hidden">
+                  <div
+                    className="h-full bg-sky-500 transition-all duration-500 rounded-full"
+                    style={{ width: `${Math.min(100, poolData?.poolSummary?.ramPercentOfHost || 0)}%` }}
+                  />
+                </div>
+                <span className="text-[10px] text-zinc-400 font-mono mt-1.5 block">
+                  {poolData?.poolSummary?.ramPercentOfHost ?? 0}% ของโฮสต์ ({poolData?.poolSummary?.hostMemTotalMB || 8192} MB)
+                </span>
+              </div>
+            </div>
+
+            {/* DISK POOL */}
+            <div className="p-3.5 rounded-xl bg-zinc-900/90 border border-zinc-800 flex flex-col justify-between">
+              <div className="flex items-center justify-between text-zinc-400 text-xs">
+                <span>พื้นที่ Workspace รวม</span>
+                <HardDrive className="h-4 w-4 text-amber-400" />
+              </div>
+              <div className="mt-2">
+                <div className="text-2xl font-bold font-mono text-amber-400">
+                  {(poolData?.poolSummary?.totalUsedDiskMB || 0) > 1024
+                    ? `${((poolData?.poolSummary?.totalUsedDiskMB || 0) / 1024).toFixed(2)} GB`
+                    : `${poolData?.poolSummary?.totalUsedDiskMB || 0} MB`}
+                </div>
+                <div className="w-full bg-zinc-800 h-1.5 rounded-full mt-2 overflow-hidden">
+                  <div
+                    className="h-full bg-amber-500 transition-all duration-500 rounded-full"
+                    style={{
+                      width: `${Math.min(
+                        100,
+                        (((poolData?.poolSummary?.totalUsedDiskMB || 0) /
+                          ((poolData?.poolSummary?.totalAllocatedDiskGB || 10) * 1024)) *
+                          100)
+                      )}%`
+                    }}
+                  />
+                </div>
+                <span className="text-[10px] text-zinc-400 font-mono mt-1.5 block">
+                  โควตารวม: {poolData?.poolSummary?.totalAllocatedDiskGB || 0} GB NVMe
+                </span>
+              </div>
+            </div>
+
+            {/* CONTAINERS ONLINE */}
+            <div className="p-3.5 rounded-xl bg-zinc-900/90 border border-zinc-800 flex flex-col justify-between">
+              <div className="flex items-center justify-between text-zinc-400 text-xs">
+                <span>คอนเทนเนอร์ที่ทำงานอยู่</span>
+                <Server className="h-4 w-4 text-purple-400" />
+              </div>
+              <div className="mt-2">
+                <div className="text-2xl font-bold font-mono text-white">
+                  {poolData?.poolSummary?.runningServers ?? ctServers.filter(s => s.status === 'running').length}
+                  <span className="text-xs text-zinc-400 font-normal">
+                    {' '}/ {poolData?.poolSummary?.totalServers ?? ctServers.length} เครื่อง
+                  </span>
+                </div>
+                <div className="w-full bg-zinc-800 h-1.5 rounded-full mt-2 overflow-hidden">
+                  <div
+                    className="h-full bg-purple-500 transition-all duration-500 rounded-full"
+                    style={{
+                      width: `${
+                        (poolData?.poolSummary?.totalServers || 1) > 0
+                          ? Math.round(
+                              ((poolData?.poolSummary?.runningServers || 0) /
+                                (poolData?.poolSummary?.totalServers || 1)) *
+                                100
+                            )
+                          : 0
+                      }%`
+                    }}
+                  />
+                </div>
+                <span className="text-[10px] text-zinc-400 font-mono mt-1.5 block">
+                  {poolData?.poolSummary?.stoppedServers || 0} เครื่องปิดพักอยู่
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* SECTION 1: LIVE CONTAINER STATS & PROCESS OVERVIEW */}
+          <div className="space-y-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+              <div className="flex items-center gap-2">
+                <h3 className="text-xs font-bold text-zinc-200 uppercase tracking-wider flex items-center gap-1.5">
+                  <Gauge className="h-3.5 w-3.5 text-emerald-400" />
+                  <span>สถานะทรัพยากรเครื่องนักศึกษาแบบสด ({poolData?.servers?.length || ctServers.length} เครื่อง)</span>
+                </h3>
+              </div>
+              <div className="relative w-full sm:w-64">
+                <Search className="h-3.5 w-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-zinc-400" />
+                <Input
+                  type="text"
+                  placeholder="ค้นหาเครื่อง หรือรหัสนักศึกษา..."
+                  value={poolFilterQuery}
+                  onChange={(e) => setPoolFilterQuery(e.target.value)}
+                  className="pl-8 h-8 text-xs bg-zinc-900 border-zinc-800 text-zinc-200"
+                />
+              </div>
+            </div>
+
+            {/* CONTAINER LIST */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+              {(poolData?.servers || ctServers)
+                .filter((srv) => {
+                  const q = poolFilterQuery.toLowerCase().trim()
+                  if (!q) return true
+                  return (
+                    String(srv.vmid).includes(q) ||
+                    (srv.serverName || srv.name || '').toLowerCase().includes(q) ||
+                    (srv.studentId || '').toLowerCase().includes(q)
+                  )
+                })
+                .map((server: any) => {
+                  const stats = server.stats || {
+                    running: server.status === 'running',
+                    cpuPercent: 0,
+                    memUsageMB: 0,
+                    memLimitMB: server.ram || 1024,
+                    memPercent: 0,
+                    diskUsageMB: 0,
+                    diskLimitGB: server.disk || 10,
+                    diskPercent: 0,
+                    pids: 0
+                  }
+                  const isRunning = server.status === 'running' || stats.running
+
+                  return (
+                    <div
+                      key={server.vmid}
+                      className="p-4 rounded-xl bg-zinc-900/80 border border-zinc-800 hover:border-zinc-700 transition-all space-y-3 text-xs"
+                    >
+                      {/* Top Header of Card */}
+                      <div className="flex items-center justify-between pb-2 border-b border-zinc-800">
+                        <div className="flex items-center gap-2">
+                          {renderOSLogo(server.osKey || 'debian-12', 'h-4 w-4')}
+                          <div>
+                            <div className="flex items-center gap-1.5">
+                              <span className="font-mono font-bold text-white text-xs">
+                                CT {server.vmid}
+                              </span>
+                              <span className="text-zinc-400 font-medium truncate max-w-[150px]">
+                                {server.serverName || server.name}
+                              </span>
+                            </div>
+                            <span className="text-[10px] text-zinc-500 font-mono block">
+                              ID: {server.studentId}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <span
+                            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium font-mono ${
+                              isRunning
+                                ? 'bg-emerald-950/80 border border-emerald-800 text-emerald-400'
+                                : 'bg-zinc-800 border border-zinc-700 text-zinc-400'
+                            }`}
+                          >
+                            <span
+                              className={`h-1.5 w-1.5 rounded-full ${
+                                isRunning ? 'bg-emerald-400 animate-pulse' : 'bg-zinc-500'
+                              }`}
+                            />
+                            {isRunning ? 'RUNNING' : 'STOPPED'}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Resource Meters Row */}
+                      <div className="grid grid-cols-3 gap-2">
+                        {/* CPU */}
+                        <div className="p-2 rounded-lg bg-zinc-950/60 border border-zinc-800/80">
+                          <div className="flex items-center justify-between text-[10px] text-zinc-400">
+                            <span>CPU</span>
+                            <span className="font-mono font-bold text-zinc-200">
+                              {stats.cpuPercent}%
+                            </span>
+                          </div>
+                          <div className="w-full bg-zinc-800 h-1.5 rounded-full mt-1.5 overflow-hidden">
+                            <div
+                              className={`h-full rounded-full transition-all duration-300 ${
+                                stats.cpuPercent > 80
+                                  ? 'bg-red-500'
+                                  : stats.cpuPercent > 50
+                                  ? 'bg-amber-500'
+                                  : 'bg-emerald-500'
+                              }`}
+                              style={{ width: `${Math.min(100, stats.cpuPercent)}%` }}
+                            />
+                          </div>
+                        </div>
+
+                        {/* RAM */}
+                        <div className="p-2 rounded-lg bg-zinc-950/60 border border-zinc-800/80">
+                          <div className="flex items-center justify-between text-[10px] text-zinc-400">
+                            <span>RAM</span>
+                            <span className="font-mono font-bold text-sky-400">
+                              {stats.memUsageMB} MB
+                            </span>
+                          </div>
+                          <div className="w-full bg-zinc-800 h-1.5 rounded-full mt-1.5 overflow-hidden">
+                            <div
+                              className="h-full bg-sky-500 rounded-full transition-all duration-300"
+                              style={{ width: `${Math.min(100, stats.memPercent)}%` }}
+                            />
+                          </div>
+                        </div>
+
+                        {/* DISK */}
+                        <div className="p-2 rounded-lg bg-zinc-950/60 border border-zinc-800/80">
+                          <div className="flex items-center justify-between text-[10px] text-zinc-400">
+                            <span>ดิสก์</span>
+                            <span className="font-mono font-bold text-amber-400">
+                              {stats.diskUsageMB} MB
+                            </span>
+                          </div>
+                          <div className="w-full bg-zinc-800 h-1.5 rounded-full mt-1.5 overflow-hidden">
+                            <div
+                              className="h-full bg-amber-500 rounded-full transition-all duration-300"
+                              style={{ width: `${Math.min(100, stats.diskPercent)}%` }}
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Top Process Preview & PIDs */}
+                      <div className="flex items-center justify-between text-[11px] bg-zinc-950/40 p-2 rounded-lg border border-zinc-800/60">
+                        <div className="flex items-center gap-1.5 truncate max-w-[70%]">
+                          <Flame className="h-3.5 w-3.5 text-amber-400 shrink-0" />
+                          <span className="text-zinc-400 text-[10px]">โปรเซสหลัก:</span>
+                          <span className="font-mono text-[10px] text-zinc-200 truncate">
+                            {server.topProcess
+                              ? `${server.topProcess.command.slice(0, 32)} (PID ${server.topProcess.pid})`
+                              : isRunning
+                              ? 'bash / sshd'
+                              : 'เครื่องปิดอยู่'}
+                          </span>
+                        </div>
+                        <span className="font-mono text-[10px] text-zinc-400">
+                          {stats.pids || 0} PIDs
+                        </span>
+                      </div>
+
+                      {/* Actions */}
+                      <div className="flex items-center justify-between pt-1">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setSelectedProcessServer(server)}
+                          className="h-7 text-xs border-zinc-700 bg-zinc-800 hover:bg-zinc-700 text-zinc-200"
+                        >
+                          <Activity className="h-3 w-3 mr-1.5 text-emerald-400" />
+                          ตรวจสอบโปรเซส (Live)
+                        </Button>
+
+                        <div className="flex items-center gap-1">
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => onOpenTerminal(server)}
+                            className="h-7 text-xs text-zinc-400 hover:text-white"
+                            title="เปิด Terminal"
+                          >
+                            <Terminal className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => onTogglePower(server.vmid)}
+                            className="h-7 text-xs text-zinc-400 hover:text-white"
+                            title={isRunning ? 'ปิดเครื่อง' : 'เปิดเครื่อง'}
+                          >
+                            {isRunning ? (
+                              <Square className="h-3.5 w-3.5 text-amber-500" />
+                            ) : (
+                              <Play className="h-3.5 w-3.5 text-emerald-500" />
+                            )}
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => onReboot(server.vmid)}
+                            className="h-7 text-xs text-zinc-400 hover:text-white"
+                            title="รีบูต"
+                          >
+                            <RotateCw className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
+            </div>
+          </div>
+
+          {/* SECTION 2: TOP RESOURCE-CONSUMING PROCESSES ACROSS POOL */}
+          <div className="space-y-3 pt-2">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs font-bold text-zinc-200 uppercase tracking-wider flex items-center gap-1.5">
+                <Flame className="h-3.5 w-3.5 text-red-400" />
+                <span>โปรเซสที่มีการใช้งานทรัพยากรสูงสุดในคลัสเตอร์ (Top Pool Processes)</span>
+              </h3>
+              <span className="text-[11px] text-zinc-400 font-mono">
+                {poolData?.topProcesses?.length || 0} โปรเซส
+              </span>
+            </div>
+
+            <div className="overflow-x-auto rounded-xl border border-zinc-800 bg-zinc-900/90">
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="border-b border-zinc-800 text-[10px] text-zinc-400 uppercase tracking-wider bg-zinc-950/60 font-mono">
+                    <th className="py-2.5 px-3">เครื่อง / นศ.</th>
+                    <th className="py-2.5 px-3">PID</th>
+                    <th className="py-2.5 px-3">USER</th>
+                    <th className="py-2.5 px-3">%CPU</th>
+                    <th className="py-2.5 px-3">%MEM</th>
+                    <th className="py-2.5 px-3">เวลา</th>
+                    <th className="py-2.5 px-3">คำสั่งที่รัน (Command)</th>
+                    <th className="py-2.5 px-3 text-right">การจัดการ</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-zinc-800/80 font-mono text-[11px]">
+                  {!poolData?.topProcesses || poolData.topProcesses.length === 0 ? (
+                    <tr>
+                      <td colSpan={8} className="py-6 text-center text-zinc-500 font-sans">
+                        ไม่มีโปรเซสที่กำลังทำงานในเครื่องนักเรียนขณะนี้
+                      </td>
+                    </tr>
+                  ) : (
+                    poolData.topProcesses.map((p, idx) => (
+                      <tr key={idx} className="hover:bg-zinc-800/40 transition-colors">
+                        <td className="py-2.5 px-3">
+                          <span className="font-bold text-white">CT {p.vmid}</span>
+                          <span className="text-zinc-500 block text-[10px]">
+                            {p.studentId}
+                          </span>
+                        </td>
+                        <td className="py-2.5 px-3 text-zinc-300 font-bold">{p.pid}</td>
+                        <td className="py-2.5 px-3 text-zinc-400">{p.user}</td>
+                        <td className="py-2.5 px-3">
+                          <span
+                            className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
+                              p.cpu > 50
+                                ? 'bg-red-950/80 text-red-400 border border-red-800'
+                                : p.cpu > 20
+                                ? 'bg-amber-950/80 text-amber-400 border border-amber-800'
+                                : 'bg-emerald-950/80 text-emerald-400 border border-emerald-800'
+                            }`}
+                          >
+                            {p.cpu}%
+                          </span>
+                        </td>
+                        <td className="py-2.5 px-3 text-sky-400">{p.mem}%</td>
+                        <td className="py-2.5 px-3 text-zinc-400 text-[10px]">{p.time}</td>
+                        <td className="py-2.5 px-3 text-zinc-200 max-w-xs truncate" title={p.command}>
+                          {p.command}
+                        </td>
+                        <td className="py-2.5 px-3 text-right">
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => handleKillProcess(p.vmid || 0, p.pid, p.command)}
+                            disabled={isKillingPid === p.pid}
+                            className="h-6 text-[10px] px-2 bg-red-600/80 hover:bg-red-600 text-white cursor-pointer"
+                          >
+                            {isKillingPid === p.pid ? (
+                              <RefreshCw className="h-3 w-3 animate-spin" />
+                            ) : (
+                              'ยุติ (Kill)'
+                            )}
+                          </Button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ==================================================================== */}
       {/* SUB-TAB 1: STUDENT PASSWORDS VIEWER TABLE                             */}
@@ -772,15 +1487,26 @@ export function AdminPanel({
                   </div>
 
                   <div className="flex items-center justify-between pt-2 border-t border-zinc-100 dark:border-zinc-800">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => onOpenTerminal(server)}
-                      className="h-7 text-xs border-zinc-300 dark:border-zinc-700"
-                    >
-                      <Terminal className="h-3 w-3 mr-1" />
-                      Web Terminal
-                    </Button>
+                    <div className="flex items-center gap-1.5">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setSelectedProcessServer(server)}
+                        className="h-7 text-xs border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-200"
+                      >
+                        <Activity className="h-3 w-3 mr-1 text-emerald-500" />
+                        โปรเซส & กราฟสด
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => onOpenTerminal(server)}
+                        className="h-7 text-xs border-zinc-300 dark:border-zinc-700"
+                      >
+                        <Terminal className="h-3 w-3 mr-1" />
+                        Web Terminal
+                      </Button>
+                    </div>
 
                     <div className="flex items-center gap-1.5">
                       <Button
@@ -962,6 +1688,207 @@ export function AdminPanel({
                 ))}
             </div>
           )}
+        </div>
+      )}
+
+      {/* ==================================================================== */}
+      {/* SINGLE CONTAINER PROCESS & RESOURCE INSPECTOR MODAL                  */}
+      {/* ==================================================================== */}
+      {selectedProcessServer && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-xs">
+          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in-95">
+            {/* Modal Header */}
+            <div className="p-4 sm:p-5 border-b border-zinc-800 flex items-center justify-between bg-zinc-950/60">
+              <div className="flex items-center gap-3">
+                <div className="h-9 w-9 rounded-xl bg-zinc-800 border border-zinc-700 flex items-center justify-center text-emerald-400">
+                  <Activity className="h-5 w-5" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-bold text-white text-sm sm:text-base">
+                      มอนิเตอร์โปรเซส: CT {selectedProcessServer.vmid} ({selectedProcessServer.serverName || selectedProcessServer.name})
+                    </h3>
+                    {isProcessStreamConnected ? (
+                      <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-mono bg-emerald-950/80 border border-emerald-800 text-emerald-400">
+                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                        LIVE (2s)
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-mono bg-amber-950/80 border border-amber-800 text-amber-400">
+                        <RefreshCw className="h-3 w-3 animate-spin" />
+                        เชื่อมต่อสตรีม...
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs text-zinc-400 mt-0.5">
+                    นักศึกษา: {selectedProcessServer.studentId} • IP: {selectedProcessServer.ip}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => onOpenTerminal(selectedProcessServer)}
+                  className="h-8 text-xs border-zinc-700 bg-zinc-800 text-zinc-200"
+                >
+                  <Terminal className="h-3.5 w-3.5 mr-1" />
+                  Terminal
+                </Button>
+                <button
+                  type="button"
+                  onClick={() => setSelectedProcessServer(null)}
+                  className="h-8 w-8 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white flex items-center justify-center cursor-pointer"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+
+            {/* Live Metrics Row */}
+            {serverProcessStreamData?.stats && (
+              <div className="grid grid-cols-4 gap-2.5 p-4 border-b border-zinc-800 bg-zinc-950/40 text-xs">
+                <div className="p-2.5 rounded-lg bg-zinc-900 border border-zinc-800">
+                  <span className="text-zinc-400 text-[10px] block">CPU การใช้งาน</span>
+                  <span className="text-lg font-bold font-mono text-emerald-400">
+                    {serverProcessStreamData.stats.cpuPercent}%
+                  </span>
+                </div>
+                <div className="p-2.5 rounded-lg bg-zinc-900 border border-zinc-800">
+                  <span className="text-zinc-400 text-[10px] block">RAM การใช้งาน</span>
+                  <span className="text-lg font-bold font-mono text-sky-400">
+                    {serverProcessStreamData.stats.memUsageMB} MB
+                    <span className="text-xs text-zinc-500 font-normal ml-1">
+                      ({serverProcessStreamData.stats.memPercent}%)
+                    </span>
+                  </span>
+                </div>
+                <div className="p-2.5 rounded-lg bg-zinc-900 border border-zinc-800">
+                  <span className="text-zinc-400 text-[10px] block">พื้นที่ Workspace</span>
+                  <span className="text-lg font-bold font-mono text-amber-400">
+                    {serverProcessStreamData.stats.diskUsageMB} MB
+                  </span>
+                </div>
+                <div className="p-2.5 rounded-lg bg-zinc-900 border border-zinc-800">
+                  <span className="text-zinc-400 text-[10px] block">จำนวน PIDs</span>
+                  <span className="text-lg font-bold font-mono text-purple-400">
+                    {serverProcessStreamData.stats.pids || 0}
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {/* Search Filter & Table Header */}
+            <div className="p-4 border-b border-zinc-800 flex items-center justify-between gap-3 bg-zinc-900">
+              <div className="relative flex-1 max-w-sm">
+                <Search className="h-3.5 w-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
+                <Input
+                  type="text"
+                  placeholder="กรองโปรเซสตาม PID หรือชื่อคำสั่ง..."
+                  value={processSearchQuery}
+                  onChange={(e) => setProcessSearchQuery(e.target.value)}
+                  className="pl-8 h-8 text-xs bg-zinc-950 border-zinc-800 text-zinc-200"
+                />
+              </div>
+              <span className="text-xs text-zinc-400 font-mono">
+                {serverProcessStreamData?.processes?.length || 0} โปรเซส
+              </span>
+            </div>
+
+            {/* Process Table Body */}
+            <div className="flex-1 overflow-y-auto p-4">
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="border-b border-zinc-800 text-[10px] text-zinc-400 uppercase tracking-wider font-mono">
+                    <th className="py-2 px-2.5">PID</th>
+                    <th className="py-2 px-2.5">USER</th>
+                    <th className="py-2 px-2.5">%CPU</th>
+                    <th className="py-2 px-2.5">%MEM</th>
+                    <th className="py-2 px-2.5">STAT</th>
+                    <th className="py-2 px-2.5">TIME</th>
+                    <th className="py-2 px-2.5">COMMAND</th>
+                    <th className="py-2 px-2.5 text-right">จัดการ</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-zinc-800/60 font-mono text-[11px]">
+                  {!serverProcessStreamData?.processes || serverProcessStreamData.processes.length === 0 ? (
+                    <tr>
+                      <td colSpan={8} className="py-8 text-center text-zinc-500 font-sans">
+                        {isProcessStreamConnected ? 'ไม่พบโปรเซสที่กำลังทำงาน' : 'กำลังดึงรายการโปรเซสจากคอนเทนเนอร์...'}
+                      </td>
+                    </tr>
+                  ) : (
+                    serverProcessStreamData.processes
+                      .filter((p) => {
+                        const q = processSearchQuery.toLowerCase().trim()
+                        if (!q) return true
+                        return (
+                          String(p.pid).includes(q) ||
+                          p.command.toLowerCase().includes(q) ||
+                          p.user.toLowerCase().includes(q)
+                        )
+                      })
+                      .map((p) => (
+                        <tr key={p.pid} className="hover:bg-zinc-800/40 transition-colors">
+                          <td className="py-2.5 px-2.5 font-bold text-white">{p.pid}</td>
+                          <td className="py-2.5 px-2.5 text-zinc-400">{p.user}</td>
+                          <td className="py-2.5 px-2.5">
+                            <span
+                              className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
+                                p.cpu > 50
+                                  ? 'bg-red-950/80 text-red-400 border border-red-800'
+                                  : p.cpu > 20
+                                  ? 'bg-amber-950/80 text-amber-400 border border-amber-800'
+                                  : 'bg-emerald-950/80 text-emerald-400 border border-emerald-800'
+                              }`}
+                            >
+                              {p.cpu}%
+                            </span>
+                          </td>
+                          <td className="py-2.5 px-2.5 text-sky-400">{p.mem}%</td>
+                          <td className="py-2.5 px-2.5 text-zinc-500 text-[10px]">{p.stat}</td>
+                          <td className="py-2.5 px-2.5 text-zinc-400 text-[10px]">{p.time}</td>
+                          <td className="py-2.5 px-2.5 text-zinc-200 max-w-md truncate" title={p.command}>
+                            {p.command}
+                          </td>
+                          <td className="py-2.5 px-2.5 text-right">
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              onClick={() => handleKillProcess(selectedProcessServer.vmid, p.pid, p.command)}
+                              disabled={isKillingPid === p.pid}
+                              className="h-6 text-[10px] px-2 bg-red-600/80 hover:bg-red-600 text-white cursor-pointer"
+                            >
+                              {isKillingPid === p.pid ? (
+                                <RefreshCw className="h-3 w-3 animate-spin" />
+                              ) : (
+                                'ยุติ (Kill)'
+                              )}
+                            </Button>
+                          </td>
+                        </tr>
+                      ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-3 border-t border-zinc-800 bg-zinc-950 flex items-center justify-between text-xs text-zinc-400">
+              <span className="text-[11px]">
+                คำสั่ง `kill -9` จะส่งสัญญาณ SIGKILL บังคับปิดโปรเซสทันทีเพื่อคืนทรัพยากร
+              </span>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setSelectedProcessServer(null)}
+                className="h-7 text-xs border-zinc-700 bg-zinc-900 text-zinc-200"
+              >
+                ปิดหน้าต่าง
+              </Button>
+            </div>
+          </div>
         </div>
       )}
     </div>

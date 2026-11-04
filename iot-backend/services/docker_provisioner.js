@@ -369,4 +369,197 @@ export async function getContainerLiveStats(containerId, serverMeta = null) {
   }
 }
 
+/**
+ * Fetch list of active processes inside container (ps aux)
+ */
+export async function getContainerProcesses(containerId) {
+  try {
+    const container = docker.getContainer(containerId)
+    let topData = null
+    try {
+      topData = await container.top({ ps_args: 'aux' })
+    } catch {
+      topData = await container.top()
+    }
+
+    if (!topData || !topData.Processes) {
+      return []
+    }
+
+    const titles = (topData.Titles || []).map(t => String(t).toUpperCase().trim())
+    const userIdx = titles.indexOf('USER') !== -1 ? titles.indexOf('USER') : 0
+    const pidIdx = titles.indexOf('PID') !== -1 ? titles.indexOf('PID') : 1
+    const cpuIdx = titles.indexOf('%CPU') !== -1 ? titles.indexOf('%CPU') : 2
+    const memIdx = titles.indexOf('%MEM') !== -1 ? titles.indexOf('%MEM') : 3
+    const vszIdx = titles.indexOf('VSZ') !== -1 ? titles.indexOf('VSZ') : 4
+    const rssIdx = titles.indexOf('RSS') !== -1 ? titles.indexOf('RSS') : 5
+    const statIdx = titles.indexOf('STAT') !== -1 ? titles.indexOf('STAT') : 7
+    const timeIdx = titles.indexOf('TIME') !== -1 ? titles.indexOf('TIME') : 9
+    const cmdIdx = titles.indexOf('COMMAND') !== -1 ? titles.indexOf('COMMAND') : 10
+
+    return topData.Processes.map(proc => {
+      const cmd = proc.slice(cmdIdx).join(' ') || proc[cmdIdx] || ''
+      return {
+        user: proc[userIdx] || 'root',
+        pid: parseInt(proc[pidIdx], 10) || proc[pidIdx],
+        cpu: parseFloat(proc[cpuIdx]) || 0.0,
+        mem: parseFloat(proc[memIdx]) || 0.0,
+        vsz: proc[vszIdx] || '-',
+        rss: proc[rssIdx] || '-',
+        stat: proc[statIdx] || '-',
+        time: proc[timeIdx] || '-',
+        command: cmd
+      }
+    }).sort((a, b) => b.cpu - a.cpu || b.mem - a.mem)
+  } catch (err) {
+    return []
+  }
+}
+
+/**
+ * Kill a specific process inside student container
+ */
+export async function killContainerProcess(containerId, pid, signal = '9') {
+  try {
+    const container = docker.getContainer(containerId)
+    const cleanPid = parseInt(pid, 10)
+    if (!cleanPid || isNaN(cleanPid)) {
+      return { success: false, error: 'Invalid PID' }
+    }
+    const exec = await container.exec({
+      AttachStdin: false,
+      AttachStdout: true,
+      AttachStderr: true,
+      Cmd: ['kill', `-${signal}`, String(cleanPid)]
+    })
+    const stream = await exec.start({})
+    let output = ''
+    stream.on('data', chunk => { output += chunk.toString() })
+    await new Promise(resolve => stream.on('end', resolve))
+    return { success: true, output }
+  } catch (err) {
+    return { success: false, error: err.message }
+  }
+}
+
+/**
+ * Aggregated Cluster / Container Pool Resource & Process Snapshot
+ */
+export async function getPoolDashboardSnapshot(servers = []) {
+  try {
+    const dockerInfo = await docker.info().catch(() => ({}))
+    const nCpus = dockerInfo.NCPU || 4
+    const hostMemTotal = dockerInfo.MemTotal || (8 * 1024 * 1024 * 1024)
+    const hostMemTotalMB = Math.round(hostMemTotal / (1024 * 1024))
+
+    let totalAllocatedVcpu = 0
+    let totalAllocatedRamMB = 0
+    let totalAllocatedDiskGB = 0
+    let totalUsedRamMB = 0
+    let totalUsedDiskMB = 0
+    let totalCpuPercent = 0.0
+
+    const enrichedServers = []
+    const allProcesses = []
+
+    for (const s of servers) {
+      totalAllocatedVcpu += Number(s.vcpu || 1)
+      totalAllocatedRamMB += Number(s.ram || 1024)
+      totalAllocatedDiskGB += Number(s.disk || 10)
+
+      const containerId = s.containerId || s.name
+      const [stats, processes] = await Promise.all([
+        getContainerLiveStats(containerId, s),
+        s.status === 'running' ? getContainerProcesses(containerId) : Promise.resolve([])
+      ])
+
+      if (stats.running) {
+        totalCpuPercent += stats.cpuPercent
+        totalUsedRamMB += stats.memUsageMB
+      }
+      totalUsedDiskMB += stats.diskUsageMB || 0
+
+      // Top process for this container (excluding idle sleep loops if others exist)
+      let topProc = processes.length > 0 ? processes[0] : null
+      if (processes.length > 1 && topProc && topProc.command.includes('sleep 3600')) {
+        const nonSleep = processes.find(p => !p.command.includes('sleep 3600'))
+        if (nonSleep) topProc = nonSleep
+      }
+
+      enrichedServers.push({
+        vmid: s.vmid,
+        studentId: s.studentId,
+        serverName: s.name,
+        containerId,
+        containerName: s.containerName || containerId,
+        os: s.os || s.osKey,
+        osKey: s.osKey,
+        ip: s.ip,
+        status: stats.running ? 'running' : 'stopped',
+        vcpu: s.vcpu || 1,
+        ram: s.ram || 1024,
+        disk: s.disk || 10,
+        customDomain: s.customDomain || '',
+        webPort: s.webPort || 80,
+        stats,
+        processCount: processes.length,
+        topProcess: topProc
+      })
+
+      if (stats.running && processes.length > 0) {
+        for (const p of processes) {
+          allProcesses.push({
+            vmid: s.vmid,
+            serverName: s.name,
+            studentId: s.studentId,
+            containerId,
+            ...p
+          })
+        }
+      }
+    }
+
+    allProcesses.sort((a, b) => b.cpu - a.cpu || b.mem - a.mem)
+    const topProcesses = allProcesses.slice(0, 15)
+    const runningCount = enrichedServers.filter(s => s.status === 'running').length
+
+    return {
+      success: true,
+      timestamp: new Date().toISOString(),
+      nodeInfo: {
+        nodeName: 'techniccom',
+        model: 'HP ProLiant DL20 Gen9',
+        ncpu: nCpus,
+        hostMemTotalMB,
+        dockerVersion: dockerInfo.ServerVersion || '26.x',
+        os: dockerInfo.OperatingSystem || 'Debian GNU/Linux 12 (bookworm)',
+        containersRunning: dockerInfo.ContainersRunning || runningCount,
+        containersTotal: dockerInfo.Containers || servers.length
+      },
+      poolSummary: {
+        totalServers: servers.length,
+        runningServers: runningCount,
+        stoppedServers: servers.length - runningCount,
+        totalCpuPercent: Math.min(100 * nCpus, Number(totalCpuPercent.toFixed(1))),
+        avgCpuPercent: runningCount > 0 ? Number((totalCpuPercent / runningCount).toFixed(1)) : 0,
+        totalUsedRamMB: Number(totalUsedRamMB.toFixed(1)),
+        totalAllocatedRamMB,
+        hostMemTotalMB,
+        ramPercentOfHost: Number(((totalUsedRamMB / hostMemTotalMB) * 100).toFixed(1)),
+        totalUsedDiskMB: Number(totalUsedDiskMB.toFixed(1)),
+        totalAllocatedDiskGB,
+        totalAllocatedVcpu
+      },
+      servers: enrichedServers,
+      topProcesses
+    }
+  } catch (err) {
+    return {
+      success: false,
+      error: err.message,
+      timestamp: new Date().toISOString()
+    }
+  }
+}
+
 
