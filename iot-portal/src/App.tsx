@@ -1802,7 +1802,7 @@ Payload:
                 <img
                   src="/logo.svg"
                   alt="infra-techcom"
-                  className="h-24 w-24 sm:h-28 sm:w-28 object-contain drop-shadow-sm select-none transition-transform hover:scale-105 duration-300"
+                  className="h-28 w-28 sm:h-32 sm:w-32 object-contain drop-shadow-md select-none transition-transform hover:scale-105 duration-300"
                 />
               </div>
               <h1 className="font-bold font-mono text-2xl tracking-tight text-zinc-900 dark:text-zinc-100">
@@ -1941,7 +1941,7 @@ Payload:
         /* ========================================================================= */
         <div className="flex-1 flex flex-col min-h-screen">
           {/* TOP NAVBAR */}
-          <header className="sticky top-0 z-30 h-16 bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 px-3 sm:px-6 flex items-center justify-between transition-colors">
+          <header className="sticky top-0 z-30 h-16 sm:h-[4.5rem] bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 px-3 sm:px-6 flex items-center justify-between transition-colors">
             {/* Left: Mobile Drawer Button + Brand Logo & Title */}
             <div className="flex items-center gap-2 sm:gap-3.5 min-w-0">
               <button
@@ -1957,7 +1957,7 @@ Payload:
                 <img
                   src="/logo.svg"
                   alt="infra-techcom"
-                  className="h-9 w-9 sm:h-10 sm:w-10 object-contain shrink-0 drop-shadow-2xs select-none"
+                  className="h-11 w-11 sm:h-12 sm:w-12 object-contain shrink-0 drop-shadow-xs select-none"
                 />
 
                 <div className="flex items-center gap-1.5 sm:gap-2">
@@ -2037,7 +2037,7 @@ Payload:
           </header>
 
           {/* MOBILE SUB-BAR (ACTIVE TAB & TOC DROPDOWN) */}
-          <div className="xl:hidden sticky top-16 z-20 bg-zinc-50/95 dark:bg-zinc-900/95 backdrop-blur-xs border-b border-zinc-200 dark:border-zinc-800 px-3 py-2 flex items-center justify-between transition-colors">
+          <div className="xl:hidden sticky top-16 sm:top-[4.5rem] z-20 bg-zinc-50/95 dark:bg-zinc-900/95 backdrop-blur-xs border-b border-zinc-200 dark:border-zinc-800 px-3 py-2 flex items-center justify-between transition-colors">
             <span className="text-xs font-semibold text-zinc-800 dark:text-zinc-200 truncate">
               {getActiveTabTitle()}
             </span>
@@ -2183,7 +2183,7 @@ Payload:
           {/* MAIN WORKSPACE: Desktop Sidebar + Content + Desktop On-This-Page */}
           <div className="flex-1 flex w-full">
             {/* DESKTOP LEFT SIDEBAR NAVIGATION */}
-            <aside className="hidden md:flex md:w-64 bg-white dark:bg-zinc-900 border-r border-zinc-200 dark:border-zinc-800 shrink-0 flex-col justify-between sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto transition-colors">
+            <aside className="hidden md:flex md:w-64 bg-white dark:bg-zinc-900 border-r border-zinc-200 dark:border-zinc-800 shrink-0 flex-col justify-between sticky top-16 sm:top-[4.5rem] h-[calc(100vh-4rem)] sm:h-[calc(100vh-4.5rem)] overflow-y-auto transition-colors">
               <nav className="p-3 space-y-6 text-xs">
                 {navItems.map((group, idx) => (
                   <div key={idx}>
@@ -5370,7 +5370,7 @@ service nginx restart`
             </main>
 
             {/* DESKTOP RIGHT SIDEBAR: "ON THIS PAGE" (TABLE OF CONTENTS) */}
-            <aside className="hidden xl:block w-64 shrink-0 border-l border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto transition-colors">
+            <aside className="hidden xl:block w-64 shrink-0 border-l border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 sticky top-16 sm:top-[4.5rem] h-[calc(100vh-4rem)] sm:h-[calc(100vh-4.5rem)] overflow-y-auto transition-colors">
               <div className="space-y-4">
                 <div className="text-xs font-semibold text-zinc-900 dark:text-white tracking-wider uppercase flex items-center gap-1.5">
                   <Bookmark className="h-3.5 w-3.5 text-zinc-500 dark:text-zinc-400" />
