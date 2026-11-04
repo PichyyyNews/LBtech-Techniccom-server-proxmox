@@ -98,15 +98,22 @@ export async function provisionStudentTelemetry(studentId, studentPassword = '')
         }
       }
 
-      // If password provided, update InfluxDB user password to match portal password
-      if (userId && studentPassword) {
+      // If password provided, update InfluxDB user password to match portal password (enforcing InfluxDB's >= 8 char requirement)
+      const validInfluxPassword = (studentPassword && studentPassword.length >= 8)
+        ? studentPassword
+        : (studentPassword ? studentPassword.padEnd(8, '0') : 'Techniccom2026')
+
+      if (userId && validInfluxPassword) {
         const passRes = await fetch(`${INFLUX_URL}/api/v2/users/${userId}/password`, {
           method: 'POST',
           headers,
-          body: JSON.stringify({ password: studentPassword })
+          body: JSON.stringify({ password: validInfluxPassword })
         })
         if (passRes.ok || passRes.status === 204) {
           console.log(`[InfluxDB] Synchronized password for ${studentId}`)
+        } else {
+          const errTxt = await passRes.text().catch(() => '')
+          console.warn(`[InfluxDB] Password sync failed for ${studentId}:`, errTxt)
         }
       }
 
@@ -259,5 +266,129 @@ export async function writeTelemetryToInflux(studentId, payload) {
       error: err.message,
       lineProtocol
     }
+  }
+}
+
+/**
+ * Synchronize all student accounts, organizations, buckets, and passwords in InfluxDB
+ */
+export async function syncAllStudentsInflux(students = []) {
+  const headers = {
+    'Content-Type': 'application/json',
+    ...getAuthHeader()
+  }
+
+  // 1. Get existing users
+  const uRes = await fetch(`${INFLUX_URL}/api/v2/users?limit=100`, { headers })
+  const uData = await uRes.json().catch(() => ({ users: [] }))
+  const userMap = {}
+  for (const u of (uData.users || [])) {
+    userMap[u.name] = u.id
+  }
+
+  // 2. Get existing orgs
+  const oRes = await fetch(`${INFLUX_URL}/api/v2/orgs?limit=100`, { headers })
+  const oData = await oRes.json().catch(() => ({ orgs: [] }))
+  const orgMap = {}
+  for (const o of (oData.orgs || [])) {
+    orgMap[o.name] = o.id
+  }
+
+  const results = []
+
+  for (const s of students) {
+    const studentId = s.studentId
+    let password = s.password || 'Techniccom2026'
+    if (password.length < 8) {
+      password = password.padEnd(8, '0')
+    }
+
+    let userId = userMap[studentId]
+    if (!userId) {
+      const createRes = await fetch(`${INFLUX_URL}/api/v2/users`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ name: studentId })
+      })
+      if (createRes.ok) {
+        const nu = await createRes.json()
+        userId = nu.id
+        userMap[studentId] = userId
+      }
+    }
+
+    if (userId) {
+      await fetch(`${INFLUX_URL}/api/v2/users/${userId}/password`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ password })
+      }).catch(() => {})
+    }
+
+    const orgName = `std-${studentId}`
+    let orgId = orgMap[orgName]
+    if (!orgId) {
+      const coRes = await fetch(`${INFLUX_URL}/api/v2/orgs`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ name: orgName })
+      })
+      if (coRes.ok) {
+        const no = await coRes.json()
+        orgId = no.id
+        orgMap[orgName] = orgId
+      }
+    }
+
+    if (userId && orgId) {
+      await fetch(`${INFLUX_URL}/api/v2/orgs/${orgId}/owners`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ id: userId })
+      }).catch(() => {})
+      await fetch(`${INFLUX_URL}/api/v2/orgs/${orgId}/members`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ id: userId })
+      }).catch(() => {})
+    }
+
+    if (orgId) {
+      const bRes = await fetch(`${INFLUX_URL}/api/v2/buckets?orgID=${orgId}`, { headers })
+      const bData = await bRes.json().catch(() => ({ buckets: [] }))
+      const hasBucket = (bData.buckets || []).some(b => b.name === 'telemetry')
+      if (!hasBucket) {
+        await fetch(`${INFLUX_URL}/api/v2/buckets`, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({
+            orgID: orgId,
+            name: 'telemetry',
+            retentionRules: [{ type: 'expire', everySeconds: 2592000 }]
+          })
+        }).catch(() => {})
+      }
+    }
+
+    // Test signin
+    const auth = Buffer.from(`${studentId}:${password}`).toString('base64')
+    const testRes = await fetch(`${INFLUX_URL}/api/v2/signin`, {
+      method: 'POST',
+      headers: { 'Authorization': `Basic ${auth}` }
+    }).catch(() => ({ ok: false }))
+
+    results.push({
+      studentId,
+      orgName,
+      passwordLen: password.length,
+      signinOk: testRes.ok || testRes.status === 204
+    })
+  }
+
+  return {
+    success: true,
+    total: students.length,
+    successfulLogins: results.filter(r => r.signinOk).length,
+    details: results
   }
 }

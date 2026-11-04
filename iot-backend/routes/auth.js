@@ -14,8 +14,8 @@ router.post('/register', async (req, res) => {
     if (!cleanId || cleanId.length < 5) {
       return res.status(400).json({ error: 'รหัสนักศึกษาต้องมีอย่างน้อย 5 ตัวอักษร' })
     }
-    if (!password || password.length < 6) {
-      return res.status(400).json({ error: 'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร' })
+    if (!password || password.length < 8) {
+      return res.status(400).json({ error: 'รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร (ตามข้อกำหนดความปลอดภัยของฐานข้อมูล InfluxDB)' })
     }
 
     console.log(`[AUTH] Registering student: ${cleanId} (${fullName})`)
@@ -101,8 +101,14 @@ router.post('/login', async (req, res) => {
       db.saveStudent(student)
       db.resetLoginAttempts(lockoutKey)
     } else {
-      // Check password if existing
-      if (student.password && student.password !== password) {
+      // Check password (also support legacy < 8 char accounts seamlessly)
+      const inputPass = String(password || '').trim()
+      const storedPass = String(student.password || '').trim()
+      const isMatch = storedPass === inputPass ||
+                      storedPass === inputPass.padEnd(8, '0') ||
+                      storedPass.padEnd(8, '0') === inputPass
+
+      if (student.password && !isMatch) {
         const attempt = db.recordFailedAttempt(lockoutKey, 5, 10)
         db.addLog('STUDENT_LOGIN_FAILED', { studentId: cleanId, ip: clientIp, attempt: attempt.failedCount })
         if (attempt.locked) {

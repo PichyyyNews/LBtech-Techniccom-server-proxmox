@@ -70,6 +70,7 @@ interface StudentSession {
   projectTitle: string
   department: string
   token: string
+  password?: string
   influxBucket?: string
   influxToken?: string
   influxOrg?: string
@@ -686,8 +687,8 @@ export default function App() {
       setAuthError('รหัสนักศึกษาต้องมีอย่างน้อย 5 ตัวอักษร')
       return
     }
-    if (!password || password.length < 6) {
-      setAuthError('รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร')
+    if (!password || password.length < 8) {
+      setAuthError('รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร (ตามข้อกำหนดความปลอดภัยของ InfluxDB)')
       return
     }
 
@@ -816,8 +817,8 @@ export default function App() {
     if (!session) return
     setSettingsError('')
 
-    if (!editPassword || editPassword.length < 6) {
-      setSettingsError('รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร')
+    if (!editPassword || editPassword.length < 8) {
+      setSettingsError('รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร (ตามข้อกำหนดความปลอดภัยของ InfluxDB)')
       return
     }
 
@@ -4421,10 +4422,19 @@ service nginx restart`
 
                         {/* Password */}
                         <div className="p-3 rounded-lg bg-zinc-100 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700/80">
-                          <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium block">รหัสผ่าน (Password)</span>
+                          <div className="flex items-center justify-between">
+                            <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium block">รหัสผ่าน (Password)</span>
+                            {(session?.token || session?.password || '').length < 8 && (
+                              <span className="text-[9px] text-amber-500 font-medium">เติม 0 เป็น 8 ตัว</span>
+                            )}
+                          </div>
                           <div className="flex items-center justify-between mt-1">
                             <span className={`font-mono text-xs select-all ${showDbPassword ? 'font-semibold text-zinc-900 dark:text-zinc-100' : 'text-zinc-400 tracking-widest'}`}>
-                              {showDbPassword ? (session?.token || '••••••••') : '••••••••'}
+                              {showDbPassword
+                                ? ((session?.token || session?.password || '').length < 8
+                                    ? (session?.token || session?.password || '').padEnd(8, '0')
+                                    : (session?.token || session?.password || '••••••••'))
+                                : '••••••••'}
                             </span>
                             <div className="flex items-center">
                               <button
@@ -4437,7 +4447,12 @@ service nginx restart`
                               </button>
                               <button
                                 type="button"
-                                onClick={() => copyDbText(session?.token || '', 'db_pass')}
+                                onClick={() => {
+                                  const p = (session?.token || session?.password || '').length < 8
+                                    ? (session?.token || session?.password || '').padEnd(8, '0')
+                                    : (session?.token || session?.password || '')
+                                  copyDbText(p, 'db_pass')
+                                }}
                                 className="p-1 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 cursor-pointer"
                                 title="คัดลอกรหัสผ่าน"
                               >
@@ -4456,11 +4471,11 @@ service nginx restart`
                           <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium block">องค์กร (Organization)</span>
                           <div className="flex items-center justify-between mt-1">
                             <span className="font-mono font-semibold text-zinc-900 dark:text-zinc-100 text-xs select-all truncate max-w-[120px]">
-                              {session?.influxOrg || 'lbtech'}
+                              {session?.influxOrg || `std-${session?.studentId || 'std'}`}
                             </span>
                             <button
                               type="button"
-                              onClick={() => copyDbText(session?.influxOrg || 'lbtech', 'db_org')}
+                              onClick={() => copyDbText(session?.influxOrg || `std-${session?.studentId || 'std'}`, 'db_org')}
                               className="p-1 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 cursor-pointer"
                               title="คัดลอก Organization"
                             >

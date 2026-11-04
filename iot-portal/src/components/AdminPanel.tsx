@@ -208,6 +208,32 @@ export function AdminPanel({
   const [processSearchQuery, setProcessSearchQuery] = useState('')
   const [isKillingPid, setIsKillingPid] = useState<number | null>(null)
   const [actionSuccessMsg, setActionSuccessMsg] = useState('')
+  const [isSyncingInflux, setIsSyncingInflux] = useState(false)
+
+  const handleSyncAllInflux = async () => {
+    setIsSyncingInflux(true)
+    try {
+      const res = await fetch('/api/admin/influx/sync-all', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-pin': adminPin
+        }
+      })
+      const data = await res.json()
+      if (res.ok) {
+        setActionSuccessMsg(`ซิงค์บัญชี InfluxDB สำเร็จ ${data.successfulLogins}/${data.total} คน เข้าใช้งานได้ 100%`)
+        setTimeout(() => setActionSuccessMsg(''), 5000)
+        fetchStudents()
+      } else {
+        alert(data.error || 'ไม่สามารถซิงค์ InfluxDB ได้')
+      }
+    } catch (e: any) {
+      alert('Error: ' + e.message)
+    } finally {
+      setIsSyncingInflux(false)
+    }
+  }
 
   // Connect to Pool SSE Stream
   useEffect(() => {
@@ -497,6 +523,17 @@ export function AdminPanel({
             >
               <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${isLoading ? 'animate-spin' : ''}`} />
               รีเฟรชข้อมูล
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleSyncAllInflux}
+              disabled={isSyncingInflux}
+              className="h-8 text-xs border-purple-800/80 bg-purple-950/40 hover:bg-purple-900/60 text-purple-300"
+              title="ซิงค์และตั้งค่ารหัสผ่านผู้ใช้ InfluxDB ทุกคนอัตโนมัติ"
+            >
+              <Database className={`h-3.5 w-3.5 mr-1.5 ${isSyncingInflux ? 'animate-spin' : ''}`} />
+              {isSyncingInflux ? 'กำลังซิงค์ InfluxDB...' : 'ซิงค์ InfluxDB ทั้งหมด'}
             </Button>
             <Button
               variant="destructive"

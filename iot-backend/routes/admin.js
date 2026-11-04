@@ -7,6 +7,7 @@ import {
   killContainerProcess,
   getContainerLiveStats
 } from '../services/docker_provisioner.js'
+import { syncAllStudentsInflux } from '../services/influx.js'
 
 const router = express.Router()
 
@@ -163,6 +164,27 @@ router.get('/pool/stream', requireAdmin, (req, res) => {
     isAlive = false
     clearInterval(interval)
   })
+})
+
+// Synchronize all student accounts, orgs, buckets & passwords in InfluxDB
+router.post('/influx/sync-all', requireAdmin, async (req, res) => {
+  try {
+    const students = db.getAllStudents()
+    const result = await syncAllStudentsInflux(students)
+    for (const s of students) {
+      if (s.password && s.password.length < 8) {
+        s.password = s.password.padEnd(8, '0')
+        s.token = s.password
+      }
+      s.influxOrg = `std-${s.studentId}`
+      s.influxBucket = 'telemetry'
+      db.saveStudent(s)
+    }
+    db.addLog('ADMIN_SYNC_ALL_INFLUX', { total: result.total, success: result.successfulLogins })
+    res.json(result)
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message })
+  }
 })
 
 // Single Server Live Stats & Process Stream (SSE)
