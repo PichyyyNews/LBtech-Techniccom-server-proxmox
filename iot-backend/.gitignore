@@ -3,3 +3,7 @@ data/*.tmp
 .env
 
 deploy.js
+
+fix_db_names.js
+inspect_db.js
+inspect_servers.js

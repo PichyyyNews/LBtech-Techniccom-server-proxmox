@@ -625,7 +625,11 @@ export function AdminPanel({
                 >
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 pb-2 border-b border-zinc-100 dark:border-zinc-800">
                     <div className="flex items-center gap-2">
-                      <span className="font-bold text-zinc-900 dark:text-white text-sm">{req.serverName}</span>
+                      <span className="font-bold text-zinc-900 dark:text-white text-sm">
+                        {req.serverName && req.serverName.replace(/^[-_.]+|[-_.]+$/g, '')
+                          ? req.serverName.replace(/^[-_.]+|[-_.]+$/g, '')
+                          : 'web-node (ชื่ออัตโนมัติ)'}
+                      </span>
                       <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300">
                         {req.os}
                       </span>
@@ -672,18 +676,23 @@ export function AdminPanel({
                       size="sm"
                       onClick={async () => {
                         setIsApprovingId(req.id)
-                        await onApproveRequest(req)
-                        setIsApprovingId(null)
-                        fetchStudents()
+                        try {
+                          await onApproveRequest(req)
+                        } finally {
+                          setIsApprovingId(null)
+                          fetchStudents()
+                        }
                       }}
-                      disabled={isApprovingId === req.id}
-                      className="h-8 text-xs bg-emerald-600 hover:bg-emerald-700 text-white"
+                      disabled={isApprovingId !== null}
+                      className="h-8 text-xs bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer disabled:opacity-60"
                     >
                       {isApprovingId === req.id ? (
                         <>
                           <RefreshCw className="h-3.5 w-3.5 mr-1.5 animate-spin" />
                           กำลังสร้าง CT บน Proxmox...
                         </>
+                      ) : isApprovingId !== null ? (
+                        <span>รอคิวสร้างเครื่อง...</span>
                       ) : (
                         <>
                           <CheckCircle2 className="h-3.5 w-3.5 mr-1.5" />

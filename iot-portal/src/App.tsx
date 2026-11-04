@@ -789,9 +789,14 @@ export default function App() {
       return
     }
 
-    const cleanName = reqServerName.trim().toLowerCase().replace(/[^a-z0-9-]/g, '-')
-    if (!cleanName || cleanName.length < 3) {
-      setReqError('กรุณาระบุชื่อเครื่องเซิร์ฟเวอร์อย่างน้อย 3 ตัวอักษร (ภาษาอังกฤษและตัวเลข)')
+    if (/[ก-๙]/.test(reqServerName)) {
+      setReqError('ชื่อเครื่องเซิร์ฟเวอร์ (Hostname) ต้องเป็นภาษาอังกฤษและตัวเลขเท่านั้น (ห้ามใช้ภาษาไทย) เช่น web-app, node-backend')
+      return
+    }
+
+    const cleanName = reqServerName.trim().toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '')
+    if (!cleanName || cleanName.length < 2 || !/[a-z0-9]/.test(cleanName)) {
+      setReqError('กรุณาระบุชื่อเครื่องเซิร์ฟเวอร์อย่างน้อย 2 ตัวอักษร (ภาษาอังกฤษและตัวเลข เช่น web-server, iot-node)')
       return
     }
 
@@ -2277,7 +2282,9 @@ Payload:
                                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 pb-2 border-b border-zinc-100 dark:border-zinc-800">
                                   <div>
                                     <span className="font-bold text-zinc-900 dark:text-white text-sm">
-                                      {req.serverName}
+                                      {req.serverName && req.serverName.replace(/^[-_.]+|[-_.]+$/g, '')
+                                        ? req.serverName.replace(/^[-_.]+|[-_.]+$/g, '')
+                                        : 'web-node (ชื่ออัตโนมัติ)'}
                                     </span>
                                     <span className="ml-2 px-2 py-0.5 rounded-full text-[10px] font-medium bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300">
                                       {req.os}

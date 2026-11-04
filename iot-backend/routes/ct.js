@@ -24,13 +24,21 @@ function requireAdmin(req, res, next) {
   return res.status(403).json({ error: 'ต้องใช้สิทธิ์อาจารย์ผู้ดูแลระบบ (Master PIN) ในการอนุมัติเครื่องเซิร์ฟเวอร์' })
 }
 
-// Helper to determine next VMID/ID
+// Global approval queue promise to serialize concurrent approvals and prevent race conditions
+let approvalMutex = Promise.resolve()
+const inProgressVmids = new Set()
+
+// Helper to determine next unique VMID
 function getNextVmid(existingServers) {
-  const ids = existingServers.map(s => Number(s.vmid)).filter(n => !isNaN(n) && n >= 109)
+  const ids = new Set([
+    ...existingServers.map(s => Number(s.vmid)).filter(n => !isNaN(n) && n >= 109),
+    ...inProgressVmids
+  ])
   let next = 109
-  while (ids.includes(next)) {
+  while (ids.has(next)) {
     next++
   }
+  inProgressVmids.add(next)
   return next
 }
 
@@ -43,10 +51,20 @@ router.post('/requests', (req, res) => {
       return res.status(400).json({ error: 'กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วน' })
     }
 
-    const cleanName = serverName.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '-')
+    let cleanName = String(serverName || '')
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9_-]/g, '-')
+      .replace(/^[-_.]+|[-_.]+$/g, '')
+      .replace(/[-_.]{2,}/g, '-')
+
+    if (!cleanName || cleanName.length < 2) {
+      cleanName = `app-${Math.random().toString(36).substring(2, 6)}`
+    }
+
     const newRequest = {
       id: `req_${Date.now()}_${Math.random().toString(16).substring(2, 6)}`,
-      studentId: studentId.trim(),
+      studentId: String(studentId).trim(),
       fullName: fullName || `Student ${studentId}`,
       projectTitle: projectTitle || 'IoT Micro-Container Project',
       serverName: cleanName,
@@ -87,83 +105,110 @@ router.get('/servers', (req, res) => {
 })
 
 // Admin Approves CT Request & Provisions Container
-router.post('/approve/:id', requireAdmin, async (req, res) => {
-  try {
-    const { id } = req.params
-    const request = db.getRequestById(id)
+router.post('/approve/:id', requireAdmin, (req, res) => {
+  // Execute approvals strictly sequentially using a mutex to prevent race conditions on VMID and Docker names
+  approvalMutex = approvalMutex.then(async () => {
+    let assignedVmid = null
+    try {
+      const { id } = req.params
+      const request = db.getRequestById(id)
 
-    if (!request) {
-      return res.status(404).json({ error: 'ไม่พบคำขอเซิร์ฟเวอร์ที่ระบุ' })
+      if (!request) {
+        return res.status(404).json({ error: 'ไม่พบคำขอเซิร์ฟเวอร์ที่ระบุ' })
+      }
+
+      if (request.status === 'approved') {
+        return res.status(400).json({ error: 'คำขอนี้ได้รับการอนุมัติไปแล้ว' })
+      }
+
+      const allServers = db.getServers()
+      assignedVmid = getNextVmid(allServers)
+
+      // Fallback clean name if serverName had only dashes
+      let cleanServerName = String(request.serverName || '')
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9_-]/g, '_')
+        .replace(/^[-_.]+|[-_.]+$/g, '')
+
+      if (!cleanServerName || cleanServerName.length < 2) {
+        cleanServerName = `node_${assignedVmid}`
+      }
+
+      const student = db.getStudent(request.studentId)
+      const rootPassword = student?.password || '07072569'
+
+      // 1. Provision In-Project Micro-Container via Docker
+      const containerRes = await createStudentContainer({
+        name: cleanServerName,
+        studentId: request.studentId,
+        osKey: request.os,
+        vcpu: request.vcpu,
+        ram: request.ram,
+        disk: request.disk,
+        password: rootPassword
+      })
+
+      // 2. Register Active Server in Database
+      const newServer = {
+        vmid: assignedVmid,
+        containerId: containerRes.containerId,
+        containerName: containerRes.containerName,
+        name: cleanServerName,
+        studentId: request.studentId,
+        os: containerRes.os,
+        osKey: request.os,
+        vcpu: request.vcpu,
+        ram: request.ram,
+        disk: request.disk,
+        ip: containerRes.ip,
+        status: 'running',
+        uptime: 'เพิ่งเริ่มทำงาน',
+        sshPort: 2222,
+        rootPassword: rootPassword,
+        cpuUsage: 1,
+        ramUsage: 25, // ~25MB lightweight micro-container
+        createdAt: new Date().toISOString()
+      }
+
+      // 3. Update Request Status
+      request.status = 'approved'
+      request.serverName = cleanServerName
+      request.vmid = assignedVmid
+      request.ip = newServer.ip
+      request.containerId = containerRes.containerId
+
+      db.saveRequest(request)
+      db.saveServer(newServer)
+
+      db.addLog('CT_REQUEST_APPROVED', {
+        requestId: id,
+        studentId: request.studentId,
+        vmid: assignedVmid,
+        containerName: containerRes.containerName
+      })
+
+      res.json({
+        success: true,
+        server: newServer,
+        container: containerRes
+      })
+    } catch (err) {
+      console.error('[CT] Approve error:', err)
+      if (!res.headersSent) {
+        res.status(500).json({ error: 'เกิดข้อผิดพลาดในการอนุมัติ: ' + err.message })
+      }
+    } finally {
+      if (assignedVmid) {
+        inProgressVmids.delete(assignedVmid)
+      }
     }
-
-    if (request.status === 'approved') {
-      return res.status(400).json({ error: 'คำขอนี้ได้รับการอนุมัติไปแล้ว' })
+  }).catch((queueErr) => {
+    console.error('[CT] Queue fatal error:', queueErr)
+    if (!res.headersSent) {
+      res.status(500).json({ error: 'เกิดข้อผิดพลาดในคิวการอนุมัติ: ' + queueErr.message })
     }
-
-    const allServers = db.getServers()
-    const nextVmid = getNextVmid(allServers)
-
-    const student = db.getStudent(request.studentId)
-    const rootPassword = student?.password || '07072569'
-
-    // 1. Provision In-Project Micro-Container via Docker
-    const containerRes = await createStudentContainer({
-      name: request.serverName,
-      studentId: request.studentId,
-      osKey: request.os,
-      vcpu: request.vcpu,
-      ram: request.ram,
-      disk: request.disk,
-      password: rootPassword
-    })
-
-    // 2. Register Active Server in Database
-    const newServer = {
-      vmid: nextVmid,
-      containerId: containerRes.containerId,
-      containerName: containerRes.containerName,
-      name: request.serverName,
-      studentId: request.studentId,
-      os: containerRes.os,
-      osKey: request.os,
-      vcpu: request.vcpu,
-      ram: request.ram,
-      disk: request.disk,
-      ip: containerRes.ip,
-      status: 'running',
-      uptime: 'เพิ่งเริ่มทำงาน',
-      sshPort: 2222,
-      rootPassword: rootPassword,
-      cpuUsage: 1,
-      ramUsage: 25, // ~25MB lightweight micro-container
-      createdAt: new Date().toISOString()
-    }
-
-    // 3. Update Request Status
-    request.status = 'approved'
-    request.vmid = nextVmid
-    request.ip = newServer.ip
-    request.containerId = containerRes.containerId
-
-    db.saveRequest(request)
-    db.saveServer(newServer)
-
-    db.addLog('CT_REQUEST_APPROVED', {
-      requestId: id,
-      studentId: request.studentId,
-      vmid: nextVmid,
-      containerName: containerRes.containerName
-    })
-
-    res.json({
-      success: true,
-      server: newServer,
-      container: containerRes
-    })
-  } catch (err) {
-    console.error('[CT] Approve error:', err)
-    res.status(500).json({ error: 'เกิดข้อผิดพลาดในการอนุมัติ: ' + err.message })
-  }
+  })
 })
 
 // Rejects CT Request (Admin or Self Student)

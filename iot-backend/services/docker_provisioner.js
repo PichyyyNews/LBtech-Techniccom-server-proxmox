@@ -18,12 +18,38 @@ const OS_LABELS = {
 }
 
 /**
+ * Sanitize studentId and serverName for 100% compliant Docker container & filesystem names
+ * Docker pattern: [a-zA-Z0-9][a-zA-Z0-9_.-]*
+ */
+export function sanitizeContainerIdentifier(studentId, serverName) {
+  const cleanStudentId = String(studentId || 'std')
+    .trim()
+    .replace(/[^a-zA-Z0-9_.-]/g, '_')
+    .replace(/^[-_.]+|[-_.]+$/g, '') || 'std'
+
+  let cleanName = String(serverName || '')
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9_.-]/g, '_')
+    .replace(/^[-_.]+|[-_.]+$/g, '')
+    .replace(/[-_.]{2,}/g, '_')
+
+  if (!cleanName || cleanName.length < 2) {
+    cleanName = `app_${Math.random().toString(36).substring(2, 6)}`
+  }
+
+  // Docker container name length limit and allowed format
+  const containerName = `std-${cleanStudentId}-${cleanName}`.slice(0, 63).replace(/[-_.]+$/, '')
+  return { cleanStudentId, cleanName, containerName }
+}
+
+/**
  * Ensure student persistent directory exists on host
  */
 function ensureWorkspaceDir(studentId, serverName) {
   const dataDir = process.env.DATA_DIR || '/app/data'
-  const cleanName = serverName.replace(/[^a-zA-Z0-9_-]/g, '_')
-  const workspacePath = path.join(dataDir, 'workspaces', studentId, cleanName)
+  const { cleanStudentId, cleanName } = sanitizeContainerIdentifier(studentId, serverName)
+  const workspacePath = path.join(dataDir, 'workspaces', cleanStudentId, cleanName)
   if (!fs.existsSync(workspacePath)) {
     fs.mkdirSync(workspacePath, { recursive: true })
     // Write a starter README
@@ -46,8 +72,7 @@ export async function createStudentContainer({
   password = ''
 }) {
   const image = IMAGE_MAP[osKey] || 'debian:12-slim'
-  const cleanName = name.toLowerCase().replace(/[^a-z0-9_-]/g, '_')
-  const containerName = `std-${studentId}-${cleanName}`
+  const { containerName, cleanName } = sanitizeContainerIdentifier(studentId, name)
 
   console.log(`[DOCKER] Provisioning student container: ${containerName} using ${image}...`)
 
