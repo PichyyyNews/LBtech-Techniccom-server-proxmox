@@ -1796,20 +1796,21 @@ Payload:
             <ThemeToggle />
           </div>
 
-          <div className="w-full max-w-[360px]">
-            <div className="flex flex-col items-center justify-center mb-6 text-center">
-              <div className="flex items-center gap-2.5 mb-1.5">
+          <div className="w-full max-w-[380px]">
+            <div className="flex flex-col items-center justify-center mb-7 text-center">
+              <div className="mb-4 flex items-center justify-center">
                 <img
                   src="/logo.svg"
                   alt="infra-techcom"
-                  className="h-8 w-8 object-contain shrink-0"
+                  className="h-24 w-24 sm:h-28 sm:w-28 object-contain drop-shadow-sm select-none transition-transform hover:scale-105 duration-300"
                 />
-                <span className="font-bold font-mono text-lg tracking-tight text-zinc-900 dark:text-zinc-100">
-                  infra-techcom
-                </span>
               </div>
-              <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
-                Infrastructure for Technical Computer • เทคโนโลยีคอมพิวเตอร์ วิทยาลัยเทคนิคลพบุรี
+              <h1 className="font-bold font-mono text-2xl tracking-tight text-zinc-900 dark:text-zinc-100">
+                infra-techcom
+              </h1>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1 max-w-[320px] leading-relaxed">
+                Infrastructure for Technical Computer<br />
+                <span className="text-[11px] text-zinc-400 dark:text-zinc-500">แผนกวิชาเทคโนโลยีคอมพิวเตอร์ วิทยาลัยเทคนิคลพบุรี</span>
               </p>
             </div>
 
@@ -1940,33 +1941,39 @@ Payload:
         /* ========================================================================= */
         <div className="flex-1 flex flex-col min-h-screen">
           {/* TOP NAVBAR */}
-          <header className="sticky top-0 z-30 h-14 bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 px-3 sm:px-6 flex items-center justify-between transition-colors">
-            {/* Left: Mobile Drawer Button + Brand */}
-            <div className="flex items-center gap-2 sm:gap-3">
+          <header className="sticky top-0 z-30 h-16 bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 px-3 sm:px-6 flex items-center justify-between transition-colors">
+            {/* Left: Mobile Drawer Button + Brand Logo & Title */}
+            <div className="flex items-center gap-2 sm:gap-3.5 min-w-0">
               <button
                 type="button"
                 onClick={() => setIsMobileMenuOpen(true)}
-                className="md:hidden p-1.5 rounded-lg text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer"
+                className="md:hidden p-2 rounded-lg text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer shrink-0"
                 aria-label="เปิดเมนูหลัก"
               >
                 <Menu className="h-5 w-5" />
               </button>
 
-              <img
-                src="/logo.svg"
-                alt="infra-techcom"
-                className="h-7 w-7 object-contain shrink-0"
-              />
+              <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
+                <img
+                  src="/logo.svg"
+                  alt="infra-techcom"
+                  className="h-9 w-9 sm:h-10 sm:w-10 object-contain shrink-0 drop-shadow-2xs select-none"
+                />
 
-              <div className="flex items-center gap-1.5 sm:gap-2">
-                <span className="font-bold font-mono text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 leading-tight">infra-techcom</span>
-                <span className="text-zinc-300 dark:text-zinc-700 hidden sm:inline">/</span>
-                <span className="text-xs text-zinc-500 dark:text-zinc-400 font-medium hidden sm:inline">Infrastructure for Technical Computer</span>
+                <div className="flex items-center gap-1.5 sm:gap-2">
+                  <span className="font-bold font-mono text-sm sm:text-base text-zinc-900 dark:text-zinc-100 leading-none">
+                    infra-techcom
+                  </span>
+                  <span className="text-zinc-300 dark:text-zinc-700 hidden lg:inline">/</span>
+                  <span className="text-xs text-zinc-500 dark:text-zinc-400 font-medium hidden lg:inline truncate">
+                    Infrastructure for Technical Computer
+                  </span>
+                </div>
               </div>
             </div>
 
-            {/* Right: Theme Toggle & Search Button (Admin access hidden at /admin) */}
-            <div className="flex items-center gap-1.5 sm:gap-2">
+            {/* Right: Actions & Tools (Responsive on mobile) */}
+            <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
               {isAdminUnlocked && (
                 <button
                   type="button"
@@ -1974,14 +1981,14 @@ Payload:
                     setActiveTab('admin')
                     window.history.pushState(null, '', '/admin')
                   }}
-                  className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-xs font-medium transition-colors cursor-pointer shadow-2xs ${
+                  className={`inline-flex items-center gap-1.5 p-1.5 sm:px-2.5 sm:py-1.5 rounded-lg border text-xs font-medium transition-colors cursor-pointer shadow-2xs ${
                     activeTab === 'admin'
                       ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300'
                       : 'border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-200'
                   }`}
                   title="เปิดแผงควบคุมอาจารย์"
                 >
-                  <ShieldCheck className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                  <ShieldCheck className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
                   <span className="hidden sm:inline text-[11px]">แผงควบคุมอาจารย์</span>
                 </button>
               )}
@@ -1995,19 +2002,19 @@ Payload:
                   setCopiedAiLink(true)
                   setTimeout(() => setCopiedAiLink(false), 2200)
                 }}
-                className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-700 text-xs font-medium text-zinc-700 dark:text-zinc-200 transition-colors shadow-2xs cursor-pointer"
+                className="inline-flex items-center gap-1.5 p-1.5 sm:px-2.5 sm:py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-700 text-xs font-medium text-zinc-700 dark:text-zinc-200 transition-colors shadow-2xs cursor-pointer"
                 title="คัดลอกลิงก์ llms.txt ให้ AI (ChatGPT, Claude, Cursor) อ่านโครงสร้างและสเปกระบบทั้งหมดได้ทันที"
               >
                 {copiedAiLink ? (
                   <>
-                    <Check className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
-                    <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">คัดลอกลิงก์ AI แล้ว!</span>
+                    <Check className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                    <span className="hidden sm:inline text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">คัดลอกลิงก์แล้ว</span>
                   </>
                 ) : (
                   <>
-                    <Sparkles className="h-3.5 w-3.5 text-zinc-500 dark:text-zinc-400" />
-                    <span className="hidden sm:inline text-[11px]">ส่งให้ AI (llms.txt)</span>
-                    <span className="sm:hidden text-[11px]">AI</span>
+                    <Sparkles className="h-4 w-4 text-zinc-500 dark:text-zinc-400" />
+                    <span className="hidden md:inline text-[11px]">ส่งให้ AI (llms.txt)</span>
+                    <span className="hidden sm:inline md:hidden text-[11px]">AI</span>
                   </>
                 )}
               </button>
@@ -2017,12 +2024,12 @@ Payload:
               <button
                 type="button"
                 onClick={() => setIsSearchOpen(true)}
-                className="flex items-center gap-2 px-2.5 sm:px-3 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700 text-xs text-zinc-600 dark:text-zinc-300 transition-colors cursor-pointer shadow-2xs"
+                className="flex items-center gap-2 p-1.5 sm:px-3 sm:py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700 text-xs text-zinc-600 dark:text-zinc-300 transition-colors cursor-pointer shadow-2xs"
+                title="ค้นหาเอกสาร (Ctrl+K)"
               >
-                <Search className="h-3.5 w-3.5 text-zinc-400 dark:text-zinc-500" />
+                <Search className="h-4 w-4 text-zinc-400 dark:text-zinc-500" />
                 <span className="hidden sm:inline">ค้นหาเอกสาร...</span>
-                <span className="sm:hidden text-xs">ค้นหา</span>
-                <kbd className="hidden sm:inline-flex items-center px-1.5 py-0.5 text-[10px] font-mono text-zinc-400 dark:text-zinc-400 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded">
+                <kbd className="hidden md:inline-flex items-center px-1.5 py-0.5 text-[10px] font-mono text-zinc-400 dark:text-zinc-400 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded">
                   Ctrl K
                 </kbd>
               </button>
@@ -2030,7 +2037,7 @@ Payload:
           </header>
 
           {/* MOBILE SUB-BAR (ACTIVE TAB & TOC DROPDOWN) */}
-          <div className="xl:hidden sticky top-14 z-20 bg-zinc-50/95 dark:bg-zinc-900/95 backdrop-blur-xs border-b border-zinc-200 dark:border-zinc-800 px-3 py-2 flex items-center justify-between transition-colors">
+          <div className="xl:hidden sticky top-16 z-20 bg-zinc-50/95 dark:bg-zinc-900/95 backdrop-blur-xs border-b border-zinc-200 dark:border-zinc-800 px-3 py-2 flex items-center justify-between transition-colors">
             <span className="text-xs font-semibold text-zinc-800 dark:text-zinc-200 truncate">
               {getActiveTabTitle()}
             </span>
@@ -2084,13 +2091,16 @@ Payload:
               <div className="relative w-72 max-w-[85vw] bg-white dark:bg-zinc-900 border-r border-zinc-200 dark:border-zinc-800 shadow-2xl flex flex-col justify-between z-10 animate-in slide-in-from-left duration-200">
                 <div>
                   <div className="p-4 border-b border-zinc-100 dark:border-zinc-800 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2.5">
                       <img
                         src="/logo.svg"
                         alt="infra-techcom"
-                        className="h-6 w-6 object-contain shrink-0"
+                        className="h-8 w-8 object-contain shrink-0"
                       />
-                      <span className="font-bold font-mono text-xs text-zinc-900 dark:text-zinc-100">infra-techcom</span>
+                      <div>
+                        <span className="font-bold font-mono text-xs text-zinc-900 dark:text-zinc-100 block leading-tight">infra-techcom</span>
+                        <span className="text-[10px] text-zinc-400">Technical Computer</span>
+                      </div>
                     </div>
                     <button
                       type="button"
@@ -2173,7 +2183,7 @@ Payload:
           {/* MAIN WORKSPACE: Desktop Sidebar + Content + Desktop On-This-Page */}
           <div className="flex-1 flex w-full">
             {/* DESKTOP LEFT SIDEBAR NAVIGATION */}
-            <aside className="hidden md:flex md:w-64 bg-white dark:bg-zinc-900 border-r border-zinc-200 dark:border-zinc-800 shrink-0 flex-col justify-between sticky top-14 h-[calc(100vh-3.5rem)] overflow-y-auto transition-colors">
+            <aside className="hidden md:flex md:w-64 bg-white dark:bg-zinc-900 border-r border-zinc-200 dark:border-zinc-800 shrink-0 flex-col justify-between sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto transition-colors">
               <nav className="p-3 space-y-6 text-xs">
                 {navItems.map((group, idx) => (
                   <div key={idx}>
@@ -5360,7 +5370,7 @@ service nginx restart`
             </main>
 
             {/* DESKTOP RIGHT SIDEBAR: "ON THIS PAGE" (TABLE OF CONTENTS) */}
-            <aside className="hidden xl:block w-64 shrink-0 border-l border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 sticky top-14 h-[calc(100vh-3.5rem)] overflow-y-auto transition-colors">
+            <aside className="hidden xl:block w-64 shrink-0 border-l border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto transition-colors">
               <div className="space-y-4">
                 <div className="text-xs font-semibold text-zinc-900 dark:text-white tracking-wider uppercase flex items-center gap-1.5">
                   <Bookmark className="h-3.5 w-3.5 text-zinc-500 dark:text-zinc-400" />
