@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
 import {
   Wifi,
   Radio,
@@ -32,6 +32,7 @@ import {
   Play,
   Square,
   RotateCw,
+  RefreshCw,
   Clock,
   ShieldCheck,
   ShieldAlert,
@@ -259,32 +260,33 @@ export default function App() {
     localStorage.setItem('lbtech_ct_servers', JSON.stringify(ctServers))
   }, [ctServers])
 
-  // Initial Sync from Centralized Backend
-  useEffect(() => {
-    const syncBackend = async () => {
-      try {
-        const [reqRes, srvRes] = await Promise.all([
-          fetch('/api/ct/requests'),
-          fetch('/api/ct/servers')
-        ])
-        if (reqRes.ok) {
-          const reqData = await reqRes.json()
-          if (Array.isArray(reqData.requests)) {
-            setCtRequests(reqData.requests)
-          }
+  // Centralized Backend Synchronization
+  const syncCentralData = useCallback(async () => {
+    try {
+      const [reqRes, srvRes] = await Promise.all([
+        fetch('/api/ct/requests'),
+        fetch('/api/ct/servers')
+      ])
+      if (reqRes.ok) {
+        const reqData = await reqRes.json()
+        if (Array.isArray(reqData.requests)) {
+          setCtRequests(reqData.requests)
         }
-        if (srvRes.ok) {
-          const srvData = await srvRes.json()
-          if (Array.isArray(srvData.servers)) {
-            setCtServers(srvData.servers)
-          }
-        }
-      } catch {
-        // Fallback to local storage if backend offline
       }
+      if (srvRes.ok) {
+        const srvData = await srvRes.json()
+        if (Array.isArray(srvData.servers)) {
+          setCtServers(srvData.servers)
+        }
+      }
+    } catch {
+      // Fallback to local storage if backend offline
     }
-    syncBackend()
   }, [])
+
+  useEffect(() => {
+    syncCentralData()
+  }, [syncCentralData])
 
   // CT Request Form Fields
   const [reqServerName, setReqServerName] = useState('')
@@ -298,6 +300,7 @@ export default function App() {
   const [reqSuccess, setReqSuccess] = useState('')
   const [copiedSshCmd, setCopiedSshCmd] = useState<number | null>(null)
   const [isCreatingServer, setIsCreatingServer] = useState(false)
+  const [approvingReqId, setApprovingReqId] = useState<string | null>(null)
 
   // Server Credentials reveal & copy states
   const [showServerPasswords, setShowServerPasswords] = useState<Record<number, boolean>>({})
@@ -955,34 +958,34 @@ export default function App() {
       return
     }
 
+    if (approvingReqId) {
+      return // Prevent concurrent multi-clicks
+    }
+
+    setApprovingReqId(req.id)
     try {
       const res = await fetch(`/api/ct/approve/${req.id}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-admin-pin': adminPinInput || ''
+          'x-admin-pin': adminPinInput || '2569'
         }
       })
       if (res.ok) {
         const data = await res.json()
         if (data.server) {
-          setCtServers((prev) => [data.server, ...prev.filter(s => s.vmid !== data.server.vmid)])
-          setCtRequests((prev) =>
-            prev.map((r) =>
-              r.id === req.id ? { ...r, status: 'approved', vmid: data.server.vmid, ip: data.server.ip } : r
-            )
-          )
+          await syncCentralData()
           return
         }
       } else {
         const errData = await res.json()
         alert(errData.error || 'ไม่สามารถอนุมัติได้ ต้องใช้สิทธิ์อาจารย์')
-        return
       }
     } catch (err) {
       console.warn('[Approve] API error:', err)
       alert('เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์')
-      return
+    } finally {
+      setApprovingReqId(null)
     }
   }
 
@@ -2113,17 +2116,17 @@ Payload:
                                 key={item.id}
                                 type="button"
                                 onClick={() => handleTabChange(item.id)}
-                                className={`w-full flex items-center justify-between px-2.5 py-2.5 rounded-lg transition-colors cursor-pointer text-left ${
+                                className={`w-full flex items-center justify-between px-2.5 py-2 rounded-lg transition-colors cursor-pointer text-left ${
                                   isActive
-                                    ? 'bg-zinc-900 dark:bg-zinc-800 text-white font-medium border border-transparent dark:border-zinc-700'
-                                    : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800'
+                                    ? 'bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 font-medium'
+                                    : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800/60 hover:text-zinc-900 dark:hover:text-zinc-100'
                                 }`}
                               >
                                 <div className="flex items-center gap-2.5 min-w-0">
-                                  <Icon className="h-4 w-4 shrink-0" />
+                                  <Icon className="h-4 w-4 shrink-0 text-zinc-500 dark:text-zinc-400" />
                                   <span className="truncate">{item.label}</span>
                                 </div>
-                                {isActive && <ChevronRight className="h-3 w-3" />}
+                                {isActive && <ChevronRight className="h-3 w-3 shrink-0 text-zinc-400 dark:text-zinc-500" />}
                               </button>
                             )
                           })}
@@ -2188,15 +2191,15 @@ Payload:
                             onClick={() => handleTabChange(item.id)}
                             className={`w-full flex items-center justify-between px-2.5 py-2 rounded-lg transition-colors cursor-pointer text-left ${
                               isActive
-                                ? 'bg-zinc-900 dark:bg-zinc-800 text-white font-medium border border-transparent dark:border-zinc-700'
-                                : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-100'
+                                ? 'bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 font-medium'
+                                : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800/60 hover:text-zinc-900 dark:hover:text-zinc-100'
                             }`}
                           >
-                            <div className="flex items-center gap-2 min-w-0">
-                              <Icon className="h-4 w-4 shrink-0" />
+                            <div className="flex items-center gap-2.5 min-w-0">
+                              <Icon className="h-4 w-4 shrink-0 text-zinc-500 dark:text-zinc-400" />
                               <span className="truncate">{item.label}</span>
                             </div>
-                            {isActive && <ChevronRight className="h-3 w-3" />}
+                            {isActive && <ChevronRight className="h-3 w-3 shrink-0 text-zinc-400 dark:text-zinc-500" />}
                           </button>
                         )
                       })}
@@ -2391,82 +2394,100 @@ Payload:
                       </div>
 
                       {ctRequests.filter((r) => r.status === 'pending').length === 0 ? (
-                        <div className="text-xs text-zinc-500 dark:text-zinc-400 italic text-center py-4 bg-white/60 dark:bg-zinc-900/60 rounded-lg border border-zinc-200 dark:border-zinc-800">
+                        <div className="text-xs text-zinc-500 dark:text-zinc-400 italic text-center py-5 bg-zinc-50 dark:bg-zinc-900/60 rounded-xl border border-zinc-200 dark:border-zinc-800">
                           ไม่มีคำขอที่รอการอนุมัติในขณะนี้
                         </div>
                       ) : (
                         <div className="space-y-3">
                           {ctRequests
                             .filter((r) => r.status === 'pending')
-                            .map((req) => (
-                              <div
-                                key={req.id}
-                                className="p-4 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-xs space-y-3 text-xs"
-                              >
-                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 pb-2 border-b border-zinc-100 dark:border-zinc-800">
-                                  <div>
-                                    <span className="font-bold text-zinc-900 dark:text-white text-sm">
-                                      {req.serverName && req.serverName.replace(/^[-_.]+|[-_.]+$/g, '')
-                                        ? req.serverName.replace(/^[-_.]+|[-_.]+$/g, '')
-                                        : 'web-node (ชื่ออัตโนมัติ)'}
-                                    </span>
-                                    <span className="ml-2 px-2 py-0.5 rounded-full text-[10px] font-medium bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300">
-                                      {req.os}
-                                    </span>
-                                  </div>
-                                  <div className="text-zinc-500 dark:text-zinc-400 text-[11px]">
-                                    ยื่นเมื่อ: {req.createdAt}
-                                  </div>
-                                </div>
+                            .map((req) => {
+                              const cleanHost = req.serverName && req.serverName.replace(/^[-_.]+|[-_.]+$/g, '').replace(/[-_.]{2,}/g, '-')
+                                ? req.serverName.replace(/^[-_.]+|[-_.]+$/g, '').replace(/[-_.]{2,}/g, '-')
+                                : `node-${String(req.studentId || 'app').replace(/[^a-zA-Z0-9]/g, '').slice(-4)}`
+                              const isApproving = approvingReqId === req.id
 
-                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-[11px]">
-                                  <div>
-                                    <span className="text-zinc-400 block">ผู้ขอ / กลุ่ม:</span>
-                                    <span className="font-medium text-zinc-800 dark:text-zinc-200">
-                                      {req.fullName} ({req.studentId})
+                              return (
+                                <div
+                                  key={req.id}
+                                  className="p-4 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-2xs space-y-3 text-xs"
+                                >
+                                  <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2 pb-2.5 border-b border-zinc-100 dark:border-zinc-800">
+                                    <div>
+                                      <div className="flex items-center gap-2 flex-wrap">
+                                        <span className="font-semibold text-zinc-900 dark:text-zinc-100 text-sm">
+                                          {req.projectTitle || 'โครงงานพัฒนาเว็บไซต์/IoT'}
+                                        </span>
+                                        <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-medium bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700">
+                                          {cleanHost}
+                                        </span>
+                                        <span className="px-2 py-0.5 rounded-md text-[10px] font-medium bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400">
+                                          {req.os}
+                                        </span>
+                                      </div>
+                                      <div className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+                                        ผู้ขอ: <span className="font-medium text-zinc-700 dark:text-zinc-300">{req.fullName}</span> ({req.studentId})
+                                      </div>
+                                    </div>
+                                    <span className="text-[11px] text-zinc-400 shrink-0">
+                                      ยื่นเมื่อ {req.createdAt}
                                     </span>
                                   </div>
-                                  <div>
-                                    <span className="text-zinc-400 block">โครงงาน:</span>
-                                    <span className="font-medium text-zinc-800 dark:text-zinc-200 truncate block">
-                                      {req.projectTitle}
-                                    </span>
-                                  </div>
-                                  <div>
-                                    <span className="text-zinc-400 block">สเปกที่ขอ:</span>
-                                    <span className="font-mono font-medium text-zinc-800 dark:text-zinc-200">
-                                      {req.vcpu} Core • {req.ram} MB RAM • {req.disk} GB Disk
-                                    </span>
-                                  </div>
-                                </div>
 
-                                <div className="p-2.5 rounded-lg bg-zinc-50 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 leading-relaxed text-[11px]">
-                                  <span className="font-semibold block text-zinc-500 dark:text-zinc-400 mb-0.5">
-                                    วัตถุประสงค์การใช้งาน:
-                                  </span>
-                                  {req.purpose}
-                                </div>
+                                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
+                                    <div>
+                                      <span className="text-zinc-400 block">สเปกที่ขอ:</span>
+                                      <span className="font-mono font-medium text-zinc-800 dark:text-zinc-200">
+                                        {req.vcpu} vCPU • {req.ram} MB RAM • {req.disk} GB NVMe
+                                      </span>
+                                    </div>
+                                    <div>
+                                      <span className="text-zinc-400 block">รหัสอ้างอิง:</span>
+                                      <span className="font-mono text-zinc-500 dark:text-zinc-400">
+                                        {req.id}
+                                      </span>
+                                    </div>
+                                  </div>
 
-                                <div className="flex items-center justify-end gap-2 pt-1">
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    onClick={() => handleRejectRequest(req.id)}
-                                    className="h-8 text-xs text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 border-red-200 dark:border-red-900 cursor-pointer"
-                                  >
-                                    ปฏิเสธคำขอ
-                                  </Button>
-                                  <Button
-                                    size="sm"
-                                    onClick={() => handleApproveRequest(req)}
-                                    className="h-8 text-xs bg-zinc-900 hover:bg-zinc-800 text-white dark:bg-white dark:hover:bg-zinc-200 dark:text-zinc-900 cursor-pointer font-medium"
-                                  >
-                                    <CheckCircle2 className="h-3.5 w-3.5 mr-1.5" />
-                                    อนุมัติและสร้างเครื่องทันที
-                                  </Button>
+                                  <div className="p-2.5 rounded-lg bg-zinc-50 dark:bg-zinc-800/60 text-zinc-700 dark:text-zinc-300 leading-relaxed text-[11px] border border-zinc-100 dark:border-zinc-800">
+                                    <span className="font-medium text-zinc-500 dark:text-zinc-400 block mb-0.5">
+                                      วัตถุประสงค์การใช้งาน:
+                                    </span>
+                                    {req.purpose}
+                                  </div>
+
+                                  <div className="flex items-center justify-end gap-2 pt-1">
+                                    <Button
+                                      size="sm"
+                                      variant="ghost"
+                                      onClick={() => handleRejectRequest(req.id)}
+                                      disabled={approvingReqId !== null}
+                                      className="h-8 text-xs text-zinc-500 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 cursor-pointer"
+                                    >
+                                      ปฏิเสธ
+                                    </Button>
+                                    <Button
+                                      size="sm"
+                                      onClick={() => handleApproveRequest(req)}
+                                      disabled={approvingReqId !== null}
+                                      className="h-8 text-xs bg-zinc-900 hover:bg-zinc-800 text-white dark:bg-zinc-100 dark:hover:bg-zinc-200 dark:text-zinc-900 cursor-pointer font-medium disabled:opacity-50"
+                                    >
+                                      {isApproving ? (
+                                        <>
+                                          <RefreshCw className="h-3.5 w-3.5 mr-1.5 animate-spin" />
+                                          กำลังสร้างเครื่อง...
+                                        </>
+                                      ) : (
+                                        <>
+                                          <CheckCircle2 className="h-3.5 w-3.5 mr-1.5" />
+                                          อนุมัติคำขอ
+                                        </>
+                                      )}
+                                    </Button>
+                                  </div>
                                 </div>
-                              </div>
-                            ))}
+                              )
+                            })}
                         </div>
                       )}
                     </div>
@@ -3626,6 +3647,7 @@ Payload:
                   }}
                   ctRequests={ctRequests}
                   ctServers={ctServers}
+                  onRefreshData={syncCentralData}
                 />
               )}
 

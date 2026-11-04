@@ -158,6 +158,7 @@ export interface AdminPanelProps {
   onOpenTerminal: (server: any) => void
   ctRequests: any[]
   ctServers: any[]
+  onRefreshData?: () => Promise<void>
 }
 
 export interface SupportTicket {
@@ -183,7 +184,8 @@ export function AdminPanel({
   onDestroyServer,
   onOpenTerminal,
   ctRequests,
-  ctServers
+  ctServers,
+  onRefreshData
 }: AdminPanelProps) {
   const [activeSubTab, setActiveSubTab] = useState<'pool' | 'servers' | 'passwords' | 'queue' | 'tickets'>('pool')
   const [students, setStudents] = useState<EnrichedStudent[]>([])
@@ -369,13 +371,16 @@ export function AdminPanel({
   const [replyDrafts, setReplyDrafts] = useState<{ [id: string]: string }>({})
   const [updatingTicketId, setUpdatingTicketId] = useState<string | null>(null)
 
-  // Fetch students from backend admin API
+  // Fetch students & refresh central data from backend
   const fetchStudents = async () => {
     setIsLoading(true)
     try {
-      const res = await fetch('/api/admin/students', {
-        headers: { 'x-admin-pin': adminPin }
-      })
+      const [res] = await Promise.all([
+        fetch('/api/admin/students', {
+          headers: { 'x-admin-pin': adminPin }
+        }),
+        onRefreshData?.()
+      ])
       if (res.ok) {
         const data = await res.json()
         if (data.students) {
@@ -1345,58 +1350,63 @@ export function AdminPanel({
           ) : (
             <div className="space-y-3">
               {pendingRequests.map((req) => {
-                const cleanServerName = req.serverName?.replace(/^[^a-zA-Z0-9]+|[^a-zA-Z0-9]+$/g, '') || `ct-${req.studentId.split('/')[0]}`
+                const cleanServerName = req.serverName?.replace(/^[^a-zA-Z0-9]+|[^a-zA-Z0-9]+$/g, '').replace(/[-_.]{2,}/g, '-') || `node-${String(req.studentId || 'app').replace(/[^a-zA-Z0-9]/g, '').slice(-4)}`
+                const isApproving = isApprovingId === req.id
+
                 return (
                   <div
                     key={req.id}
                     className="p-4 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-2xs space-y-3 text-xs"
                   >
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 pb-2 border-b border-zinc-100 dark:border-zinc-800">
-                      <div className="flex items-center gap-2">
-                        <span className="font-semibold text-zinc-900 dark:text-white text-sm">
-                          {cleanServerName}
-                        </span>
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300">
-                          {req.os}
-                        </span>
+                    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2 pb-2.5 border-b border-zinc-100 dark:border-zinc-800">
+                      <div>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-semibold text-zinc-900 dark:text-zinc-100 text-sm">
+                            {req.projectTitle || 'โครงงานพัฒนาเว็บไซต์/IoT'}
+                          </span>
+                          <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-medium bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700">
+                            {cleanServerName}
+                          </span>
+                          <span className="px-2 py-0.5 rounded-md text-[10px] font-medium bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400">
+                            {req.os}
+                          </span>
+                        </div>
+                        <div className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+                          ผู้ขอ: <span className="font-medium text-zinc-700 dark:text-zinc-300">{req.fullName}</span> ({req.studentId})
+                        </div>
                       </div>
-                      <span className="text-zinc-400 text-[11px]">ยื่นเมื่อ: {req.createdAt}</span>
+                      <span className="text-[11px] text-zinc-400 shrink-0">ยื่นเมื่อ {req.createdAt}</span>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-[11px]">
-                      <div>
-                        <span className="text-zinc-400 block">ผู้ขอ / รหัส:</span>
-                        <span className="font-medium text-zinc-800 dark:text-zinc-200 font-mono">
-                          {req.fullName} ({req.studentId})
-                        </span>
-                      </div>
-                      <div>
-                        <span className="text-zinc-400 block">โครงงาน:</span>
-                        <span className="font-medium text-zinc-800 dark:text-zinc-200 truncate block">
-                          {req.projectTitle}
-                        </span>
-                      </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
                       <div>
                         <span className="text-zinc-400 block">สเปกที่ขอ:</span>
                         <span className="font-mono font-medium text-zinc-800 dark:text-zinc-200">
                           {req.vcpu} vCPU • {req.ram} MB RAM • {req.disk} GB NVMe
                         </span>
                       </div>
+                      <div>
+                        <span className="text-zinc-400 block">รหัสอ้างอิง:</span>
+                        <span className="font-mono text-zinc-500 dark:text-zinc-400">
+                          {req.id}
+                        </span>
+                      </div>
                     </div>
 
-                    <div className="p-2.5 rounded-lg bg-zinc-50 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 leading-relaxed text-[11px]">
-                      <span className="font-semibold block text-zinc-400 mb-0.5">วัตถุประสงค์การใช้งาน:</span>
+                    <div className="p-2.5 rounded-lg bg-zinc-50 dark:bg-zinc-800/60 text-zinc-700 dark:text-zinc-300 leading-relaxed text-[11px] border border-zinc-100 dark:border-zinc-800">
+                      <span className="font-medium text-zinc-500 dark:text-zinc-400 block mb-0.5">วัตถุประสงค์การใช้งาน:</span>
                       {req.purpose}
                     </div>
 
                     <div className="flex items-center justify-end gap-2 pt-1">
                       <Button
                         size="sm"
-                        variant="outline"
+                        variant="ghost"
                         onClick={() => onRejectRequest(req.id)}
-                        className="h-8 text-xs text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 border-zinc-200 dark:border-zinc-700 cursor-pointer"
+                        disabled={isApprovingId !== null}
+                        className="h-8 text-xs text-zinc-500 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 cursor-pointer"
                       >
-                        ปฏิเสธคำขอ
+                        ปฏิเสธ
                       </Button>
                       <Button
                         size="sm"
@@ -1410,19 +1420,19 @@ export function AdminPanel({
                           }
                         }}
                         disabled={isApprovingId !== null}
-                        className="h-8 text-xs bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer disabled:opacity-60"
+                        className="h-8 text-xs bg-zinc-900 hover:bg-zinc-800 text-white dark:bg-zinc-100 dark:hover:bg-zinc-200 dark:text-zinc-900 font-medium cursor-pointer disabled:opacity-50"
                       >
-                        {isApprovingId === req.id ? (
+                        {isApproving ? (
                           <>
                             <RefreshCw className="h-3.5 w-3.5 mr-1.5 animate-spin" />
-                            กำลังสร้าง CT บน Proxmox...
+                            กำลังสร้างเครื่อง...
                           </>
                         ) : isApprovingId !== null ? (
-                          <span>รอคิวสร้างเครื่อง...</span>
+                          <span>รอคิว...</span>
                         ) : (
                           <>
                             <CheckCircle2 className="h-3.5 w-3.5 mr-1.5" />
-                            อนุมัติและสร้าง CT ทันที
+                            อนุมัติคำขอ
                           </>
                         )}
                       </Button>
