@@ -491,172 +491,166 @@ export function AdminPanel({
 
   return (
     <div className="space-y-6">
-      {/* HEADER BANNER - Clean Neutral Surface */}
-      <div className="p-5 rounded-xl bg-zinc-900 border border-zinc-800 shadow-xs relative overflow-hidden">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 relative z-10">
-          <div className="flex items-center gap-3.5">
-            <div className="h-11 w-11 rounded-lg bg-zinc-800 border border-zinc-700/80 flex items-center justify-center text-emerald-400 shrink-0">
-              <ShieldCheck className="h-5 w-5" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-base sm:text-lg font-bold text-white tracking-tight">
-                  แผงควบคุมอาจารย์และผู้ดูแลระบบ
-                </h1>
-                <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-950/60 text-emerald-400 border border-emerald-800/80 uppercase">
-                  Admin Master
-                </span>
-              </div>
-              <p className="text-xs text-zinc-400 mt-0.5">
-                ศูนย์กลางอนุมัติเครื่องเสมือน (Proxmox VE) ตรวจสอบรหัสผ่านนักศึกษา และมอนิเตอร์คลัสเตอร์
-              </p>
-            </div>
-          </div>
-
+      {/* ==================================================================== */}
+      {/* 1. PAGE HEADER - Clean, Unboxed Header                               */}
+      {/* ==================================================================== */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-zinc-200 dark:border-zinc-800">
+        <div>
           <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={fetchStudents}
-              disabled={isLoading}
-              className="h-8 text-xs border-zinc-700 bg-zinc-800/80 hover:bg-zinc-700 text-zinc-200"
-            >
-              <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${isLoading ? 'animate-spin' : ''}`} />
-              รีเฟรชข้อมูล
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleSyncAllInflux}
-              disabled={isSyncingInflux}
-              className="h-8 text-xs border-purple-800/80 bg-purple-950/40 hover:bg-purple-900/60 text-purple-300"
-              title="ซิงค์และตั้งค่ารหัสผ่านผู้ใช้ InfluxDB ทุกคนอัตโนมัติ"
-            >
-              <Database className={`h-3.5 w-3.5 mr-1.5 ${isSyncingInflux ? 'animate-spin' : ''}`} />
-              {isSyncingInflux ? 'กำลังซิงค์ InfluxDB...' : 'ซิงค์ InfluxDB ทั้งหมด'}
-            </Button>
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={onLock}
-              className="h-8 text-xs bg-red-600/80 hover:bg-red-600 text-white"
-            >
-              <Lock className="h-3.5 w-3.5 mr-1.5" />
-              ล็อกโหมดอาจารย์
-            </Button>
+            <h1 className="text-lg font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
+              แผงควบคุมอาจารย์
+            </h1>
+            <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-medium bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700">
+              Admin
+            </span>
           </div>
+          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+            ภาพรวมทรัพยากรคลัสเตอร์และการจัดการระบบ
+          </p>
         </div>
 
-        {/* METRICS ROW */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-5 pt-4 border-t border-zinc-800/80">
-          <div className="p-3 rounded-xl bg-zinc-900/80 border border-zinc-800">
-            <div className="flex items-center justify-between text-zinc-400 text-xs">
-              <span>นักศึกษาในระบบ</span>
-              <Users className="h-4 w-4 text-emerald-400" />
-            </div>
-            <div className="text-xl font-bold text-white font-mono mt-1">
-              {students.length} <span className="text-xs text-zinc-400 font-normal">คน</span>
-            </div>
-          </div>
-
-          <div className="p-3 rounded-xl bg-zinc-900/80 border border-zinc-800">
-            <div className="flex items-center justify-between text-zinc-400 text-xs">
-              <span>คำขอรออนุมัติ</span>
-              <Clock className="h-4 w-4 text-amber-400" />
-            </div>
-            <div className="text-xl font-bold text-amber-400 font-mono mt-1">
-              {pendingRequests.length} <span className="text-xs text-zinc-400 font-normal">คำขอ</span>
-            </div>
-          </div>
-
-          <div className="p-3 rounded-xl bg-zinc-900/80 border border-zinc-800">
-            <div className="flex items-center justify-between text-zinc-400 text-xs">
-              <span>เครื่อง CT บน Proxmox</span>
-              <Server className="h-4 w-4 text-sky-400" />
-            </div>
-            <div className="text-xl font-bold text-sky-400 font-mono mt-1">
-              {ctServers.length} <span className="text-xs text-zinc-400 font-normal">เครื่อง</span>
-            </div>
-          </div>
-
-          <div className="p-3 rounded-xl bg-zinc-900/80 border border-zinc-800">
-            <div className="flex items-center justify-between text-zinc-400 text-xs">
-              <span>Proxmox Node</span>
-              <Activity className="h-4 w-4 text-emerald-400" />
-            </div>
-            <div className="text-sm font-semibold text-emerald-400 font-mono mt-1 truncate">
-              techniccom <span className="text-[10px] text-zinc-400">(DL20 Gen9)</span>
-            </div>
-          </div>
-        </div>
-
-        {/* QUICK ADMIN CONSOLES */}
-        <div className="mt-4 pt-3 border-t border-zinc-800/80 flex flex-wrap items-center gap-2 text-xs">
-          <span className="text-[11px] text-zinc-400 font-medium mr-1">คอนโซลผู้ดูแลระบบ:</span>
-          <a
-            href="https://emqx.pichyy.qzz.io"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-zinc-800/90 hover:bg-zinc-700 border border-zinc-700/80 text-zinc-200 hover:text-white transition-colors"
+        <div className="flex items-center gap-2 shrink-0">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={fetchStudents}
+            disabled={isLoading}
+            className="h-8 text-xs border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer"
           >
-            <Radio className="h-3 w-3 text-emerald-400" />
-            <span>EMQX Broker Console</span>
-            <ExternalLink className="h-2.5 w-2.5 opacity-60" />
-          </a>
-          <a
-            href="https://influx.pichyy.qzz.io"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-zinc-800/90 hover:bg-zinc-700 border border-zinc-700/80 text-zinc-200 hover:text-white transition-colors"
+            <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${isLoading ? 'animate-spin' : ''}`} />
+            รีเฟรช
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleSyncAllInflux}
+            disabled={isSyncingInflux}
+            className="h-8 text-xs border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer"
+            title="ซิงค์และตั้งค่ารหัสผ่านผู้ใช้ InfluxDB ทุกคนอัตโนมัติ"
           >
-            <Database className="h-3 w-3 text-purple-400" />
-            <span>InfluxDB Admin UI</span>
-            <ExternalLink className="h-2.5 w-2.5 opacity-60" />
-          </a>
-          <a
-            href="https://100.125.250.85:8006"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-zinc-800/90 hover:bg-zinc-700 border border-zinc-700/80 text-zinc-200 hover:text-white transition-colors"
+            <Database className={`h-3.5 w-3.5 mr-1.5 ${isSyncingInflux ? 'animate-spin' : ''}`} />
+            {isSyncingInflux ? 'กำลังซิงค์...' : 'ซิงค์ InfluxDB'}
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onLock}
+            className="h-8 text-xs border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 hover:text-red-600 dark:hover:text-red-400 hover:border-red-200 dark:hover:border-red-900/60 cursor-pointer"
           >
-            <Server className="h-3 w-3 text-sky-400" />
-            <span>Proxmox VE (Host)</span>
-            <ExternalLink className="h-2.5 w-2.5 opacity-60" />
-          </a>
+            <Lock className="h-3.5 w-3.5 mr-1.5" />
+            ล็อกโหมด
+          </Button>
         </div>
       </div>
 
-      {/* SUB-TABS NAVIGATION */}
-      <div className="flex items-center gap-2 border-b border-zinc-200 dark:border-zinc-800 pb-2 overflow-x-auto">
+      {/* ==================================================================== */}
+      {/* 2. OVERVIEW METRICS & CONSOLE LINKS                                  */}
+      {/* ==================================================================== */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="p-3.5 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-2xs">
+          <div className="flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400">
+            <span>นักศึกษาในระบบ</span>
+            <Users className="h-3.5 w-3.5 text-zinc-400" />
+          </div>
+          <div className="text-xl font-semibold font-mono text-zinc-900 dark:text-zinc-100 mt-1">
+            {students.length} <span className="text-xs font-normal text-zinc-500 font-sans">คน</span>
+          </div>
+        </div>
+
+        <div className="p-3.5 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-2xs">
+          <div className="flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400">
+            <span>คำขอรออนุมัติ</span>
+            <Clock className="h-3.5 w-3.5 text-zinc-400" />
+          </div>
+          <div className={`text-xl font-semibold font-mono mt-1 ${pendingRequests.length > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-zinc-900 dark:text-zinc-100'}`}>
+            {pendingRequests.length} <span className="text-xs font-normal text-zinc-500 font-sans">คำขอ</span>
+          </div>
+        </div>
+
+        <div className="p-3.5 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-2xs">
+          <div className="flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400">
+            <span>เครื่องเซิร์ฟเวอร์</span>
+            <Server className="h-3.5 w-3.5 text-zinc-400" />
+          </div>
+          <div className="text-xl font-semibold font-mono text-zinc-900 dark:text-zinc-100 mt-1">
+            {ctServers.length} <span className="text-xs font-normal text-zinc-500 font-sans">เครื่อง</span>
+          </div>
+        </div>
+
+        <div className="p-3.5 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-2xs">
+          <div className="flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400">
+            <span>โฮสต์ Proxmox</span>
+            <Activity className="h-3.5 w-3.5 text-zinc-400" />
+          </div>
+          <div className="text-sm font-semibold font-mono text-zinc-900 dark:text-zinc-100 mt-1.5 truncate">
+            techniccom <span className="text-[11px] font-normal text-zinc-500">(DL20 Gen9)</span>
+          </div>
+        </div>
+      </div>
+
+      {/* QUICK ADMIN CONSOLES */}
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-zinc-500 dark:text-zinc-400">
+        <span className="text-[11px] font-medium text-zinc-400 dark:text-zinc-500">คอนโซล:</span>
+        <a
+          href="https://emqx.pichyy.qzz.io"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
+        >
+          <span>EMQX Broker</span>
+          <ExternalLink className="h-2.5 w-2.5 opacity-60" />
+        </a>
+        <span>•</span>
+        <a
+          href="https://influx.pichyy.qzz.io"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
+        >
+          <span>InfluxDB Admin</span>
+          <ExternalLink className="h-2.5 w-2.5 opacity-60" />
+        </a>
+        <span>•</span>
+        <a
+          href="https://100.125.250.85:8006"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
+        >
+          <span>Proxmox VE</span>
+          <ExternalLink className="h-2.5 w-2.5 opacity-60" />
+        </a>
+      </div>
+
+      {/* ==================================================================== */}
+      {/* 3. SUB-TABS NAVIGATION                                               */}
+      {/* ==================================================================== */}
+      <div className="flex items-center gap-1.5 border-b border-zinc-200 dark:border-zinc-800 pb-2 overflow-x-auto">
         <button
           type="button"
           onClick={() => setActiveSubTab('pool')}
-          className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold cursor-pointer transition-all shrink-0 ${
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium cursor-pointer transition-colors shrink-0 ${
             activeSubTab === 'pool'
-              ? 'bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 shadow-sm'
-              : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'
+              ? 'bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 shadow-2xs font-semibold'
+              : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800/60'
           }`}
         >
-          <Activity className="h-3.5 w-3.5 text-emerald-400" />
-          <span>ภาพรวม Resource Pool & โปรเซส</span>
-          <span className="flex h-2 w-2 relative">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-          </span>
+          <Activity className="h-3.5 w-3.5" />
+          <span>ภาพรวมคลัสเตอร์ & โปรเซส</span>
         </button>
 
         <button
           type="button"
           onClick={() => setActiveSubTab('passwords')}
-          className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold cursor-pointer transition-all shrink-0 ${
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium cursor-pointer transition-colors shrink-0 ${
             activeSubTab === 'passwords'
-              ? 'bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 shadow-sm'
-              : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'
+              ? 'bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 shadow-2xs font-semibold'
+              : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800/60'
           }`}
         >
           <Key className="h-3.5 w-3.5" />
-          <span>ทะเบียนนักศึกษา & รหัสผ่าน</span>
-          <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-mono">
+          <span>บัญชีนักศึกษา</span>
+          <span className="px-1.5 py-0.2 rounded text-[10px] bg-zinc-200/80 dark:bg-zinc-800 font-mono">
             {students.length}
           </span>
         </button>
@@ -664,16 +658,16 @@ export function AdminPanel({
         <button
           type="button"
           onClick={() => setActiveSubTab('queue')}
-          className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold cursor-pointer transition-all ${
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium cursor-pointer transition-colors shrink-0 ${
             activeSubTab === 'queue'
-              ? 'bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 shadow-sm'
-              : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'
+              ? 'bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 shadow-2xs font-semibold'
+              : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800/60'
           }`}
         >
           <Clock className="h-3.5 w-3.5" />
-          <span>คิวคำขอเครื่องเซิร์ฟเวอร์</span>
+          <span>คำขอเครื่อง</span>
           {pendingRequests.length > 0 && (
-            <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-amber-500 text-white font-mono animate-pulse">
+            <span className="px-1.5 py-0.2 rounded text-[10px] bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800 font-mono">
               {pendingRequests.length}
             </span>
           )}
@@ -682,15 +676,15 @@ export function AdminPanel({
         <button
           type="button"
           onClick={() => setActiveSubTab('servers')}
-          className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold cursor-pointer transition-all ${
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium cursor-pointer transition-colors shrink-0 ${
             activeSubTab === 'servers'
-              ? 'bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 shadow-sm'
-              : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'
+              ? 'bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 shadow-2xs font-semibold'
+              : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800/60'
           }`}
         >
           <Server className="h-3.5 w-3.5" />
-          <span>เครื่อง CT ที่ออนไลน์ทั้งหมด</span>
-          <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 font-mono">
+          <span>เครื่องเซิร์ฟเวอร์</span>
+          <span className="px-1.5 py-0.2 rounded text-[10px] bg-zinc-200/80 dark:bg-zinc-800 font-mono">
             {ctServers.length}
           </span>
         </button>
@@ -698,16 +692,16 @@ export function AdminPanel({
         <button
           type="button"
           onClick={() => setActiveSubTab('tickets')}
-          className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold cursor-pointer transition-all ${
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium cursor-pointer transition-colors shrink-0 ${
             activeSubTab === 'tickets'
-              ? 'bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 shadow-sm'
-              : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'
+              ? 'bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 shadow-2xs font-semibold'
+              : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800/60'
           }`}
         >
           <HelpCircle className="h-3.5 w-3.5" />
-          <span>คำร้อง & ช่วยเหลือ</span>
+          <span>คำร้องช่วยเหลือ</span>
           {tickets.filter(t => t.status === 'pending').length > 0 && (
-            <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-amber-500 text-white font-mono animate-pulse">
+            <span className="px-1.5 py-0.2 rounded text-[10px] bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800 font-mono">
               {tickets.filter(t => t.status === 'pending').length}
             </span>
           )}
@@ -716,12 +710,12 @@ export function AdminPanel({
 
       {/* ACTION SUCCESS NOTIFICATION */}
       {actionSuccessMsg && (
-        <div className="p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-emerald-400 text-xs flex items-center justify-between animate-in fade-in">
+        <div className="p-3 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 rounded-xl text-emerald-700 dark:text-emerald-400 text-xs flex items-center justify-between animate-in fade-in">
           <div className="flex items-center gap-2">
             <CheckCircle2 className="h-4 w-4" />
             <span>{actionSuccessMsg}</span>
           </div>
-          <button onClick={() => setActionSuccessMsg('')} className="text-zinc-400 hover:text-white">
+          <button onClick={() => setActionSuccessMsg('')} className="text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 cursor-pointer">
             <X className="h-3.5 w-3.5" />
           </button>
         </div>
@@ -733,54 +727,37 @@ export function AdminPanel({
       {activeSubTab === 'pool' && (
         <div className="space-y-6">
           {/* POOL HEADER & LIVE SSE STREAM STATUS */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-zinc-900 border border-zinc-800 p-4 rounded-xl">
-            <div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-sm font-bold text-white tracking-tight flex items-center gap-2">
-                  <Activity className="h-4 w-4 text-emerald-400" />
-                  สตรีมทรัพยากรคลัสเตอร์ & โปรเซส (Realtime Pool Stream)
-                </h2>
-                {isPoolStreamConnected ? (
-                  <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-mono bg-emerald-950/80 border border-emerald-800 text-emerald-400">
-                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                    LIVE SSE (2s)
-                  </span>
-                ) : (
-                  <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-mono bg-amber-950/80 border border-amber-800 text-amber-400">
-                    <RefreshCw className="h-3 w-3 animate-spin" />
-                    กำลังเชื่อมต่อสตรีม...
-                  </span>
-                )}
-              </div>
-              <p className="text-xs text-zinc-400 mt-1">
-                มอนิเตอร์การใช้งาน CPU, RAM, Disk และโปรเซสของคอนเทนเนอร์นักศึกษาแบบเรียลไทม์ พร้อมระบบสั่งยุติโปรเซส
-              </p>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-1">
+            <div className="flex items-center gap-2">
+              <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                การใช้ทรัพยากรคลัสเตอร์
+              </h2>
+              <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-mono bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700">
+                <span className={`h-1.5 w-1.5 rounded-full ${isPoolStreamConnected ? 'bg-emerald-500' : 'bg-amber-500 animate-pulse'}`} />
+                {isPoolStreamConnected ? 'สตรีมสด (2s)' : 'กำลังเชื่อมต่อ'}
+              </span>
             </div>
 
-            <div className="flex items-center gap-2 text-[11px] text-zinc-400 font-mono">
-              <span>โฮสต์: {poolData?.nodeInfo?.model || 'HP DL20 Gen9'}</span>
-              <span>•</span>
-              <span>{poolData?.nodeInfo?.ncpu || 2} Cores</span>
-              <span>•</span>
-              <span>{poolData?.nodeInfo?.hostMemTotalMB || 8192} MB</span>
+            <div className="text-[11px] text-zinc-500 dark:text-zinc-400 font-mono">
+              โฮสต์: {poolData?.nodeInfo?.model || 'HP DL20 Gen9'} • {poolData?.nodeInfo?.ncpu || 2} Cores • {poolData?.nodeInfo?.hostMemTotalMB || 8192} MB RAM
             </div>
           </div>
 
-          {/* 4 POOL SUMMARY METRIC CARDS */}
+          {/* 4 POOL SUMMARY METRIC CARDS (Clean Neutral, Uniform styling) */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {/* CPU POOL */}
-            <div className="p-3.5 rounded-xl bg-zinc-900/90 border border-zinc-800 flex flex-col justify-between">
-              <div className="flex items-center justify-between text-zinc-400 text-xs">
-                <span>CPU Pool โหลดเฉลี่ย</span>
-                <Cpu className="h-4 w-4 text-emerald-400" />
+            <div className="p-3.5 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-2xs flex flex-col justify-between">
+              <div className="flex items-center justify-between text-zinc-500 dark:text-zinc-400 text-xs">
+                <span>CPU โหลดเฉลี่ย</span>
+                <Cpu className="h-3.5 w-3.5 text-zinc-400" />
               </div>
               <div className="mt-2">
-                <div className="text-2xl font-bold font-mono text-white">
+                <div className="text-2xl font-semibold font-mono text-zinc-900 dark:text-zinc-100">
                   {poolData?.poolSummary?.avgCpuPercent ?? 0}%
                 </div>
-                <div className="w-full bg-zinc-800 h-1.5 rounded-full mt-2 overflow-hidden">
+                <div className="w-full bg-zinc-100 dark:bg-zinc-800 h-1.5 rounded-full mt-2 overflow-hidden">
                   <div
-                    className="h-full bg-emerald-500 transition-all duration-500 rounded-full"
+                    className="h-full bg-zinc-800 dark:bg-zinc-200 transition-all duration-500 rounded-full"
                     style={{ width: `${Math.min(100, poolData?.poolSummary?.avgCpuPercent || 0)}%` }}
                   />
                 </div>
@@ -791,19 +768,19 @@ export function AdminPanel({
             </div>
 
             {/* RAM POOL */}
-            <div className="p-3.5 rounded-xl bg-zinc-900/90 border border-zinc-800 flex flex-col justify-between">
-              <div className="flex items-center justify-between text-zinc-400 text-xs">
-                <span>RAM คอนเทนเนอร์ที่ใช้จริง</span>
-                <Activity className="h-4 w-4 text-sky-400" />
+            <div className="p-3.5 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-2xs flex flex-col justify-between">
+              <div className="flex items-center justify-between text-zinc-500 dark:text-zinc-400 text-xs">
+                <span>RAM ใช้งานจริง</span>
+                <Activity className="h-3.5 w-3.5 text-zinc-400" />
               </div>
               <div className="mt-2">
-                <div className="text-2xl font-bold font-mono text-sky-400">
+                <div className="text-2xl font-semibold font-mono text-zinc-900 dark:text-zinc-100">
                   {poolData?.poolSummary?.totalUsedRamMB ?? 0}{' '}
-                  <span className="text-xs text-zinc-400 font-normal">MB</span>
+                  <span className="text-xs text-zinc-500 font-normal">MB</span>
                 </div>
-                <div className="w-full bg-zinc-800 h-1.5 rounded-full mt-2 overflow-hidden">
+                <div className="w-full bg-zinc-100 dark:bg-zinc-800 h-1.5 rounded-full mt-2 overflow-hidden">
                   <div
-                    className="h-full bg-sky-500 transition-all duration-500 rounded-full"
+                    className="h-full bg-zinc-800 dark:bg-zinc-200 transition-all duration-500 rounded-full"
                     style={{ width: `${Math.min(100, poolData?.poolSummary?.ramPercentOfHost || 0)}%` }}
                   />
                 </div>
@@ -814,20 +791,20 @@ export function AdminPanel({
             </div>
 
             {/* DISK POOL */}
-            <div className="p-3.5 rounded-xl bg-zinc-900/90 border border-zinc-800 flex flex-col justify-between">
-              <div className="flex items-center justify-between text-zinc-400 text-xs">
+            <div className="p-3.5 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-2xs flex flex-col justify-between">
+              <div className="flex items-center justify-between text-zinc-500 dark:text-zinc-400 text-xs">
                 <span>พื้นที่ Workspace รวม</span>
-                <HardDrive className="h-4 w-4 text-amber-400" />
+                <HardDrive className="h-3.5 w-3.5 text-zinc-400" />
               </div>
               <div className="mt-2">
-                <div className="text-2xl font-bold font-mono text-amber-400">
+                <div className="text-2xl font-semibold font-mono text-zinc-900 dark:text-zinc-100">
                   {(poolData?.poolSummary?.totalUsedDiskMB || 0) > 1024
                     ? `${((poolData?.poolSummary?.totalUsedDiskMB || 0) / 1024).toFixed(2)} GB`
                     : `${poolData?.poolSummary?.totalUsedDiskMB || 0} MB`}
                 </div>
-                <div className="w-full bg-zinc-800 h-1.5 rounded-full mt-2 overflow-hidden">
+                <div className="w-full bg-zinc-100 dark:bg-zinc-800 h-1.5 rounded-full mt-2 overflow-hidden">
                   <div
-                    className="h-full bg-amber-500 transition-all duration-500 rounded-full"
+                    className="h-full bg-zinc-800 dark:bg-zinc-200 transition-all duration-500 rounded-full"
                     style={{
                       width: `${Math.min(
                         100,
@@ -845,21 +822,21 @@ export function AdminPanel({
             </div>
 
             {/* CONTAINERS ONLINE */}
-            <div className="p-3.5 rounded-xl bg-zinc-900/90 border border-zinc-800 flex flex-col justify-between">
-              <div className="flex items-center justify-between text-zinc-400 text-xs">
-                <span>คอนเทนเนอร์ที่ทำงานอยู่</span>
-                <Server className="h-4 w-4 text-purple-400" />
+            <div className="p-3.5 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-2xs flex flex-col justify-between">
+              <div className="flex items-center justify-between text-zinc-500 dark:text-zinc-400 text-xs">
+                <span>คอนเทนเนอร์</span>
+                <Server className="h-3.5 w-3.5 text-zinc-400" />
               </div>
               <div className="mt-2">
-                <div className="text-2xl font-bold font-mono text-white">
+                <div className="text-2xl font-semibold font-mono text-zinc-900 dark:text-zinc-100">
                   {poolData?.poolSummary?.runningServers ?? ctServers.filter(s => s.status === 'running').length}
-                  <span className="text-xs text-zinc-400 font-normal">
+                  <span className="text-xs text-zinc-500 font-normal">
                     {' '}/ {poolData?.poolSummary?.totalServers ?? ctServers.length} เครื่อง
                   </span>
                 </div>
-                <div className="w-full bg-zinc-800 h-1.5 rounded-full mt-2 overflow-hidden">
+                <div className="w-full bg-zinc-100 dark:bg-zinc-800 h-1.5 rounded-full mt-2 overflow-hidden">
                   <div
-                    className="h-full bg-purple-500 transition-all duration-500 rounded-full"
+                    className="h-full bg-zinc-800 dark:bg-zinc-200 transition-all duration-500 rounded-full"
                     style={{
                       width: `${
                         (poolData?.poolSummary?.totalServers || 1) > 0
@@ -884,9 +861,8 @@ export function AdminPanel({
           <div className="space-y-3">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
               <div className="flex items-center gap-2">
-                <h3 className="text-xs font-bold text-zinc-200 uppercase tracking-wider flex items-center gap-1.5">
-                  <Gauge className="h-3.5 w-3.5 text-emerald-400" />
-                  <span>สถานะทรัพยากรเครื่องนักศึกษาแบบสด ({poolData?.servers?.length || ctServers.length} เครื่อง)</span>
+                <h3 className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">
+                  สถานะคอนเทนเนอร์นักศึกษา ({poolData?.servers?.length || ctServers.length} เครื่อง)
                 </h3>
               </div>
               <div className="relative w-full sm:w-64">
@@ -896,7 +872,7 @@ export function AdminPanel({
                   placeholder="ค้นหาเครื่อง หรือรหัสนักศึกษา..."
                   value={poolFilterQuery}
                   onChange={(e) => setPoolFilterQuery(e.target.value)}
-                  className="pl-8 h-8 text-xs bg-zinc-900 border-zinc-800 text-zinc-200"
+                  className="pl-8 h-8 text-xs bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-800 dark:text-zinc-200"
                 />
               </div>
             </div>
@@ -930,22 +906,22 @@ export function AdminPanel({
                   return (
                     <div
                       key={server.vmid}
-                      className="p-4 rounded-xl bg-zinc-900/80 border border-zinc-800 hover:border-zinc-700 transition-all space-y-3 text-xs"
+                      className="p-3.5 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors space-y-3 text-xs shadow-2xs"
                     >
                       {/* Top Header of Card */}
-                      <div className="flex items-center justify-between pb-2 border-b border-zinc-800">
+                      <div className="flex items-center justify-between pb-2 border-b border-zinc-100 dark:border-zinc-800">
                         <div className="flex items-center gap-2">
                           {renderOSLogo(server.osKey || 'debian-12', 'h-4 w-4')}
                           <div>
                             <div className="flex items-center gap-1.5">
-                              <span className="font-mono font-bold text-white text-xs">
+                              <span className="font-mono font-semibold text-zinc-900 dark:text-zinc-100 text-xs">
                                 CT {server.vmid}
                               </span>
-                              <span className="text-zinc-400 font-medium truncate max-w-[150px]">
+                              <span className="text-zinc-500 font-medium truncate max-w-[150px]">
                                 {server.serverName || server.name}
                               </span>
                             </div>
-                            <span className="text-[10px] text-zinc-500 font-mono block">
+                            <span className="text-[10px] text-zinc-400 font-mono block">
                               ID: {server.studentId}
                             </span>
                           </div>
@@ -953,18 +929,18 @@ export function AdminPanel({
 
                         <div className="flex items-center gap-2">
                           <span
-                            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium font-mono ${
+                            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-mono ${
                               isRunning
-                                ? 'bg-emerald-950/80 border border-emerald-800 text-emerald-400'
-                                : 'bg-zinc-800 border border-zinc-700 text-zinc-400'
+                                ? 'bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-400'
+                                : 'bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400'
                             }`}
                           >
                             <span
                               className={`h-1.5 w-1.5 rounded-full ${
-                                isRunning ? 'bg-emerald-400 animate-pulse' : 'bg-zinc-500'
+                                isRunning ? 'bg-emerald-500' : 'bg-zinc-400'
                               }`}
                             />
-                            {isRunning ? 'RUNNING' : 'STOPPED'}
+                            {isRunning ? 'Running' : 'Stopped'}
                           </span>
                         </div>
                       </div>
@@ -972,21 +948,21 @@ export function AdminPanel({
                       {/* Resource Meters Row */}
                       <div className="grid grid-cols-3 gap-2">
                         {/* CPU */}
-                        <div className="p-2 rounded-lg bg-zinc-950/60 border border-zinc-800/80">
-                          <div className="flex items-center justify-between text-[10px] text-zinc-400">
+                        <div className="p-2 rounded-lg bg-zinc-50 dark:bg-zinc-950/60 border border-zinc-200/80 dark:border-zinc-800/80">
+                          <div className="flex items-center justify-between text-[10px] text-zinc-500 dark:text-zinc-400">
                             <span>CPU</span>
-                            <span className="font-mono font-bold text-zinc-200">
+                            <span className="font-mono font-semibold text-zinc-800 dark:text-zinc-200">
                               {stats.cpuPercent}%
                             </span>
                           </div>
-                          <div className="w-full bg-zinc-800 h-1.5 rounded-full mt-1.5 overflow-hidden">
+                          <div className="w-full bg-zinc-200/80 dark:bg-zinc-800 h-1 rounded-full mt-1.5 overflow-hidden">
                             <div
                               className={`h-full rounded-full transition-all duration-300 ${
                                 stats.cpuPercent > 80
                                   ? 'bg-red-500'
                                   : stats.cpuPercent > 50
                                   ? 'bg-amber-500'
-                                  : 'bg-emerald-500'
+                                  : 'bg-zinc-700 dark:bg-zinc-300'
                               }`}
                               style={{ width: `${Math.min(100, stats.cpuPercent)}%` }}
                             />
@@ -994,32 +970,32 @@ export function AdminPanel({
                         </div>
 
                         {/* RAM */}
-                        <div className="p-2 rounded-lg bg-zinc-950/60 border border-zinc-800/80">
-                          <div className="flex items-center justify-between text-[10px] text-zinc-400">
+                        <div className="p-2 rounded-lg bg-zinc-50 dark:bg-zinc-950/60 border border-zinc-200/80 dark:border-zinc-800/80">
+                          <div className="flex items-center justify-between text-[10px] text-zinc-500 dark:text-zinc-400">
                             <span>RAM</span>
-                            <span className="font-mono font-bold text-sky-400">
+                            <span className="font-mono font-semibold text-zinc-800 dark:text-zinc-200">
                               {stats.memUsageMB} MB
                             </span>
                           </div>
-                          <div className="w-full bg-zinc-800 h-1.5 rounded-full mt-1.5 overflow-hidden">
+                          <div className="w-full bg-zinc-200/80 dark:bg-zinc-800 h-1 rounded-full mt-1.5 overflow-hidden">
                             <div
-                              className="h-full bg-sky-500 rounded-full transition-all duration-300"
+                              className="h-full bg-zinc-700 dark:bg-zinc-300 rounded-full transition-all duration-300"
                               style={{ width: `${Math.min(100, stats.memPercent)}%` }}
                             />
                           </div>
                         </div>
 
                         {/* DISK */}
-                        <div className="p-2 rounded-lg bg-zinc-950/60 border border-zinc-800/80">
-                          <div className="flex items-center justify-between text-[10px] text-zinc-400">
+                        <div className="p-2 rounded-lg bg-zinc-50 dark:bg-zinc-950/60 border border-zinc-200/80 dark:border-zinc-800/80">
+                          <div className="flex items-center justify-between text-[10px] text-zinc-500 dark:text-zinc-400">
                             <span>ดิสก์</span>
-                            <span className="font-mono font-bold text-amber-400">
+                            <span className="font-mono font-semibold text-zinc-800 dark:text-zinc-200">
                               {stats.diskUsageMB} MB
                             </span>
                           </div>
-                          <div className="w-full bg-zinc-800 h-1.5 rounded-full mt-1.5 overflow-hidden">
+                          <div className="w-full bg-zinc-200/80 dark:bg-zinc-800 h-1 rounded-full mt-1.5 overflow-hidden">
                             <div
-                              className="h-full bg-amber-500 rounded-full transition-all duration-300"
+                              className="h-full bg-zinc-700 dark:bg-zinc-300 rounded-full transition-all duration-300"
                               style={{ width: `${Math.min(100, stats.diskPercent)}%` }}
                             />
                           </div>
@@ -1027,11 +1003,10 @@ export function AdminPanel({
                       </div>
 
                       {/* Top Process Preview & PIDs */}
-                      <div className="flex items-center justify-between text-[11px] bg-zinc-950/40 p-2 rounded-lg border border-zinc-800/60">
+                      <div className="flex items-center justify-between text-[11px] bg-zinc-50 dark:bg-zinc-950/40 p-2 rounded-lg border border-zinc-200/80 dark:border-zinc-800/60">
                         <div className="flex items-center gap-1.5 truncate max-w-[70%]">
-                          <Flame className="h-3.5 w-3.5 text-amber-400 shrink-0" />
                           <span className="text-zinc-400 text-[10px]">โปรเซสหลัก:</span>
-                          <span className="font-mono text-[10px] text-zinc-200 truncate">
+                          <span className="font-mono text-[10px] text-zinc-700 dark:text-zinc-300 truncate">
                             {server.topProcess
                               ? `${server.topProcess.command.slice(0, 32)} (PID ${server.topProcess.pid})`
                               : isRunning
@@ -1050,9 +1025,9 @@ export function AdminPanel({
                           size="sm"
                           variant="outline"
                           onClick={() => setSelectedProcessServer(server)}
-                          className="h-7 text-xs border-zinc-700 bg-zinc-800 hover:bg-zinc-700 text-zinc-200"
+                          className="h-7 text-xs border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-200 cursor-pointer"
                         >
-                          <Activity className="h-3 w-3 mr-1.5 text-emerald-400" />
+                          <Activity className="h-3 w-3 mr-1.5 text-zinc-500" />
                           ตรวจสอบโปรเซส (Live)
                         </Button>
 
@@ -1061,7 +1036,7 @@ export function AdminPanel({
                             size="sm"
                             variant="ghost"
                             onClick={() => onOpenTerminal(server)}
-                            className="h-7 text-xs text-zinc-400 hover:text-white"
+                            className="h-7 w-7 p-0 text-zinc-500 hover:text-zinc-900 dark:hover:text-white cursor-pointer"
                             title="เปิด Terminal"
                           >
                             <Terminal className="h-3.5 w-3.5" />
@@ -1070,7 +1045,7 @@ export function AdminPanel({
                             size="sm"
                             variant="ghost"
                             onClick={() => onTogglePower(server.vmid)}
-                            className="h-7 text-xs text-zinc-400 hover:text-white"
+                            className="h-7 w-7 p-0 text-zinc-500 hover:text-zinc-900 dark:hover:text-white cursor-pointer"
                             title={isRunning ? 'ปิดเครื่อง' : 'เปิดเครื่อง'}
                           >
                             {isRunning ? (
@@ -1083,7 +1058,7 @@ export function AdminPanel({
                             size="sm"
                             variant="ghost"
                             onClick={() => onReboot(server.vmid)}
-                            className="h-7 text-xs text-zinc-400 hover:text-white"
+                            className="h-7 w-7 p-0 text-zinc-500 hover:text-zinc-900 dark:hover:text-white cursor-pointer"
                             title="รีบูต"
                           >
                             <RotateCw className="h-3.5 w-3.5" />
@@ -1099,72 +1074,71 @@ export function AdminPanel({
           {/* SECTION 2: TOP RESOURCE-CONSUMING PROCESSES ACROSS POOL */}
           <div className="space-y-3 pt-2">
             <div className="flex items-center justify-between">
-              <h3 className="text-xs font-bold text-zinc-200 uppercase tracking-wider flex items-center gap-1.5">
-                <Flame className="h-3.5 w-3.5 text-red-400" />
-                <span>โปรเซสที่มีการใช้งานทรัพยากรสูงสุดในคลัสเตอร์ (Top Pool Processes)</span>
+              <h3 className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">
+                โปรเซสที่มีการใช้งานทรัพยากรสูงสุดในคลัสเตอร์
               </h3>
               <span className="text-[11px] text-zinc-400 font-mono">
                 {poolData?.topProcesses?.length || 0} โปรเซส
               </span>
             </div>
 
-            <div className="overflow-x-auto rounded-xl border border-zinc-800 bg-zinc-900/90">
+            <div className="overflow-x-auto rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-2xs">
               <table className="w-full text-left text-xs">
                 <thead>
-                  <tr className="border-b border-zinc-800 text-[10px] text-zinc-400 uppercase tracking-wider bg-zinc-950/60 font-mono">
+                  <tr className="border-b border-zinc-200 dark:border-zinc-800 text-[10px] text-zinc-500 uppercase tracking-wider bg-zinc-50 dark:bg-zinc-950/60 font-mono">
                     <th className="py-2.5 px-3">เครื่อง / นศ.</th>
                     <th className="py-2.5 px-3">PID</th>
                     <th className="py-2.5 px-3">USER</th>
                     <th className="py-2.5 px-3">%CPU</th>
                     <th className="py-2.5 px-3">%MEM</th>
                     <th className="py-2.5 px-3">เวลา</th>
-                    <th className="py-2.5 px-3">คำสั่งที่รัน (Command)</th>
+                    <th className="py-2.5 px-3">คำสั่งที่รัน</th>
                     <th className="py-2.5 px-3 text-right">การจัดการ</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-zinc-800/80 font-mono text-[11px]">
+                <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800 font-mono text-[11px]">
                   {!poolData?.topProcesses || poolData.topProcesses.length === 0 ? (
                     <tr>
-                      <td colSpan={8} className="py-6 text-center text-zinc-500 font-sans">
+                      <td colSpan={8} className="py-6 text-center text-zinc-400 font-sans">
                         ไม่มีโปรเซสที่กำลังทำงานในเครื่องนักเรียนขณะนี้
                       </td>
                     </tr>
                   ) : (
                     poolData.topProcesses.map((p, idx) => (
-                      <tr key={idx} className="hover:bg-zinc-800/40 transition-colors">
+                      <tr key={idx} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-colors">
                         <td className="py-2.5 px-3">
-                          <span className="font-bold text-white">CT {p.vmid}</span>
-                          <span className="text-zinc-500 block text-[10px]">
+                          <span className="font-semibold text-zinc-900 dark:text-white">CT {p.vmid}</span>
+                          <span className="text-zinc-400 block text-[10px]">
                             {p.studentId}
                           </span>
                         </td>
-                        <td className="py-2.5 px-3 text-zinc-300 font-bold">{p.pid}</td>
-                        <td className="py-2.5 px-3 text-zinc-400">{p.user}</td>
+                        <td className="py-2.5 px-3 text-zinc-800 dark:text-zinc-200 font-semibold">{p.pid}</td>
+                        <td className="py-2.5 px-3 text-zinc-500">{p.user}</td>
                         <td className="py-2.5 px-3">
                           <span
-                            className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
+                            className={`px-1.5 py-0.5 rounded text-[10px] font-mono ${
                               p.cpu > 50
-                                ? 'bg-red-950/80 text-red-400 border border-red-800'
+                                ? 'bg-red-50 dark:bg-red-950/60 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800'
                                 : p.cpu > 20
-                                ? 'bg-amber-950/80 text-amber-400 border border-amber-800'
-                                : 'bg-emerald-950/80 text-emerald-400 border border-emerald-800'
+                                ? 'bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800'
+                                : 'text-zinc-700 dark:text-zinc-300'
                             }`}
                           >
                             {p.cpu}%
                           </span>
                         </td>
-                        <td className="py-2.5 px-3 text-sky-400">{p.mem}%</td>
+                        <td className="py-2.5 px-3 text-zinc-600 dark:text-zinc-400">{p.mem}%</td>
                         <td className="py-2.5 px-3 text-zinc-400 text-[10px]">{p.time}</td>
-                        <td className="py-2.5 px-3 text-zinc-200 max-w-xs truncate" title={p.command}>
+                        <td className="py-2.5 px-3 text-zinc-800 dark:text-zinc-200 max-w-xs truncate" title={p.command}>
                           {p.command}
                         </td>
                         <td className="py-2.5 px-3 text-right">
                           <Button
                             size="sm"
-                            variant="destructive"
+                            variant="ghost"
                             onClick={() => handleKillProcess(p.vmid || 0, p.pid, p.command)}
                             disabled={isKillingPid === p.pid}
-                            className="h-6 text-[10px] px-2 bg-red-600/80 hover:bg-red-600 text-white cursor-pointer"
+                            className="h-6 text-[10px] px-2 text-zinc-500 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 cursor-pointer"
                           >
                             {isKillingPid === p.pid ? (
                               <RefreshCw className="h-3 w-3 animate-spin" />
@@ -1196,7 +1170,7 @@ export function AdminPanel({
                 placeholder="ค้นหาตามรหัสนักศึกษา, ชื่อ-นามสกุล, หรือโครงงาน..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9 h-9 text-xs bg-white dark:bg-zinc-900 border-zinc-300 dark:border-zinc-700 rounded-lg"
+                className="pl-9 h-9 text-xs bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 rounded-lg text-zinc-800 dark:text-zinc-200"
               />
             </div>
 
@@ -1205,7 +1179,7 @@ export function AdminPanel({
                 variant="outline"
                 size="sm"
                 onClick={toggleRevealAll}
-                className="h-9 text-xs border-zinc-300 dark:border-zinc-700"
+                className="h-9 text-xs border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer"
               >
                 {students.every((s) => revealedPasswords[s.studentId]) ? (
                   <>
@@ -1224,7 +1198,7 @@ export function AdminPanel({
                 variant="outline"
                 size="sm"
                 onClick={handleExportCsv}
-                className="h-9 text-xs border-zinc-300 dark:border-zinc-700"
+                className="h-9 text-xs border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer"
               >
                 <FileDown className="h-3.5 w-3.5 mr-1.5" />
                 ส่งออก CSV
@@ -1233,7 +1207,7 @@ export function AdminPanel({
           </div>
 
           {/* TABLE */}
-          <div className="border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden bg-white dark:bg-zinc-900 shadow-xs">
+          <div className="border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden bg-white dark:bg-zinc-900 shadow-2xs">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
                 <thead className="bg-zinc-50 dark:bg-zinc-800/80 text-zinc-500 dark:text-zinc-400 font-semibold border-b border-zinc-200 dark:border-zinc-800">
@@ -1241,7 +1215,7 @@ export function AdminPanel({
                     <th className="py-3 px-3.5">รหัสนักศึกษา</th>
                     <th className="py-3 px-3.5">ชื่อ - นามสกุล</th>
                     <th className="py-3 px-3.5">ชื่อโครงงาน</th>
-                    <th className="py-3 px-3.5">🔑 รหัสผ่าน (Password)</th>
+                    <th className="py-3 px-3.5">รหัสผ่าน</th>
                     <th className="py-3 px-3.5">InfluxDB Bucket & Token</th>
                     <th className="py-3 px-3.5">เครื่อง CT</th>
                   </tr>
@@ -1259,7 +1233,7 @@ export function AdminPanel({
                       return (
                         <tr key={st.studentId} className="hover:bg-zinc-50/70 dark:hover:bg-zinc-800/40 transition-colors">
                           {/* Student ID */}
-                          <td className="py-3 px-3.5 font-mono font-bold text-zinc-900 dark:text-zinc-100 whitespace-nowrap">
+                          <td className="py-3 px-3.5 font-mono font-semibold text-zinc-900 dark:text-zinc-100 whitespace-nowrap">
                             {st.studentId}
                           </td>
 
@@ -1280,8 +1254,8 @@ export function AdminPanel({
                           <td className="py-3 px-3.5 whitespace-nowrap">
                             <div className="flex items-center gap-1.5">
                               <span
-                                className={`font-mono text-xs px-2 py-1 rounded bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 font-bold ${
-                                  isRevealed ? 'text-emerald-600 dark:text-emerald-400' : 'text-zinc-400 tracking-widest'
+                                className={`font-mono text-xs px-2 py-1 rounded bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 font-semibold ${
+                                  isRevealed ? 'text-zinc-900 dark:text-zinc-100' : 'text-zinc-400 tracking-widest'
                                 }`}
                               >
                                 {isRevealed ? st.password : '••••••••'}
@@ -1315,11 +1289,11 @@ export function AdminPanel({
                           <td className="py-3 px-3.5 whitespace-nowrap">
                             <div className="space-y-0.5">
                               <div className="flex items-center gap-1 text-[11px] text-zinc-700 dark:text-zinc-300 font-mono">
-                                <Database className="h-3 w-3 text-purple-400 shrink-0" />
+                                <Database className="h-3 w-3 text-zinc-400 shrink-0" />
                                 <span className="truncate max-w-[120px]">{st.influxBucket || `telemetry-${st.studentId}`}</span>
                               </div>
                               <div className="flex items-center gap-1 text-[10px] text-zinc-400 font-mono">
-                                <Radio className="h-2.5 w-2.5 text-sky-400 shrink-0" />
+                                <Radio className="h-2.5 w-2.5 text-zinc-400 shrink-0" />
                                 <span>lbtech/{st.studentId}/#</span>
                               </div>
                             </div>
@@ -1332,7 +1306,7 @@ export function AdminPanel({
                                 {st.servers.map((srv) => (
                                   <span
                                     key={srv.vmid}
-                                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-mono font-medium bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-800"
+                                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-mono font-medium bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700"
                                   >
                                     CT {srv.vmid} ({srv.ip})
                                   </span>
@@ -1370,91 +1344,92 @@ export function AdminPanel({
             </div>
           ) : (
             <div className="space-y-3">
-              {pendingRequests.map((req) => (
-                <div
-                  key={req.id}
-                  className="p-4 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-xs space-y-3 text-xs"
-                >
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 pb-2 border-b border-zinc-100 dark:border-zinc-800">
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold text-zinc-900 dark:text-white text-sm">
-                        {req.serverName && req.serverName.replace(/^[-_.]+|[-_.]+$/g, '')
-                          ? req.serverName.replace(/^[-_.]+|[-_.]+$/g, '')
-                          : 'web-node (ชื่ออัตโนมัติ)'}
-                      </span>
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300">
-                        {req.os}
-                      </span>
+              {pendingRequests.map((req) => {
+                const cleanServerName = req.serverName?.replace(/^[^a-zA-Z0-9]+|[^a-zA-Z0-9]+$/g, '') || `ct-${req.studentId.split('/')[0]}`
+                return (
+                  <div
+                    key={req.id}
+                    className="p-4 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-2xs space-y-3 text-xs"
+                  >
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 pb-2 border-b border-zinc-100 dark:border-zinc-800">
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold text-zinc-900 dark:text-white text-sm">
+                          {cleanServerName}
+                        </span>
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300">
+                          {req.os}
+                        </span>
+                      </div>
+                      <span className="text-zinc-400 text-[11px]">ยื่นเมื่อ: {req.createdAt}</span>
                     </div>
-                    <span className="text-zinc-400 text-[11px]">ยื่นเมื่อ: {req.createdAt}</span>
-                  </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-[11px]">
-                    <div>
-                      <span className="text-zinc-400 block">ผู้ขอ / รหัส:</span>
-                      <span className="font-medium text-zinc-800 dark:text-zinc-200 font-mono">
-                        {req.fullName} ({req.studentId})
-                      </span>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-[11px]">
+                      <div>
+                        <span className="text-zinc-400 block">ผู้ขอ / รหัส:</span>
+                        <span className="font-medium text-zinc-800 dark:text-zinc-200 font-mono">
+                          {req.fullName} ({req.studentId})
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-zinc-400 block">โครงงาน:</span>
+                        <span className="font-medium text-zinc-800 dark:text-zinc-200 truncate block">
+                          {req.projectTitle}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-zinc-400 block">สเปกที่ขอ:</span>
+                        <span className="font-mono font-medium text-zinc-800 dark:text-zinc-200">
+                          {req.vcpu} vCPU • {req.ram} MB RAM • {req.disk} GB NVMe
+                        </span>
+                      </div>
                     </div>
-                    <div>
-                      <span className="text-zinc-400 block">โครงงาน:</span>
-                      <span className="font-medium text-zinc-800 dark:text-zinc-200 truncate block">
-                        {req.projectTitle}
-                      </span>
-                    </div>
-                    <div>
-                      <span className="text-zinc-400 block">สเปกที่ขอ:</span>
-                      <span className="font-mono font-medium text-zinc-800 dark:text-zinc-200">
-                        {req.vcpu} vCPU • {req.ram} MB RAM • {req.disk} GB NVMe
-                      </span>
-                    </div>
-                  </div>
 
-                  <div className="p-2.5 rounded-lg bg-zinc-50 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 leading-relaxed text-[11px]">
-                    <span className="font-semibold block text-zinc-400 mb-0.5">วัตถุประสงค์การใช้งาน:</span>
-                    {req.purpose}
-                  </div>
+                    <div className="p-2.5 rounded-lg bg-zinc-50 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 leading-relaxed text-[11px]">
+                      <span className="font-semibold block text-zinc-400 mb-0.5">วัตถุประสงค์การใช้งาน:</span>
+                      {req.purpose}
+                    </div>
 
-                  <div className="flex items-center justify-end gap-2 pt-1">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => onRejectRequest(req.id)}
-                      className="h-8 text-xs text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 border-red-200 dark:border-red-900"
-                    >
-                      ปฏิเสธคำขอ
-                    </Button>
-                    <Button
-                      size="sm"
-                      onClick={async () => {
-                        setIsApprovingId(req.id)
-                        try {
-                          await onApproveRequest(req)
-                        } finally {
-                          setIsApprovingId(null)
-                          fetchStudents()
-                        }
-                      }}
-                      disabled={isApprovingId !== null}
-                      className="h-8 text-xs bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer disabled:opacity-60"
-                    >
-                      {isApprovingId === req.id ? (
-                        <>
-                          <RefreshCw className="h-3.5 w-3.5 mr-1.5 animate-spin" />
-                          กำลังสร้าง CT บน Proxmox...
-                        </>
-                      ) : isApprovingId !== null ? (
-                        <span>รอคิวสร้างเครื่อง...</span>
-                      ) : (
-                        <>
-                          <CheckCircle2 className="h-3.5 w-3.5 mr-1.5" />
-                          อนุมัติและสร้าง CT บน Proxmox ทันที
-                        </>
-                      )}
-                    </Button>
+                    <div className="flex items-center justify-end gap-2 pt-1">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => onRejectRequest(req.id)}
+                        className="h-8 text-xs text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 border-zinc-200 dark:border-zinc-700 cursor-pointer"
+                      >
+                        ปฏิเสธคำขอ
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={async () => {
+                          setIsApprovingId(req.id)
+                          try {
+                            await onApproveRequest(req)
+                          } finally {
+                            setIsApprovingId(null)
+                            fetchStudents()
+                          }
+                        }}
+                        disabled={isApprovingId !== null}
+                        className="h-8 text-xs bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer disabled:opacity-60"
+                      >
+                        {isApprovingId === req.id ? (
+                          <>
+                            <RefreshCw className="h-3.5 w-3.5 mr-1.5 animate-spin" />
+                            กำลังสร้าง CT บน Proxmox...
+                          </>
+                        ) : isApprovingId !== null ? (
+                          <span>รอคิวสร้างเครื่อง...</span>
+                        ) : (
+                          <>
+                            <CheckCircle2 className="h-3.5 w-3.5 mr-1.5" />
+                            อนุมัติและสร้าง CT ทันที
+                          </>
+                        )}
+                      </Button>
+                    </div>
                   </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           )}
         </div>
@@ -1466,7 +1441,7 @@ export function AdminPanel({
       {activeSubTab === 'servers' && (
         <div className="space-y-4">
           <div className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
-            เครื่องเซิร์ฟเวอร์ที่ทำงานอยู่บน HP ProLiant DL20 Gen9 ({ctServers.length} เครื่อง)
+            เครื่องเซิร์ฟเวอร์ที่ทำงานอยู่ ({ctServers.length} เครื่อง)
           </div>
 
           {ctServers.length === 0 ? (
@@ -1480,24 +1455,24 @@ export function AdminPanel({
               {ctServers.map((server) => (
                 <div
                   key={server.vmid}
-                  className="p-4 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl space-y-3 text-xs"
+                  className="p-4 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl space-y-3 text-xs shadow-2xs"
                 >
                   <div className="flex items-center justify-between pb-2 border-b border-zinc-100 dark:border-zinc-800">
                     <div className="flex items-center gap-2">
-                      {renderOSLogo(server.osKey || 'debian-12', 'h-5 w-5')}
+                      {renderOSLogo(server.osKey || 'debian-12', 'h-4 w-4')}
                       <div>
-                        <span className="font-bold text-zinc-900 dark:text-white font-mono">CT {server.vmid}</span>
+                        <span className="font-semibold text-zinc-900 dark:text-white font-mono">CT {server.vmid}</span>
                         <span className="ml-1.5 text-zinc-500 font-medium">({server.name})</span>
                       </div>
                     </div>
                     <span
-                      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium ${
+                      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-mono ${
                         server.status === 'running'
-                          ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800'
+                          ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800'
                           : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400'
                       }`}
                     >
-                      <span className={`h-1.5 w-1.5 rounded-full ${server.status === 'running' ? 'bg-emerald-500 animate-pulse' : 'bg-zinc-400'}`} />
+                      <span className={`h-1.5 w-1.5 rounded-full ${server.status === 'running' ? 'bg-emerald-500' : 'bg-zinc-400'}`} />
                       {server.status === 'running' ? 'Running' : 'Stopped'}
                     </span>
                   </div>
@@ -1505,11 +1480,11 @@ export function AdminPanel({
                   <div className="grid grid-cols-2 gap-2 text-[11px]">
                     <div>
                       <span className="text-zinc-400 block">IP Address (vmbr1):</span>
-                      <span className="font-mono font-semibold text-zinc-800 dark:text-zinc-200">{server.ip}</span>
+                      <span className="font-mono font-medium text-zinc-800 dark:text-zinc-200">{server.ip}</span>
                     </div>
                     <div>
                       <span className="text-zinc-400 block">ผู้ถือครอง (Student ID):</span>
-                      <span className="font-mono font-semibold text-zinc-800 dark:text-zinc-200">{server.studentId}</span>
+                      <span className="font-mono font-medium text-zinc-800 dark:text-zinc-200">{server.studentId}</span>
                     </div>
                     <div>
                       <span className="text-zinc-400 block">ทรัพยากร:</span>
@@ -1519,7 +1494,7 @@ export function AdminPanel({
                     </div>
                     <div>
                       <span className="text-zinc-400 block">Root Password:</span>
-                      <span className="font-mono font-semibold text-emerald-600 dark:text-emerald-400">{server.rootPassword || '07072569'}</span>
+                      <span className="font-mono font-medium text-zinc-900 dark:text-zinc-100">{server.rootPassword || '07072569'}</span>
                     </div>
                   </div>
 
@@ -1529,19 +1504,19 @@ export function AdminPanel({
                         size="sm"
                         variant="outline"
                         onClick={() => setSelectedProcessServer(server)}
-                        className="h-7 text-xs border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-200"
+                        className="h-7 text-xs border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-200 cursor-pointer"
                       >
-                        <Activity className="h-3 w-3 mr-1 text-emerald-500" />
-                        โปรเซส & กราฟสด
+                        <Activity className="h-3 w-3 mr-1 text-zinc-500" />
+                        โปรเซส & กราฟ
                       </Button>
                       <Button
                         size="sm"
                         variant="outline"
                         onClick={() => onOpenTerminal(server)}
-                        className="h-7 text-xs border-zinc-300 dark:border-zinc-700"
+                        className="h-7 text-xs border-zinc-200 dark:border-zinc-700 cursor-pointer"
                       >
                         <Terminal className="h-3 w-3 mr-1" />
-                        Web Terminal
+                        Terminal
                       </Button>
                     </div>
 
@@ -1550,7 +1525,7 @@ export function AdminPanel({
                         size="sm"
                         variant="outline"
                         onClick={() => onTogglePower(server.vmid)}
-                        className="h-7 text-xs"
+                        className="h-7 text-xs border-zinc-200 dark:border-zinc-700 cursor-pointer"
                       >
                         {server.status === 'running' ? (
                           <>
@@ -1568,15 +1543,17 @@ export function AdminPanel({
                         size="sm"
                         variant="outline"
                         onClick={() => onReboot(server.vmid)}
-                        className="h-7 text-xs"
+                        className="h-7 w-7 p-0 border-zinc-200 dark:border-zinc-700 cursor-pointer"
+                        title="รีบูต"
                       >
                         <RotateCw className="h-3 w-3" />
                       </Button>
                       <Button
                         size="sm"
-                        variant="destructive"
+                        variant="ghost"
                         onClick={() => onDestroyServer(server.vmid)}
-                        className="h-7 text-xs bg-red-600/80 hover:bg-red-600 text-white"
+                        className="h-7 w-7 p-0 text-zinc-400 hover:text-red-600 dark:hover:text-red-400 cursor-pointer"
+                        title="ลบเครื่อง"
                       >
                         <Trash2 className="h-3 w-3" />
                       </Button>
@@ -1595,8 +1572,8 @@ export function AdminPanel({
       {activeSubTab === 'tickets' && (
         <div className="space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-zinc-50 dark:bg-zinc-900/60 p-3.5 rounded-xl border border-zinc-200 dark:border-zinc-800">
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-zinc-500 font-medium">กรองสถานะ:</span>
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span className="text-xs text-zinc-500 font-medium mr-1">สถานะ:</span>
               {(['all', 'pending', 'in_progress', 'resolved'] as const).map(f => (
                 <button
                   key={f}
@@ -1605,7 +1582,7 @@ export function AdminPanel({
                   className={`px-2.5 py-1 rounded-lg text-xs font-medium cursor-pointer transition-colors ${
                     ticketFilter === f
                       ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 font-semibold'
-                      : 'bg-white dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100'
+                      : 'bg-white dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-700/60'
                   }`}
                 >
                   {f === 'all' && `ทั้งหมด (${tickets.length})`}
@@ -1637,19 +1614,19 @@ export function AdminPanel({
                 .map(t => (
                   <div
                     key={t.id}
-                    className="border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-zinc-900 p-4 space-y-3 shadow-xs"
+                    className="border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-zinc-900 p-4 space-y-3 shadow-2xs"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider ${
+                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono ${
                             t.status === 'pending'
                               ? 'bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800'
                               : t.status === 'in_progress'
                               ? 'bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800'
                               : 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800'
                           }`}>
-                            {t.status === 'pending' ? 'รอตรวจสอบ' : t.status === 'in_progress' ? 'กำลังดำเนินการ' : 'แก้ไขเสร็จสิ้น'}
+                            {t.status === 'pending' ? 'รอตรวจสอบ' : t.status === 'in_progress' ? 'กำลังดำเนินการ' : 'เสร็จสิ้น'}
                           </span>
                           <span className="text-[11px] font-mono text-zinc-400">{t.id}</span>
                           <span className="text-[11px] text-zinc-400">• {new Date(t.createdAt).toLocaleString('th-TH')}</span>
@@ -1676,7 +1653,7 @@ export function AdminPanel({
                           placeholder="พิมพ์ข้อความตอบกลับหรือคำแนะนำให้นักศึกษา..."
                           value={replyDrafts[t.id] !== undefined ? replyDrafts[t.id] : (t.adminReply || '')}
                           onChange={(e) => setReplyDrafts(prev => ({ ...prev, [t.id]: e.target.value }))}
-                          className="text-xs h-8"
+                          className="text-xs h-8 bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700"
                         />
                         <Button
                           size="sm"
@@ -1695,7 +1672,7 @@ export function AdminPanel({
                             <button
                               type="button"
                               onClick={() => handleUpdateTicket(t.id, 'in_progress')}
-                              className="px-2.5 py-1 rounded-md text-[11px] font-medium bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 hover:bg-blue-100 border border-blue-200 dark:border-blue-900 cursor-pointer"
+                              className="px-2.5 py-1 rounded-md text-[11px] font-medium bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 border border-zinc-200 dark:border-zinc-700 cursor-pointer"
                             >
                               ตั้งเป็นกำลังทำ
                             </button>
@@ -1704,9 +1681,9 @@ export function AdminPanel({
                             <button
                               type="button"
                               onClick={() => handleUpdateTicket(t.id, 'resolved')}
-                              className="px-2.5 py-1 rounded-md text-[11px] font-medium bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 border border-emerald-200 dark:border-emerald-900 cursor-pointer"
+                              className="px-2.5 py-1 rounded-md text-[11px] font-medium bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 border border-emerald-200 dark:border-emerald-900 cursor-pointer"
                             >
-                              เสร็จสิ้น (Resolved)
+                              เสร็จสิ้น
                             </button>
                           )}
                           {t.status === 'resolved' && (
@@ -1715,7 +1692,7 @@ export function AdminPanel({
                               onClick={() => handleUpdateTicket(t.id, 'pending')}
                               className="px-2.5 py-1 rounded-md text-[11px] font-medium bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 cursor-pointer"
                             >
-                              เปิดใหม่ (Reopen)
+                              เปิดใหม่
                             </button>
                           )}
                         </div>
@@ -1732,32 +1709,32 @@ export function AdminPanel({
       {/* SINGLE CONTAINER PROCESS & RESOURCE INSPECTOR MODAL                  */}
       {/* ==================================================================== */}
       {selectedProcessServer && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-xs">
-          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in-95">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/60 backdrop-blur-xs">
+          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in-95">
             {/* Modal Header */}
-            <div className="p-4 sm:p-5 border-b border-zinc-800 flex items-center justify-between bg-zinc-950/60">
+            <div className="p-4 sm:p-5 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between bg-zinc-50/60 dark:bg-zinc-950/60">
               <div className="flex items-center gap-3">
-                <div className="h-9 w-9 rounded-xl bg-zinc-800 border border-zinc-700 flex items-center justify-center text-emerald-400">
+                <div className="h-9 w-9 rounded-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 flex items-center justify-center text-zinc-700 dark:text-zinc-300">
                   <Activity className="h-5 w-5" />
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <h3 className="font-bold text-white text-sm sm:text-base">
+                    <h3 className="font-semibold text-zinc-900 dark:text-white text-sm sm:text-base">
                       มอนิเตอร์โปรเซส: CT {selectedProcessServer.vmid} ({selectedProcessServer.serverName || selectedProcessServer.name})
                     </h3>
                     {isProcessStreamConnected ? (
-                      <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-mono bg-emerald-950/80 border border-emerald-800 text-emerald-400">
-                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                      <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-mono bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700">
+                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
                         LIVE (2s)
                       </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-mono bg-amber-950/80 border border-amber-800 text-amber-400">
+                      <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-mono bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
                         <RefreshCw className="h-3 w-3 animate-spin" />
                         เชื่อมต่อสตรีม...
                       </span>
                     )}
                   </div>
-                  <p className="text-xs text-zinc-400 mt-0.5">
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5 font-mono">
                     นักศึกษา: {selectedProcessServer.studentId} • IP: {selectedProcessServer.ip}
                   </p>
                 </div>
@@ -1768,7 +1745,7 @@ export function AdminPanel({
                   size="sm"
                   variant="outline"
                   onClick={() => onOpenTerminal(selectedProcessServer)}
-                  className="h-8 text-xs border-zinc-700 bg-zinc-800 text-zinc-200"
+                  className="h-8 text-xs border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 cursor-pointer"
                 >
                   <Terminal className="h-3.5 w-3.5 mr-1" />
                   Terminal
@@ -1776,7 +1753,7 @@ export function AdminPanel({
                 <button
                   type="button"
                   onClick={() => setSelectedProcessServer(null)}
-                  className="h-8 w-8 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white flex items-center justify-center cursor-pointer"
+                  className="h-8 w-8 rounded-lg bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-500 hover:text-zinc-900 dark:hover:text-white flex items-center justify-center cursor-pointer transition-colors"
                 >
                   <X className="h-4 w-4" />
                 </button>
@@ -1785,31 +1762,31 @@ export function AdminPanel({
 
             {/* Live Metrics Row */}
             {serverProcessStreamData?.stats && (
-              <div className="grid grid-cols-4 gap-2.5 p-4 border-b border-zinc-800 bg-zinc-950/40 text-xs">
-                <div className="p-2.5 rounded-lg bg-zinc-900 border border-zinc-800">
+              <div className="grid grid-cols-4 gap-2.5 p-4 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50/40 dark:bg-zinc-950/40 text-xs">
+                <div className="p-2.5 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800">
                   <span className="text-zinc-400 text-[10px] block">CPU การใช้งาน</span>
-                  <span className="text-lg font-bold font-mono text-emerald-400">
+                  <span className="text-lg font-semibold font-mono text-zinc-900 dark:text-zinc-100">
                     {serverProcessStreamData.stats.cpuPercent}%
                   </span>
                 </div>
-                <div className="p-2.5 rounded-lg bg-zinc-900 border border-zinc-800">
+                <div className="p-2.5 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800">
                   <span className="text-zinc-400 text-[10px] block">RAM การใช้งาน</span>
-                  <span className="text-lg font-bold font-mono text-sky-400">
+                  <span className="text-lg font-semibold font-mono text-zinc-900 dark:text-zinc-100">
                     {serverProcessStreamData.stats.memUsageMB} MB
-                    <span className="text-xs text-zinc-500 font-normal ml-1">
+                    <span className="text-xs text-zinc-400 font-normal ml-1">
                       ({serverProcessStreamData.stats.memPercent}%)
                     </span>
                   </span>
                 </div>
-                <div className="p-2.5 rounded-lg bg-zinc-900 border border-zinc-800">
+                <div className="p-2.5 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800">
                   <span className="text-zinc-400 text-[10px] block">พื้นที่ Workspace</span>
-                  <span className="text-lg font-bold font-mono text-amber-400">
+                  <span className="text-lg font-semibold font-mono text-zinc-900 dark:text-zinc-100">
                     {serverProcessStreamData.stats.diskUsageMB} MB
                   </span>
                 </div>
-                <div className="p-2.5 rounded-lg bg-zinc-900 border border-zinc-800">
+                <div className="p-2.5 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800">
                   <span className="text-zinc-400 text-[10px] block">จำนวน PIDs</span>
-                  <span className="text-lg font-bold font-mono text-purple-400">
+                  <span className="text-lg font-semibold font-mono text-zinc-900 dark:text-zinc-100">
                     {serverProcessStreamData.stats.pids || 0}
                   </span>
                 </div>
@@ -1817,7 +1794,7 @@ export function AdminPanel({
             )}
 
             {/* Search Filter & Table Header */}
-            <div className="p-4 border-b border-zinc-800 flex items-center justify-between gap-3 bg-zinc-900">
+            <div className="p-4 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between gap-3 bg-zinc-50 dark:bg-zinc-900">
               <div className="relative flex-1 max-w-sm">
                 <Search className="h-3.5 w-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
                 <Input
@@ -1825,7 +1802,7 @@ export function AdminPanel({
                   placeholder="กรองโปรเซสตาม PID หรือชื่อคำสั่ง..."
                   value={processSearchQuery}
                   onChange={(e) => setProcessSearchQuery(e.target.value)}
-                  className="pl-8 h-8 text-xs bg-zinc-950 border-zinc-800 text-zinc-200"
+                  className="pl-8 h-8 text-xs bg-white dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 text-zinc-800 dark:text-zinc-200"
                 />
               </div>
               <span className="text-xs text-zinc-400 font-mono">
@@ -1837,7 +1814,7 @@ export function AdminPanel({
             <div className="flex-1 overflow-y-auto p-4">
               <table className="w-full text-left text-xs">
                 <thead>
-                  <tr className="border-b border-zinc-800 text-[10px] text-zinc-400 uppercase tracking-wider font-mono">
+                  <tr className="border-b border-zinc-200 dark:border-zinc-800 text-[10px] text-zinc-400 uppercase tracking-wider font-mono">
                     <th className="py-2 px-2.5">PID</th>
                     <th className="py-2 px-2.5">USER</th>
                     <th className="py-2 px-2.5">%CPU</th>
@@ -1848,10 +1825,10 @@ export function AdminPanel({
                     <th className="py-2 px-2.5 text-right">จัดการ</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-zinc-800/60 font-mono text-[11px]">
+                <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800/60 font-mono text-[11px]">
                   {!serverProcessStreamData?.processes || serverProcessStreamData.processes.length === 0 ? (
                     <tr>
-                      <td colSpan={8} className="py-8 text-center text-zinc-500 font-sans">
+                      <td colSpan={8} className="py-8 text-center text-zinc-400 font-sans">
                         {isProcessStreamConnected ? 'ไม่พบโปรเซสที่กำลังทำงาน' : 'กำลังดึงรายการโปรเซสจากคอนเทนเนอร์...'}
                       </td>
                     </tr>
@@ -1867,35 +1844,35 @@ export function AdminPanel({
                         )
                       })
                       .map((p) => (
-                        <tr key={p.pid} className="hover:bg-zinc-800/40 transition-colors">
-                          <td className="py-2.5 px-2.5 font-bold text-white">{p.pid}</td>
+                        <tr key={p.pid} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-colors">
+                          <td className="py-2.5 px-2.5 font-semibold text-zinc-900 dark:text-white">{p.pid}</td>
                           <td className="py-2.5 px-2.5 text-zinc-400">{p.user}</td>
                           <td className="py-2.5 px-2.5">
                             <span
-                              className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
+                              className={`px-1.5 py-0.5 rounded text-[10px] font-mono ${
                                 p.cpu > 50
-                                  ? 'bg-red-950/80 text-red-400 border border-red-800'
+                                  ? 'bg-red-50 dark:bg-red-950/60 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800'
                                   : p.cpu > 20
-                                  ? 'bg-amber-950/80 text-amber-400 border border-amber-800'
-                                  : 'bg-emerald-950/80 text-emerald-400 border border-emerald-800'
+                                  ? 'bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800'
+                                  : 'text-zinc-700 dark:text-zinc-300'
                               }`}
                             >
                               {p.cpu}%
                             </span>
                           </td>
-                          <td className="py-2.5 px-2.5 text-sky-400">{p.mem}%</td>
-                          <td className="py-2.5 px-2.5 text-zinc-500 text-[10px]">{p.stat}</td>
+                          <td className="py-2.5 px-2.5 text-zinc-600 dark:text-zinc-400">{p.mem}%</td>
+                          <td className="py-2.5 px-2.5 text-zinc-400 text-[10px]">{p.stat}</td>
                           <td className="py-2.5 px-2.5 text-zinc-400 text-[10px]">{p.time}</td>
-                          <td className="py-2.5 px-2.5 text-zinc-200 max-w-md truncate" title={p.command}>
+                          <td className="py-2.5 px-2.5 text-zinc-800 dark:text-zinc-200 max-w-md truncate" title={p.command}>
                             {p.command}
                           </td>
                           <td className="py-2.5 px-2.5 text-right">
                             <Button
                               size="sm"
-                              variant="destructive"
+                              variant="ghost"
                               onClick={() => handleKillProcess(selectedProcessServer.vmid, p.pid, p.command)}
                               disabled={isKillingPid === p.pid}
-                              className="h-6 text-[10px] px-2 bg-red-600/80 hover:bg-red-600 text-white cursor-pointer"
+                              className="h-6 text-[10px] px-2 text-zinc-500 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 cursor-pointer"
                             >
                               {isKillingPid === p.pid ? (
                                 <RefreshCw className="h-3 w-3 animate-spin" />
@@ -1912,7 +1889,7 @@ export function AdminPanel({
             </div>
 
             {/* Modal Footer */}
-            <div className="p-3 border-t border-zinc-800 bg-zinc-950 flex items-center justify-between text-xs text-zinc-400">
+            <div className="p-3 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 flex items-center justify-between text-xs text-zinc-400">
               <span className="text-[11px]">
                 คำสั่ง `kill -9` จะส่งสัญญาณ SIGKILL บังคับปิดโปรเซสทันทีเพื่อคืนทรัพยากร
               </span>
@@ -1920,7 +1897,7 @@ export function AdminPanel({
                 size="sm"
                 variant="outline"
                 onClick={() => setSelectedProcessServer(null)}
-                className="h-7 text-xs border-zinc-700 bg-zinc-900 text-zinc-200"
+                className="h-7 text-xs border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-200 cursor-pointer"
               >
                 ปิดหน้าต่าง
               </Button>

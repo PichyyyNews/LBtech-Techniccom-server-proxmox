@@ -2113,9 +2113,9 @@ Payload:
                                     : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800'
                                 }`}
                               >
-                                <div className="flex items-center gap-2.5">
+                                <div className="flex items-center gap-2.5 min-w-0">
                                   <Icon className="h-4 w-4 shrink-0" />
-                                  <span>{item.label}</span>
+                                  <span className="truncate">{item.label}</span>
                                 </div>
                                 {isActive && <ChevronRight className="h-3 w-3" />}
                               </button>
@@ -2186,9 +2186,9 @@ Payload:
                                 : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-100'
                             }`}
                           >
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 min-w-0">
                               <Icon className="h-4 w-4 shrink-0" />
-                              <span>{item.label}</span>
+                              <span className="truncate">{item.label}</span>
                             </div>
                             {isActive && <ChevronRight className="h-3 w-3" />}
                           </button>
