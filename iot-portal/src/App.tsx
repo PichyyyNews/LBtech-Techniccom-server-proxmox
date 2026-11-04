@@ -1795,10 +1795,12 @@ Payload:
 
           <div className="w-full max-w-[360px]">
             <div className="flex flex-col items-center justify-center mb-6 text-center">
-              <div className="flex items-center gap-2 mb-1">
-                <div className="h-8 w-8 rounded-lg bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 flex items-center justify-center shadow-xs">
-                  <Wifi className="h-4 w-4" />
-                </div>
+              <div className="flex items-center gap-2.5 mb-1.5">
+                <img
+                  src="/logo.svg"
+                  alt="infra-techcom"
+                  className="h-8 w-8 object-contain shrink-0"
+                />
                 <span className="font-bold font-mono text-lg tracking-tight text-zinc-900 dark:text-zinc-100">
                   infra-techcom
                 </span>
@@ -1947,9 +1949,11 @@ Payload:
                 <Menu className="h-5 w-5" />
               </button>
 
-              <div className="h-8 w-8 rounded-lg bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 flex items-center justify-center shadow-xs shrink-0">
-                <Wifi className="h-4 w-4" />
-              </div>
+              <img
+                src="/logo.svg"
+                alt="infra-techcom"
+                className="h-7 w-7 object-contain shrink-0"
+              />
 
               <div className="flex items-center gap-1.5 sm:gap-2">
                 <span className="font-bold font-mono text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 leading-tight">infra-techcom</span>
@@ -2078,9 +2082,11 @@ Payload:
                 <div>
                   <div className="p-4 border-b border-zinc-100 dark:border-zinc-800 flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <div className="h-7 w-7 rounded-md bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 flex items-center justify-center">
-                        <Wifi className="h-4 w-4" />
-                      </div>
+                      <img
+                        src="/logo.svg"
+                        alt="infra-techcom"
+                        className="h-6 w-6 object-contain shrink-0"
+                      />
                       <span className="font-bold font-mono text-xs text-zinc-900 dark:text-zinc-100">infra-techcom</span>
                     </div>
                     <button
