@@ -1800,7 +1800,7 @@ Payload:
             <div className="flex flex-col items-center justify-center mb-7 text-center">
               <div className="mb-4 flex items-center justify-center">
                 <img
-                  src="/logo.svg"
+                  src="/logo.svg?v=5"
                   alt="infra-techcom"
                   className="h-28 w-28 sm:h-32 sm:w-32 object-contain drop-shadow-md select-none transition-transform hover:scale-105 duration-300"
                 />
@@ -1955,7 +1955,7 @@ Payload:
 
               <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
                 <img
-                  src="/logo.svg"
+                  src="/logo.svg?v=5"
                   alt="infra-techcom"
                   className="h-11 w-11 sm:h-12 sm:w-12 object-contain shrink-0 drop-shadow-xs select-none"
                 />
@@ -2093,9 +2093,9 @@ Payload:
                   <div className="p-4 border-b border-zinc-100 dark:border-zinc-800 flex items-center justify-between">
                     <div className="flex items-center gap-2.5">
                       <img
-                        src="/logo.svg"
+                        src="/logo.svg?v=5"
                         alt="infra-techcom"
-                        className="h-8 w-8 object-contain shrink-0"
+                        className="h-10 w-10 object-contain shrink-0 drop-shadow-2xs"
                       />
                       <div>
                         <span className="font-bold font-mono text-xs text-zinc-900 dark:text-zinc-100 block leading-tight">infra-techcom</span>
