@@ -2265,6 +2265,8 @@ Payload:
                   ? selectedServerVmid !== null
                     ? 'max-w-7xl p-1 sm:p-5 md:p-8'
                     : 'max-w-7xl p-2 sm:p-5 md:p-8'
+                  : activeTab === 'admin'
+                  ? 'max-w-[1440px] p-2.5 sm:p-6 md:p-8'
                   : 'max-w-4xl p-2.5 sm:p-6 md:p-8'
               }`}
             >
@@ -5373,42 +5375,44 @@ service nginx restart`
             </main>
 
             {/* DESKTOP RIGHT SIDEBAR: "ON THIS PAGE" (TABLE OF CONTENTS) */}
-            <aside className="hidden xl:block w-64 shrink-0 border-l border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 sticky top-16 sm:top-[4.5rem] h-[calc(100vh-4rem)] sm:h-[calc(100vh-4.5rem)] overflow-y-auto transition-colors">
-              <div className="space-y-4">
-                <div className="text-xs font-semibold text-zinc-900 dark:text-white tracking-wider uppercase flex items-center gap-1.5">
-                  <Bookmark className="h-3.5 w-3.5 text-zinc-500 dark:text-zinc-400" />
-                  <span>ในหน้านี้ (On this page)</span>
-                </div>
-                <nav className="space-y-1 text-xs">
-                  {tocItems.map((item) => (
-                    <button
-                      key={item.id}
-                      type="button"
-                      onClick={() => {
-                        const el = document.getElementById(item.id)
-                        if (el) {
-                          el.scrollIntoView({ behavior: 'smooth', block: 'start' })
-                        }
-                      }}
-                      className="w-full text-left py-1.5 px-2.5 rounded-md text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors cursor-pointer text-xs truncate block"
-                    >
-                      {item.label}
-                    </button>
-                  ))}
-                </nav>
+            {activeTab !== 'admin' && (
+              <aside className="hidden xl:block w-64 shrink-0 border-l border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 sticky top-16 sm:top-[4.5rem] h-[calc(100vh-4rem)] sm:h-[calc(100vh-4.5rem)] overflow-y-auto transition-colors">
+                <div className="space-y-4">
+                  <div className="text-xs font-semibold text-zinc-900 dark:text-white tracking-wider uppercase flex items-center gap-1.5">
+                    <Bookmark className="h-3.5 w-3.5 text-zinc-500 dark:text-zinc-400" />
+                    <span>ในหน้านี้ (On this page)</span>
+                  </div>
+                  <nav className="space-y-1 text-xs">
+                    {tocItems.map((item) => (
+                      <button
+                        key={item.id}
+                        type="button"
+                        onClick={() => {
+                          const el = document.getElementById(item.id)
+                          if (el) {
+                            el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                          }
+                        }}
+                        className="w-full text-left py-1.5 px-2.5 rounded-md text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors cursor-pointer text-xs truncate block"
+                      >
+                        {item.label}
+                      </button>
+                    ))}
+                  </nav>
 
-                <div className="pt-6 border-t border-zinc-100 dark:border-zinc-800">
-                  <div className="text-[11px] font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-2">
-                    โครงงานของคุณ
-                  </div>
-                  <div className="p-3 bg-zinc-50 dark:bg-zinc-900/60 rounded-lg border border-zinc-100 dark:border-zinc-800 space-y-1.5 text-xs">
-                    <div className="font-semibold text-zinc-800 dark:text-zinc-200 truncate">{session.projectTitle}</div>
-                    <div className="text-[11px] text-zinc-500 dark:text-zinc-400 truncate">{session.fullName}</div>
-                    <div className="font-mono text-[10px] text-zinc-400 dark:text-zinc-500 truncate">ID: {session.studentId}</div>
+                  <div className="pt-6 border-t border-zinc-100 dark:border-zinc-800">
+                    <div className="text-[11px] font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-2">
+                      โครงงานของคุณ
+                    </div>
+                    <div className="p-3 bg-zinc-50 dark:bg-zinc-900/60 rounded-lg border border-zinc-100 dark:border-zinc-800 space-y-1.5 text-xs">
+                      <div className="font-semibold text-zinc-800 dark:text-zinc-200 truncate">{session.projectTitle}</div>
+                      <div className="text-[11px] text-zinc-500 dark:text-zinc-400 truncate">{session.fullName}</div>
+                      <div className="font-mono text-[10px] text-zinc-400 dark:text-zinc-500 truncate">ID: {session.studentId}</div>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </aside>
+              </aside>
+            )}
           </div>
         </div>
       )}

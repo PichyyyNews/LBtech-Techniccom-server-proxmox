@@ -551,44 +551,44 @@ export function AdminPanel({
       {/* ==================================================================== */}
       {/* 2. OVERVIEW METRICS & CONSOLE LINKS                                  */}
       {/* ==================================================================== */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div className="p-3.5 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-2xs">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4">
+        <div className="p-4 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-2xs">
           <div className="flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400">
             <span>นักศึกษาในระบบ</span>
-            <Users className="h-3.5 w-3.5 text-zinc-400" />
+            <Users className="h-4 w-4 text-zinc-400" />
           </div>
-          <div className="text-xl font-semibold font-mono text-zinc-900 dark:text-zinc-100 mt-1">
+          <div className="text-2xl font-semibold font-mono text-zinc-900 dark:text-zinc-100 mt-1.5">
             {students.length} <span className="text-xs font-normal text-zinc-500 font-sans">คน</span>
           </div>
         </div>
 
-        <div className="p-3.5 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-2xs">
+        <div className="p-4 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-2xs">
           <div className="flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400">
             <span>คำขอรออนุมัติ</span>
-            <Clock className="h-3.5 w-3.5 text-zinc-400" />
+            <Clock className="h-4 w-4 text-zinc-400" />
           </div>
-          <div className={`text-xl font-semibold font-mono mt-1 ${pendingRequests.length > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-zinc-900 dark:text-zinc-100'}`}>
+          <div className={`text-2xl font-semibold font-mono mt-1.5 ${pendingRequests.length > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-zinc-900 dark:text-zinc-100'}`}>
             {pendingRequests.length} <span className="text-xs font-normal text-zinc-500 font-sans">คำขอ</span>
           </div>
         </div>
 
-        <div className="p-3.5 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-2xs">
+        <div className="p-4 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-2xs">
           <div className="flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400">
             <span>เครื่องเซิร์ฟเวอร์</span>
-            <Server className="h-3.5 w-3.5 text-zinc-400" />
+            <Server className="h-4 w-4 text-zinc-400" />
           </div>
-          <div className="text-xl font-semibold font-mono text-zinc-900 dark:text-zinc-100 mt-1">
+          <div className="text-2xl font-semibold font-mono text-zinc-900 dark:text-zinc-100 mt-1.5">
             {ctServers.length} <span className="text-xs font-normal text-zinc-500 font-sans">เครื่อง</span>
           </div>
         </div>
 
-        <div className="p-3.5 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-2xs">
+        <div className="p-4 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-2xs">
           <div className="flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400">
             <span>โฮสต์ Proxmox</span>
-            <Activity className="h-3.5 w-3.5 text-zinc-400" />
+            <Activity className="h-4 w-4 text-zinc-400" />
           </div>
-          <div className="text-sm font-semibold font-mono text-zinc-900 dark:text-zinc-100 mt-1.5 truncate">
-            techniccom <span className="text-[11px] font-normal text-zinc-500">(DL20 Gen9)</span>
+          <div className="text-base font-semibold font-mono text-zinc-900 dark:text-zinc-100 mt-2 truncate">
+            techniccom <span className="text-xs font-normal text-zinc-500">(DL20 Gen9)</span>
           </div>
         </div>
       </div>
@@ -749,65 +749,65 @@ export function AdminPanel({
           </div>
 
           {/* 4 POOL SUMMARY METRIC CARDS (Clean Neutral, Uniform styling) */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4">
             {/* CPU POOL */}
-            <div className="p-3.5 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-2xs flex flex-col justify-between">
+            <div className="p-4 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-2xs flex flex-col justify-between">
               <div className="flex items-center justify-between text-zinc-500 dark:text-zinc-400 text-xs">
                 <span>CPU โหลดเฉลี่ย</span>
-                <Cpu className="h-3.5 w-3.5 text-zinc-400" />
+                <Cpu className="h-4 w-4 text-zinc-400" />
               </div>
-              <div className="mt-2">
+              <div className="mt-2.5">
                 <div className="text-2xl font-semibold font-mono text-zinc-900 dark:text-zinc-100">
                   {poolData?.poolSummary?.avgCpuPercent ?? 0}%
                 </div>
-                <div className="w-full bg-zinc-100 dark:bg-zinc-800 h-1.5 rounded-full mt-2 overflow-hidden">
+                <div className="w-full bg-zinc-100 dark:bg-zinc-800 h-1.5 rounded-full mt-2.5 overflow-hidden">
                   <div
                     className="h-full bg-zinc-800 dark:bg-zinc-200 transition-all duration-500 rounded-full"
                     style={{ width: `${Math.min(100, poolData?.poolSummary?.avgCpuPercent || 0)}%` }}
                   />
                 </div>
-                <span className="text-[10px] text-zinc-400 font-mono mt-1.5 block">
+                <span className="text-[10px] text-zinc-400 font-mono mt-2 block">
                   จัดสรร: {poolData?.poolSummary?.totalAllocatedVcpu || 0} vCPUs จาก {poolData?.nodeInfo?.ncpu || 2} คอร์
                 </span>
               </div>
             </div>
 
             {/* RAM POOL */}
-            <div className="p-3.5 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-2xs flex flex-col justify-between">
+            <div className="p-4 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-2xs flex flex-col justify-between">
               <div className="flex items-center justify-between text-zinc-500 dark:text-zinc-400 text-xs">
                 <span>RAM ใช้งานจริง</span>
-                <Activity className="h-3.5 w-3.5 text-zinc-400" />
+                <Activity className="h-4 w-4 text-zinc-400" />
               </div>
-              <div className="mt-2">
+              <div className="mt-2.5">
                 <div className="text-2xl font-semibold font-mono text-zinc-900 dark:text-zinc-100">
                   {poolData?.poolSummary?.totalUsedRamMB ?? 0}{' '}
                   <span className="text-xs text-zinc-500 font-normal">MB</span>
                 </div>
-                <div className="w-full bg-zinc-100 dark:bg-zinc-800 h-1.5 rounded-full mt-2 overflow-hidden">
+                <div className="w-full bg-zinc-100 dark:bg-zinc-800 h-1.5 rounded-full mt-2.5 overflow-hidden">
                   <div
                     className="h-full bg-zinc-800 dark:bg-zinc-200 transition-all duration-500 rounded-full"
                     style={{ width: `${Math.min(100, poolData?.poolSummary?.ramPercentOfHost || 0)}%` }}
                   />
                 </div>
-                <span className="text-[10px] text-zinc-400 font-mono mt-1.5 block">
+                <span className="text-[10px] text-zinc-400 font-mono mt-2 block">
                   {poolData?.poolSummary?.ramPercentOfHost ?? 0}% ของโฮสต์ ({poolData?.poolSummary?.hostMemTotalMB || 8192} MB)
                 </span>
               </div>
             </div>
 
             {/* DISK POOL */}
-            <div className="p-3.5 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-2xs flex flex-col justify-between">
+            <div className="p-4 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-2xs flex flex-col justify-between">
               <div className="flex items-center justify-between text-zinc-500 dark:text-zinc-400 text-xs">
                 <span>พื้นที่ Workspace รวม</span>
-                <HardDrive className="h-3.5 w-3.5 text-zinc-400" />
+                <HardDrive className="h-4 w-4 text-zinc-400" />
               </div>
-              <div className="mt-2">
+              <div className="mt-2.5">
                 <div className="text-2xl font-semibold font-mono text-zinc-900 dark:text-zinc-100">
                   {(poolData?.poolSummary?.totalUsedDiskMB || 0) > 1024
                     ? `${((poolData?.poolSummary?.totalUsedDiskMB || 0) / 1024).toFixed(2)} GB`
                     : `${poolData?.poolSummary?.totalUsedDiskMB || 0} MB`}
                 </div>
-                <div className="w-full bg-zinc-100 dark:bg-zinc-800 h-1.5 rounded-full mt-2 overflow-hidden">
+                <div className="w-full bg-zinc-100 dark:bg-zinc-800 h-1.5 rounded-full mt-2.5 overflow-hidden">
                   <div
                     className="h-full bg-zinc-800 dark:bg-zinc-200 transition-all duration-500 rounded-full"
                     style={{
@@ -820,26 +820,26 @@ export function AdminPanel({
                     }}
                   />
                 </div>
-                <span className="text-[10px] text-zinc-400 font-mono mt-1.5 block">
+                <span className="text-[10px] text-zinc-400 font-mono mt-2 block">
                   โควตารวม: {poolData?.poolSummary?.totalAllocatedDiskGB || 0} GB NVMe
                 </span>
               </div>
             </div>
 
             {/* CONTAINERS ONLINE */}
-            <div className="p-3.5 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-2xs flex flex-col justify-between">
+            <div className="p-4 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-2xs flex flex-col justify-between">
               <div className="flex items-center justify-between text-zinc-500 dark:text-zinc-400 text-xs">
                 <span>คอนเทนเนอร์</span>
-                <Server className="h-3.5 w-3.5 text-zinc-400" />
+                <Server className="h-4 w-4 text-zinc-400" />
               </div>
-              <div className="mt-2">
+              <div className="mt-2.5">
                 <div className="text-2xl font-semibold font-mono text-zinc-900 dark:text-zinc-100">
                   {poolData?.poolSummary?.runningServers ?? ctServers.filter(s => s.status === 'running').length}
                   <span className="text-xs text-zinc-500 font-normal">
                     {' '}/ {poolData?.poolSummary?.totalServers ?? ctServers.length} เครื่อง
                   </span>
                 </div>
-                <div className="w-full bg-zinc-100 dark:bg-zinc-800 h-1.5 rounded-full mt-2 overflow-hidden">
+                <div className="w-full bg-zinc-100 dark:bg-zinc-800 h-1.5 rounded-full mt-2.5 overflow-hidden">
                   <div
                     className="h-full bg-zinc-800 dark:bg-zinc-200 transition-all duration-500 rounded-full"
                     style={{
@@ -855,7 +855,7 @@ export function AdminPanel({
                     }}
                   />
                 </div>
-                <span className="text-[10px] text-zinc-400 font-mono mt-1.5 block">
+                <span className="text-[10px] text-zinc-400 font-mono mt-2 block">
                   {poolData?.poolSummary?.stoppedServers || 0} เครื่องปิดพักอยู่
                 </span>
               </div>
@@ -883,7 +883,7 @@ export function AdminPanel({
             </div>
 
             {/* CONTAINER LIST */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
               {(poolData?.servers || ctServers)
                 .filter((srv) => {
                   const q = poolFilterQuery.toLowerCase().trim()
@@ -1090,38 +1090,38 @@ export function AdminPanel({
             <div className="overflow-x-auto rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-2xs">
               <table className="w-full text-left text-xs">
                 <thead>
-                  <tr className="border-b border-zinc-200 dark:border-zinc-800 text-[10px] text-zinc-500 uppercase tracking-wider bg-zinc-50 dark:bg-zinc-950/60 font-mono">
-                    <th className="py-2.5 px-3">เครื่อง / นศ.</th>
-                    <th className="py-2.5 px-3">PID</th>
-                    <th className="py-2.5 px-3">USER</th>
-                    <th className="py-2.5 px-3">%CPU</th>
-                    <th className="py-2.5 px-3">%MEM</th>
-                    <th className="py-2.5 px-3">เวลา</th>
-                    <th className="py-2.5 px-3">คำสั่งที่รัน</th>
-                    <th className="py-2.5 px-3 text-right">การจัดการ</th>
+                  <tr className="border-b border-zinc-200 dark:border-zinc-800 text-[11px] text-zinc-500 uppercase tracking-wider bg-zinc-50 dark:bg-zinc-950/60 font-mono">
+                    <th className="py-3 px-4">เครื่อง / นศ.</th>
+                    <th className="py-3 px-4">PID</th>
+                    <th className="py-3 px-4">USER</th>
+                    <th className="py-3 px-4">%CPU</th>
+                    <th className="py-3 px-4">%MEM</th>
+                    <th className="py-3 px-4">เวลา</th>
+                    <th className="py-3 px-4">คำสั่งที่รัน</th>
+                    <th className="py-3 px-4 text-right">การจัดการ</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800 font-mono text-[11px]">
                   {!poolData?.topProcesses || poolData.topProcesses.length === 0 ? (
                     <tr>
-                      <td colSpan={8} className="py-6 text-center text-zinc-400 font-sans">
+                      <td colSpan={8} className="py-8 text-center text-zinc-400 font-sans">
                         ไม่มีโปรเซสที่กำลังทำงานในเครื่องนักเรียนขณะนี้
                       </td>
                     </tr>
                   ) : (
                     poolData.topProcesses.map((p, idx) => (
                       <tr key={idx} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-colors">
-                        <td className="py-2.5 px-3">
+                        <td className="py-3 px-4">
                           <span className="font-semibold text-zinc-900 dark:text-white">CT {p.vmid}</span>
                           <span className="text-zinc-400 block text-[10px]">
                             {p.studentId}
                           </span>
                         </td>
-                        <td className="py-2.5 px-3 text-zinc-800 dark:text-zinc-200 font-semibold">{p.pid}</td>
-                        <td className="py-2.5 px-3 text-zinc-500">{p.user}</td>
-                        <td className="py-2.5 px-3">
+                        <td className="py-3 px-4 text-zinc-800 dark:text-zinc-200 font-semibold">{p.pid}</td>
+                        <td className="py-3 px-4 text-zinc-500">{p.user}</td>
+                        <td className="py-3 px-4">
                           <span
-                            className={`px-1.5 py-0.5 rounded text-[10px] font-mono ${
+                            className={`px-2 py-0.5 rounded text-[10px] font-mono ${
                               p.cpu > 50
                                 ? 'bg-red-50 dark:bg-red-950/60 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800'
                                 : p.cpu > 20
@@ -1132,18 +1132,18 @@ export function AdminPanel({
                             {p.cpu}%
                           </span>
                         </td>
-                        <td className="py-2.5 px-3 text-zinc-600 dark:text-zinc-400">{p.mem}%</td>
-                        <td className="py-2.5 px-3 text-zinc-400 text-[10px]">{p.time}</td>
-                        <td className="py-2.5 px-3 text-zinc-800 dark:text-zinc-200 max-w-xs truncate" title={p.command}>
+                        <td className="py-3 px-4 text-zinc-600 dark:text-zinc-400">{p.mem}%</td>
+                        <td className="py-3 px-4 text-zinc-400 text-[10px]">{p.time}</td>
+                        <td className="py-3 px-4 text-zinc-800 dark:text-zinc-200 max-w-md xl:max-w-2xl font-mono truncate" title={p.command}>
                           {p.command}
                         </td>
-                        <td className="py-2.5 px-3 text-right">
+                        <td className="py-3 px-4 text-right">
                           <Button
                             size="sm"
                             variant="ghost"
                             onClick={() => handleKillProcess(p.vmid || 0, p.pid, p.command)}
                             disabled={isKillingPid === p.pid}
-                            className="h-6 text-[10px] px-2 text-zinc-500 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 cursor-pointer"
+                            className="h-7 text-xs px-2.5 text-zinc-500 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 cursor-pointer"
                           >
                             {isKillingPid === p.pid ? (
                               <RefreshCw className="h-3 w-3 animate-spin" />
@@ -1215,14 +1215,14 @@ export function AdminPanel({
           <div className="border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden bg-white dark:bg-zinc-900 shadow-2xs">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
-                <thead className="bg-zinc-50 dark:bg-zinc-800/80 text-zinc-500 dark:text-zinc-400 font-semibold border-b border-zinc-200 dark:border-zinc-800">
+                <thead className="bg-zinc-50 dark:bg-zinc-800/80 text-zinc-500 dark:text-zinc-400 font-semibold border-b border-zinc-200 dark:border-zinc-800 text-[11px]">
                   <tr>
-                    <th className="py-3 px-3.5">รหัสนักศึกษา</th>
-                    <th className="py-3 px-3.5">ชื่อ - นามสกุล</th>
-                    <th className="py-3 px-3.5">ชื่อโครงงาน</th>
-                    <th className="py-3 px-3.5">รหัสผ่าน</th>
-                    <th className="py-3 px-3.5">InfluxDB Bucket & Token</th>
-                    <th className="py-3 px-3.5">เครื่อง CT</th>
+                    <th className="py-3.5 px-4">รหัสนักศึกษา</th>
+                    <th className="py-3.5 px-4">ชื่อ - นามสกุล</th>
+                    <th className="py-3.5 px-4">ชื่อโครงงาน</th>
+                    <th className="py-3.5 px-4">รหัสผ่าน</th>
+                    <th className="py-3.5 px-4">InfluxDB Bucket & Token</th>
+                    <th className="py-3.5 px-4">เครื่อง CT</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
@@ -1238,12 +1238,12 @@ export function AdminPanel({
                       return (
                         <tr key={st.studentId} className="hover:bg-zinc-50/70 dark:hover:bg-zinc-800/40 transition-colors">
                           {/* Student ID */}
-                          <td className="py-3 px-3.5 font-mono font-semibold text-zinc-900 dark:text-zinc-100 whitespace-nowrap">
+                          <td className="py-3.5 px-4 font-mono font-semibold text-zinc-900 dark:text-zinc-100 whitespace-nowrap">
                             {st.studentId}
                           </td>
 
                           {/* Full Name */}
-                          <td className="py-3 px-3.5 font-medium text-zinc-800 dark:text-zinc-200">
+                          <td className="py-3.5 px-4 font-medium text-zinc-800 dark:text-zinc-200">
                             {st.fullName}
                             <span className="block text-[10px] text-zinc-400 font-normal">
                               {st.department || 'เทคโนโลยีคอมพิวเตอร์'}
@@ -1251,15 +1251,15 @@ export function AdminPanel({
                           </td>
 
                           {/* Project Title */}
-                          <td className="py-3 px-3.5 text-zinc-700 dark:text-zinc-300 max-w-[200px] truncate" title={st.projectTitle}>
+                          <td className="py-3.5 px-4 text-zinc-700 dark:text-zinc-300 max-w-[320px] xl:max-w-[420px] truncate" title={st.projectTitle}>
                             {st.projectTitle}
                           </td>
 
                           {/* Password */}
-                          <td className="py-3 px-3.5 whitespace-nowrap">
+                          <td className="py-3.5 px-4 whitespace-nowrap">
                             <div className="flex items-center gap-1.5">
                               <span
-                                className={`font-mono text-xs px-2 py-1 rounded bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 font-semibold ${
+                                className={`font-mono text-xs px-2.5 py-1 rounded bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 font-semibold ${
                                   isRevealed ? 'text-zinc-900 dark:text-zinc-100' : 'text-zinc-400 tracking-widest'
                                 }`}
                               >
@@ -1291,11 +1291,11 @@ export function AdminPanel({
                           </td>
 
                           {/* InfluxDB & MQTT */}
-                          <td className="py-3 px-3.5 whitespace-nowrap">
+                          <td className="py-3.5 px-4 whitespace-nowrap">
                             <div className="space-y-0.5">
                               <div className="flex items-center gap-1 text-[11px] text-zinc-700 dark:text-zinc-300 font-mono">
                                 <Database className="h-3 w-3 text-zinc-400 shrink-0" />
-                                <span className="truncate max-w-[120px]">{st.influxBucket || `telemetry-${st.studentId}`}</span>
+                                <span className="truncate max-w-[140px]">{st.influxBucket || `telemetry-${st.studentId}`}</span>
                               </div>
                               <div className="flex items-center gap-1 text-[10px] text-zinc-400 font-mono">
                                 <Radio className="h-2.5 w-2.5 text-zinc-400 shrink-0" />
@@ -1305,13 +1305,13 @@ export function AdminPanel({
                           </td>
 
                           {/* CT Servers */}
-                          <td className="py-3 px-3.5 whitespace-nowrap">
+                          <td className="py-3.5 px-4 whitespace-nowrap">
                             {st.servers && st.servers.length > 0 ? (
                               <div className="space-y-1">
                                 {st.servers.map((srv) => (
                                   <span
                                     key={srv.vmid}
-                                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-mono font-medium bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700"
+                                    className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-medium bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700"
                                   >
                                     CT {srv.vmid} ({srv.ip})
                                   </span>
@@ -1348,7 +1348,7 @@ export function AdminPanel({
               <p className="text-xs text-zinc-400 mt-1">คำขอเครื่องเซิร์ฟเวอร์ทั้งหมดได้รับการพิจารณาครบถ้วนแล้ว</p>
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
               {pendingRequests.map((req) => {
                 const cleanServerName = req.serverName?.replace(/^[^a-zA-Z0-9]+|[^a-zA-Z0-9]+$/g, '').replace(/[-_.]{2,}/g, '-') || `node-${String(req.studentId || 'app').replace(/[^a-zA-Z0-9]/g, '').slice(-4)}`
                 const isApproving = isApprovingId === req.id
@@ -1461,7 +1461,7 @@ export function AdminPanel({
               <p className="text-xs text-zinc-400 mt-1">เมื่ออนุมัติคำขอในคิว เครื่องจะปรากฏในหน้านี้</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
               {ctServers.map((server) => (
                 <div
                   key={server.vmid}
@@ -1618,7 +1618,7 @@ export function AdminPanel({
               <p className="text-xs text-zinc-500">ไม่มีคำร้องหรือการแจ้งปัญหาในหมวดหมู่นี้</p>
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
               {tickets
                 .filter(t => ticketFilter === 'all' || t.status === ticketFilter)
                 .map(t => (
@@ -1720,7 +1720,7 @@ export function AdminPanel({
       {/* ==================================================================== */}
       {selectedProcessServer && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/60 backdrop-blur-xs">
-          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in-95">
+          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl w-full max-w-5xl xl:max-w-6xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in-95">
             {/* Modal Header */}
             <div className="p-4 sm:p-5 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between bg-zinc-50/60 dark:bg-zinc-950/60">
               <div className="flex items-center gap-3">
